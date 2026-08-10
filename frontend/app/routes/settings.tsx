@@ -1,6 +1,8 @@
 import React from 'react'
 import { Link } from 'react-router'
-import { getTvs, addTv, removeTv, removeAllTvImages, updateTv } from '~/utils/tvApi';
+import { toast } from 'sonner';
+import { getTvs, addTv, removeTv, removeAllTvImages, updateTv, tvPowerOn, type TVUpdate } from '~/utils/tvApi';
+import { fetchAlbums, reconcileImages, getBackupUrl } from '~/utils/galleryApi';
 import { Input } from '~/components/ui/input';
 import { Button } from '~/components/ui/button';
 import { getProviders, setProvider, getProvider, deleteProvider } from '~/utils/providerApi';
@@ -12,6 +14,9 @@ interface TV {
   name?: string;
   mac?: string;
   delete_other_images_on_upload?: boolean;
+  slideshow_enabled?: boolean;
+  slideshow_album_id?: number | null;
+  slideshow_interval_minutes?: number | null;
 }
 
 export default function Settings() {
@@ -32,6 +37,11 @@ export default function Settings() {
   const [immichEnabled, setImmichEnabled] = React.useState(false);
   const [providerError, setProviderError] = React.useState("");
   const [providerSaving, setProviderSaving] = React.useState(false);
+
+  // Albums drive the slideshow picker; MAC drafts are per TV until saved.
+  const [albums, setAlbums] = React.useState<{ id: string; name: string }[]>([]);
+  const [macDrafts, setMacDrafts] = React.useState<Record<string, string>>({});
+  const [maintenanceBusy, setMaintenanceBusy] = React.useState(false);
 
   // Fetch TVs
   const fetchTvs = React.useCallback(async () => {
@@ -61,6 +71,7 @@ export default function Settings() {
   React.useEffect(() => {
     fetchTvs();
     fetchProviders();
+    fetchAlbums().then(setAlbums).catch(() => setAlbums([]));
   }, [fetchTvs, fetchProviders]);
 
   // TV handlers
@@ -115,6 +126,55 @@ export default function Settings() {
       await fetchTvs();
     } catch (e: any) {
       setError(e.message || 'Failed to update TV setting');
+    }
+  };
+
+  const handleSlideshow = async (tvIp: string, updates: TVUpdate) => {
+    setError('');
+    try {
+      await updateTv(tvIp, updates);
+      await fetchTvs();
+    } catch (e: any) {
+      setError(e.message || 'Failed to update the slideshow');
+      await fetchTvs();
+    }
+  };
+
+  const handleSaveMac = async (tvIp: string) => {
+    setError('');
+    try {
+      await updateTv(tvIp, { mac: (macDrafts[tvIp] || '').trim() });
+      setMacDrafts({ ...macDrafts, [tvIp]: '' });
+      await fetchTvs();
+    } catch (e: any) {
+      setError(e.message || 'Failed to save the MAC address');
+    }
+  };
+
+  const handleWake = async (tvIp: string) => {
+    setError('');
+    try {
+      await tvPowerOn(tvIp);
+      toast.success('Wake-up packet sent', { position: 'top-center' });
+    } catch (e: any) {
+      setError(e.message || 'Failed to wake the TV');
+    }
+  };
+
+  const handleReconcile = async () => {
+    setMaintenanceBusy(true);
+    setError('');
+    try {
+      const report = await reconcileImages();
+      const parts = [`${report.added} added`, `${report.removed} removed`, `${report.hashed} hashed`];
+      if (report.duplicate_groups.length) {
+        parts.push(`${report.duplicate_groups.length} duplicate group${report.duplicate_groups.length === 1 ? '' : 's'}`);
+      }
+      toast.success(`Library checked: ${parts.join(', ')}`, { position: 'top-center', duration: 8000 });
+    } catch (e: any) {
+      setError(e.message || 'Failed to check the library');
+    } finally {
+      setMaintenanceBusy(false);
     }
   };
 
@@ -213,10 +273,74 @@ export default function Settings() {
                     <span>Delete other images on upload</span>
                   </label>
 
+                  {/* Wake-on-LAN is the only way to reach a TV that is off, and it needs the MAC. */}
+                  {!tv.mac && (
+                    <div className="mb-4">
+                      <label className="block text-sm mb-1">MAC address (to wake the TV)</label>
+                      <div className="flex gap-2">
+                        <Input
+                          type="text"
+                          value={macDrafts[tv.ip] ?? ''}
+                          onChange={e => setMacDrafts({ ...macDrafts, [tv.ip]: e.target.value })}
+                          placeholder="aa:bb:cc:dd:ee:ff"
+                        />
+                        <Button
+                          onClick={() => handleSaveMac(tv.ip)}
+                          disabled={!(macDrafts[tv.ip] || '').trim()}
+                        >
+                          Save
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
+                  <fieldset className="mb-4 border border-border rounded-lg p-3">
+                    <legend className="text-sm font-medium px-1">Slideshow</legend>
+                    <p className="text-xs text-muted-foreground mb-2">
+                      Rotates through images of an album that are already on this TV.
+                    </p>
+                    <div className="flex flex-col gap-2">
+                      <select
+                        value={tv.slideshow_album_id ?? ''}
+                        onChange={e => handleSlideshow(tv.ip, { slideshow_album_id: e.target.value || null })}
+                        aria-label="Slideshow album"
+                        className="border px-2 py-2 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-200"
+                      >
+                        <option value="">No album</option>
+                        {albums.map(album => (
+                          <option key={album.id} value={album.id}>{album.name}</option>
+                        ))}
+                      </select>
+                      <div className="flex items-center gap-2">
+                        <Input
+                          type="number"
+                          min={1}
+                          value={tv.slideshow_interval_minutes ?? ''}
+                          onChange={e => handleSlideshow(tv.ip, { slideshow_interval_minutes: e.target.value || null })}
+                          placeholder="Every … minutes"
+                          aria-label="Slideshow interval in minutes"
+                        />
+                        <span className="text-sm text-muted-foreground whitespace-nowrap">min</span>
+                      </div>
+                      <label className="flex items-center gap-2 text-sm">
+                        <input
+                          type="checkbox"
+                          checked={!!tv.slideshow_enabled}
+                          onChange={e => handleSlideshow(tv.ip, { slideshow_enabled: e.target.checked })}
+                          className="accent-blue-600"
+                        />
+                        <span>Enabled</span>
+                      </label>
+                    </div>
+                  </fieldset>
+
                   <div className="flex flex-col gap-2">
                     <Link to={`/tv-gallery?ip=${encodeURIComponent(tv.ip)}`} className="bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium py-2 px-4 rounded-lg text-center">
                       View Gallery
                     </Link>
+                    <button onClick={() => handleWake(tv.ip)} className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline">
+                      Wake the TV
+                    </button>
                     <button onClick={() => handleRemoveAllImages(tv.ip)} className="text-red-500 hover:text-red-700 text-sm font-medium">
                       Delete all Images from TV
                     </button>
@@ -228,6 +352,27 @@ export default function Settings() {
               ))}
             </div>
           )}
+        </div>
+
+        {/* Maintenance */}
+        <div className="bg-card rounded-2xl border border-border p-5 mb-8">
+          <h2 className="text-lg font-semibold mb-4 text-foreground">Library</h2>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <a
+              href={getBackupUrl()}
+              className="bg-blue-600 text-white hover:bg-blue-900 text-sm font-medium py-2 px-4 rounded-lg text-center"
+            >
+              Download a backup
+            </a>
+            <Button onClick={handleReconcile} disabled={maintenanceBusy}>
+              {maintenanceBusy ? 'Checking…' : 'Check the library'}
+            </Button>
+          </div>
+          <p className="text-sm text-muted-foreground mt-3">
+            The backup is a zip of your uploads and the database — take one before updating.
+            Checking the library picks up files added or removed outside the app and reports
+            images stored twice under different names.
+          </p>
         </div>
 
         {/* Provider Settings */}

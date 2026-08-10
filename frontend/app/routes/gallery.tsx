@@ -1,7 +1,7 @@
 
 
 import React, { useEffect, useRef, useState } from "react";
-import { deleteImage, fetchImages, fetchAlbums, uploadImage, createAlbum, addImagesToAlbum, fetchProviderAlbumImages, fetchProviderAlbums, getProviderImageStreamUrl } from "../utils/galleryApi";
+import { deleteImage, fetchImages, fetchAlbums, uploadImage, createAlbum, addImagesToAlbum, fetchProviderAlbumImages, fetchProviderAlbums, getProviderImageStreamUrl, type ImageSort } from "../utils/galleryApi";
 import ImageCard from "../components/imageCard";
 import AlbumCard from "~/components/AlbumCard";
 import ImageGrid from "~/components/imageGrid";
@@ -52,11 +52,13 @@ export default function Gallery() {
   const [pendingFiles, setPendingFiles] = useState<File[] | null>(null);
   const [dropAlbumId, setDropAlbumId] = useState("");
   const [dropNewAlbumName, setDropNewAlbumName] = useState("");
+  const [search, setSearch] = useState("");
+  const [sort, setSort] = useState<ImageSort>("newest");
 
   async function loadLocalGallery() {
     setLoading(true);
     try {
-      const [imgs, als] = await Promise.all([fetchImages(), fetchAlbums()]);
+      const [imgs, als] = await Promise.all([fetchImages({ q: search, sort }), fetchAlbums()]);
       // Convert to GalleryImage objects
       setImages(imgs.map((img: string) => ({
         id: img,
@@ -86,8 +88,13 @@ export default function Gallery() {
     }
   }
 
+  // Re-query on search and sort, debounced so typing does not fire a request per key.
   useEffect(() => {
-    loadLocalGallery();
+    const timer = setTimeout(loadLocalGallery, search ? 250 : 0);
+    return () => clearTimeout(timer);
+  }, [search, sort]);
+
+  useEffect(() => {
     loadProviderGallery();
     // Load TVs once and share with image cards to avoid per-card requests
     (async () => {
@@ -216,15 +223,24 @@ export default function Gallery() {
     setError("");
     let uploaded = 0;
     let failed = 0;
+    const duplicates: string[] = [];
 
     for (const file of files) {
       try {
-        await uploadImage(file, albumId);
+        const result = await uploadImage(file, albumId);
         uploaded++;
+        if (result?.duplicate_of) duplicates.push(`${result.filename} (same as ${result.duplicate_of})`);
       } catch (err) {
         failed++;
         console.error(`Failed to upload ${file.name}:`, err);
       }
+    }
+
+    if (duplicates.length > 0) {
+      toast.warning(`Already in the gallery: ${duplicates.join(", ")}`, {
+        position: "top-center",
+        duration: 8000,
+      });
     }
 
     if (uploaded > 0) await loadLocalGallery();
@@ -414,6 +430,26 @@ export default function Gallery() {
                 {selected.length === images.length ? "Clear selection" : "Select all"}
               </button>
             )}
+          </div>
+          <div className="flex flex-wrap items-center gap-2 mb-2">
+            <input
+              type="search"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Search by name…"
+              aria-label="Search images by name"
+              className="border px-2 py-2 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 flex-1 min-w-48"
+            />
+            <select
+              value={sort}
+              onChange={e => setSort(e.target.value as ImageSort)}
+              aria-label="Sort images"
+              className="border px-2 py-2 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-200"
+            >
+              <option value="newest">Newest first</option>
+              <option value="oldest">Oldest first</option>
+              <option value="name">By name</option>
+            </select>
           </div>
           <p className="text-sm text-muted-foreground mb-2">Tick the boxes, or shift-click, to move or delete several images at once.</p>
           {loading ? (

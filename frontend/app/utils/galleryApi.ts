@@ -19,10 +19,30 @@ export async function fetchProviderAlbumImages(albumId: string) {
 export function getProviderImageStreamUrl(imageId: string, size: string = "fullsize") {
   return `${API_BASE}/api/provider/images/${encodeURIComponent(imageId)}/stream?size=${encodeURIComponent(size)}`;
 }
-export async function fetchImages() {
-  const res = await fetch(`${API_BASE}/api/images`);
+export type ImageSort = 'newest' | 'oldest' | 'name';
+
+export async function fetchImages(options: { q?: string; sort?: ImageSort } = {}) {
+  const params = new URLSearchParams();
+  if (options.q) params.set('q', options.q);
+  if (options.sort && options.sort !== 'newest') params.set('sort', options.sort);
+  const query = params.toString();
+
+  const res = await fetch(`${API_BASE}/api/images${query ? `?${query}` : ''}`);
   if (!res.ok) throw new Error('Failed to fetch images');
   return (await res.json()).images;
+}
+
+/** Realign the database with the uploads folder and report what moved. */
+export async function reconcileImages(): Promise<{
+  added: number; removed: number; hashed: number; duplicate_groups: string[][];
+}> {
+  const res = await fetch(`${API_BASE}/api/images/reconcile`, { method: 'POST' });
+  if (!res.ok) throw new Error((await res.json()).error || 'Failed to reconcile images');
+  return await res.json();
+}
+
+export function getBackupUrl() {
+  return `${API_BASE}/api/backup`;
 }
 
 export async function deleteImage(filename: string) {
@@ -143,6 +163,12 @@ export async function deleteAlbum(album: string) {
   return (await res.json()).albums;
 }
 
-export function getUploadUrl(filename: string) {
-  return `${API_BASE}/uploads/${encodeURIComponent(filename)}`;
+/**
+ * URL of an uploaded image. Pass a width to get a downscaled copy instead of the
+ * original — a grid tile does not need a full-resolution artwork. Only 160, 400 and
+ * 800 are generated; anything else silently serves the original.
+ */
+export function getUploadUrl(filename: string, width?: 160 | 400 | 800) {
+  const base = `${API_BASE}/uploads/${encodeURIComponent(filename)}`;
+  return width ? `${base}?w=${width}` : base;
 }

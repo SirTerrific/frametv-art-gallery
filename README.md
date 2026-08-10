@@ -46,6 +46,11 @@ This project uses local websocket APIs provided by the TVs.
 - **Send a whole album to a TV.** One button uploads every image in the album, in order,
   showing progress and stopping early if the TV goes quiet.
 - **Light and dark mode.** Follows the system preference, with a toggle in the header.
+- **Slideshow.** Rotate through an album on a TV at a chosen interval.
+- **Wake the TV.** Wake-on-LAN, using the MAC address stored with the TV.
+- **Search and sort** the gallery, newest first by default.
+- **Duplicate warning.** The same artwork uploaded under another name is flagged.
+- **Backup.** Download a zip of your uploads and the database in one click.
 - **Immich import.** Browse your Immich albums and push any photo to the TV.
 
 ## Images
@@ -96,6 +101,7 @@ All optional, with sensible defaults. Set them as environment variables on the c
 | `FRAME_TV_PAIRING_TIMEOUT` | `45` | How long adding a TV waits for the pairing prompt to be accepted. |
 | `FRAME_TV_DOWN_COOLDOWN` | `30` | Seconds a TV is skipped after it failed to answer. |
 | `FRAME_TV_MAX_PARALLEL_CALLS` | `8` | Concurrent TV requests per worker. |
+| `FRAME_TV_SLIDESHOW` | `1` | Set to `0` to stop the slideshow loop from running at all. |
 
 # Tests
 

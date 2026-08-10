@@ -1,11 +1,17 @@
 import base64
-from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory, jsonify, Response
+import hashlib
+import shutil
+import sqlite3
+import tempfile
+import zipfile
+from flask import Flask, after_this_request, render_template, request, redirect, url_for, flash, send_file, send_from_directory, jsonify, Response
 import os
 from werkzeug.utils import secure_filename
 from pathlib import Path
 import sys
 from flask_sqlalchemy import SQLAlchemy
 from utils.crop_image import crop_image_file, CropImageError, get_preset_crop_box, CROP_PRESETS
+from utils.thumbnails import get_or_create, parse_width
 from samsungtvws.exceptions import HttpApiError, ResponseError
 from const import CONNECTION_NAME
 from typing import Tuple, Optional
@@ -65,6 +71,9 @@ os.makedirs(INSTANCE_FOLDER, exist_ok=True)
 
 frametv_db_path = os.path.abspath(os.path.join(INSTANCE_FOLDER, 'frametv.db'))
 
+# Downscaled copies of the uploads, rebuilt on demand and safe to delete.
+THUMBNAIL_DIR = Path(INSTANCE_FOLDER).joinpath('thumbnails')
+
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 
 app = Flask(__name__, static_folder="frontend/build/client")
@@ -116,6 +125,19 @@ def init_db():
 init_db()
 migrate = Migrate(app, db)
 
+# One gunicorn worker out of several picks up the slideshow loop; see utils/slideshow.py.
+app.config['SLIDESHOW_LOCK_PATH'] = os.path.join(INSTANCE_FOLDER, 'slideshow.lock')
+if os.environ.get('FRAME_TV_SLIDESHOW', '1').lower() not in ('0', 'false', 'no'):
+    from utils import slideshow as _slideshow
+
+    _slideshow.start(
+        app,
+        db,
+        (TV, Image, UploadedImage),
+        play_uploaded_content,
+        (FrameTVError, OSError),
+    )
+
 
 # --- Helpers ---
 def allowed_file(filename: str) -> bool:
@@ -161,6 +183,19 @@ def _normalized_static_path(path: str) -> Path:
     return normalized
 
 
+def _file_sha256(path: str) -> Optional[str]:
+    """Content hash of a file, or None if it cannot be read."""
+    digest = hashlib.sha256()
+    try:
+        with open(path, 'rb') as handle:
+            for chunk in iter(lambda: handle.read(1024 * 1024), b''):
+                digest.update(chunk)
+    except OSError:
+        app.logger.warning('Could not hash %s', path, exc_info=True)
+        return None
+    return digest.hexdigest()
+
+
 def _guess_image_mimetype(image_bytes: bytes) -> str:
     if image_bytes.startswith(b'\xff\xd8\xff'):
         return 'image/jpeg'
@@ -199,8 +234,139 @@ app.media_provider = media_provider
 # List all uploaded images (not album-specific)
 @app.route('/api/images', methods=['GET'])
 def api_list_images():
-    files = [f for f in os.listdir(app.config['UPLOAD_FOLDER']) if os.path.isfile(os.path.join(app.config['UPLOAD_FOLDER'], f))]
+    """List the uploaded filenames, newest first.
+
+    The directory listing has no meaningful order, so the database's created_at is
+    used where a row exists and the file's own mtime otherwise. Pass ?q= to filter
+    by name and ?sort=oldest|name to change the order. The response stays a plain
+    list of filenames, as before.
+    """
+    upload_folder = app.config['UPLOAD_FOLDER']
+    files = [
+        f for f in os.listdir(upload_folder)
+        if os.path.isfile(os.path.join(upload_folder, f))
+    ]
+
+    query = (request.args.get('q') or '').strip().lower()
+    if query:
+        files = [f for f in files if query in f.lower()]
+
+    added_at = {
+        img.filename: img.created_at
+        for img in Image.query.filter(Image.filename.in_(files)).all()
+    } if files else {}
+
+    def sort_key(filename):
+        known = added_at.get(filename)
+        if known is not None:
+            return known.timestamp()
+        try:
+            return os.path.getmtime(os.path.join(upload_folder, filename))
+        except OSError:
+            return 0.0
+
+    sort = request.args.get('sort')
+    if sort == 'name':
+        files.sort(key=str.lower)
+    else:
+        files.sort(key=sort_key, reverse=sort != 'oldest')
+
     return {'images': files}
+
+
+@app.route('/api/images/reconcile', methods=['POST'])
+def api_reconcile_images():
+    """Realign the database with the uploads folder.
+
+    Files can be added or removed underneath the app, and rows predating the hash
+    column have none. This adds rows for untracked files, drops rows whose file is
+    gone, and fills in missing hashes. Album membership is never touched.
+    """
+    upload_folder = app.config['UPLOAD_FOLDER']
+    on_disk = {
+        f for f in os.listdir(upload_folder)
+        if os.path.isfile(os.path.join(upload_folder, f)) and allowed_file(f)
+    }
+
+    rows = Image.query.all()
+    known = {img.filename for img in rows}
+
+    removed = 0
+    for img in rows:
+        if img.filename not in on_disk:
+            UploadedImage.query.filter_by(image_id=img.id).delete()
+            db.session.delete(img)
+            removed += 1
+
+    added = 0
+    for filename in sorted(on_disk - known):
+        db.session.add(Image(filename=filename, sha256=_file_sha256(os.path.join(upload_folder, filename))))
+        added += 1
+
+    hashed = 0
+    for img in rows:
+        if img.filename in on_disk and not img.sha256:
+            img.sha256 = _file_sha256(os.path.join(upload_folder, img.filename))
+            hashed += 1
+
+    db.session.commit()
+
+    # Reported once the hashes exist, so the answer covers the whole library.
+    duplicates = {}
+    for img in Image.query.filter(Image.sha256.isnot(None)).order_by(Image.id).all():
+        duplicates.setdefault(img.sha256, []).append(img.filename)
+    duplicate_groups = [names for names in duplicates.values() if len(names) > 1]
+
+    return {
+        'added': added,
+        'removed': removed,
+        'hashed': hashed,
+        'duplicate_groups': duplicate_groups,
+    }
+
+
+@app.route('/api/backup', methods=['GET'])
+def api_backup():
+    """Download a zip of the uploads and the database.
+
+    The README tells people to back up before updating without giving them a way to
+    do it. The database is copied through sqlite's own backup API so the archive
+    holds a consistent snapshot even while the app is being used.
+    """
+    stamp = datetime.now().strftime('%Y%m%d-%H%M%S')
+    tmp_dir = tempfile.mkdtemp(prefix='frametv-backup-')
+    archive_path = os.path.join(tmp_dir, f'frametv-backup-{stamp}.zip')
+
+    try:
+        db_snapshot = os.path.join(tmp_dir, 'frametv.db')
+        source = sqlite3.connect(frametv_db_path)
+        try:
+            destination = sqlite3.connect(db_snapshot)
+            try:
+                source.backup(destination)
+            finally:
+                destination.close()
+        finally:
+            source.close()
+
+        upload_folder = app.config['UPLOAD_FOLDER']
+        with zipfile.ZipFile(archive_path, 'w', zipfile.ZIP_DEFLATED) as archive:
+            archive.write(db_snapshot, 'instance/frametv.db')
+            for filename in sorted(os.listdir(upload_folder)):
+                full = os.path.join(upload_folder, filename)
+                if os.path.isfile(full):
+                    archive.write(full, f'uploads/{filename}')
+
+        @after_this_request
+        def cleanup(response):
+            shutil.rmtree(tmp_dir, ignore_errors=True)
+            return response
+
+        return send_file(archive_path, as_attachment=True, download_name=os.path.basename(archive_path))
+    except Exception as e:
+        shutil.rmtree(tmp_dir, ignore_errors=True)
+        _log_exception('Failed to build the backup archive', e)
+        return _error_response('Failed to build the backup archive', 500)
 
 
 @app.route('/api/images/added_this_month', methods=['GET'])
@@ -409,6 +575,7 @@ def upload():
     except ValueError as e:
         return {'error': str(e)}, 400
     file.save(file_path)
+    digest = _file_sha256(file_path)
 
     # Re-uploading the same filename overwrites the file, so reuse its row instead of
     # leaving a second one behind pointing at the same image.
@@ -416,10 +583,27 @@ def upload():
     if not img:
         img = Image(filename=filename)
         db.session.add(img)
+
+    # The same artwork under another name still uploads — silently dropping a file
+    # someone asked for would be worse — but the caller is told, so it can say so.
+    duplicate_of = None
+    if digest:
+        twin = Image.query.filter(
+            Image.sha256 == digest, Image.filename != filename
+        ).first()
+        if twin and os.path.isfile(os.path.join(app.config['UPLOAD_FOLDER'], twin.filename)):
+            duplicate_of = twin.filename
+        img.sha256 = digest
+
     if album:
         img.album = album
     db.session.commit()
-    return {'success': True, 'filename': filename, 'album_id': album.id if album else None}
+    return {
+        'success': True,
+        'filename': filename,
+        'album_id': album.id if album else None,
+        'duplicate_of': duplicate_of,
+    }
     
 # --- Play Uploaded Image on TV ---
 @app.route('/api/tv/play_uploaded', methods=['POST'])
@@ -454,12 +638,24 @@ def api_play_uploaded_image():
 
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
+    """Serve an uploaded image, or a downscaled copy with ?w=<width>.
+
+    Without the parameter this behaves exactly as before, so existing links keep
+    returning the original file.
+    """
     try:
-        safe_name, _ = _normalized_upload_path(filename, must_exist=True)
+        safe_name, source_path = _normalized_upload_path(filename, must_exist=True)
     except ValueError:
         return {'error': 'Invalid filename'}, 400
     except FileNotFoundError:
         return {'error': 'Image not found'}, 404
+
+    width = parse_width(request.args.get('w'))
+    if width:
+        thumbnail = get_or_create(THUMBNAIL_DIR, source_path, safe_name, width)
+        if thumbnail:
+            return send_file(thumbnail, mimetype='image/jpeg', max_age=86400)
+
     return send_from_directory(app.config['UPLOAD_FOLDER'], safe_name)
 
 
@@ -476,7 +672,10 @@ def api_get_tvs():
             'ip': tv.ip,
             'name': tv.name,
             'mac': tv.mac,
-            'delete_other_images_on_upload': getattr(tv, 'delete_other_images_on_upload', False)
+            'delete_other_images_on_upload': getattr(tv, 'delete_other_images_on_upload', False),
+            'slideshow_enabled': bool(getattr(tv, 'slideshow_enabled', False)),
+            'slideshow_album_id': getattr(tv, 'slideshow_album_id', None),
+            'slideshow_interval_minutes': getattr(tv, 'slideshow_interval_minutes', None),
         } for tv in tvs
     ]}
 
@@ -485,9 +684,42 @@ def api_update_tv(ip):
     tv = TV.query.filter_by(ip=ip).first()
     if not tv:
         return {'error': 'TV not found'}, 404
-    data = request.get_json()
+    data = request.get_json() or {}
     if 'delete_other_images_on_upload' in data:
         tv.delete_other_images_on_upload = bool(data['delete_other_images_on_upload'])
+    if 'mac' in data:
+        tv.mac = (data['mac'] or '').strip() or None
+
+    if 'slideshow_enabled' in data:
+        tv.slideshow_enabled = bool(data['slideshow_enabled'])
+    if 'slideshow_album_id' in data:
+        album_id = data['slideshow_album_id']
+        if album_id in (None, ''):
+            tv.slideshow_album_id = None
+        else:
+            try:
+                album = Album.query.get(int(album_id))
+            except (TypeError, ValueError):
+                return {'error': 'Invalid album'}, 400
+            if not album:
+                return {'error': 'Album not found'}, 404
+            tv.slideshow_album_id = album.id
+    if 'slideshow_interval_minutes' in data:
+        raw = data['slideshow_interval_minutes']
+        if raw in (None, ''):
+            tv.slideshow_interval_minutes = None
+        else:
+            try:
+                minutes = int(raw)
+            except (TypeError, ValueError):
+                return {'error': 'Interval must be a whole number of minutes'}, 400
+            if minutes < 1:
+                return {'error': 'Interval must be at least one minute'}, 400
+            tv.slideshow_interval_minutes = minutes
+
+    if tv.slideshow_enabled and not (tv.slideshow_album_id and tv.slideshow_interval_minutes):
+        return {'error': 'Pick an album and an interval before enabling the slideshow'}, 400
+
     db.session.commit()
     return {'success': True}
 
@@ -758,12 +990,19 @@ def api_delete_tv_image(ip, content_id):
 @app.route('/api/tv/<ip>/on', methods=['POST'])
 def api_tv_power_on(ip):
     data = request.get_json(silent=True) or {}
-    mac = data.get('mac')
     tv = TV.query.filter_by(ip=ip).first()
+    # The caller may pass a MAC, but the stored one is what the TV was added with.
+    mac = data.get('mac') or (tv.mac if tv else None)
     token = tv.token if tv else None
+    if not mac:
+        return _error_response(
+            'This TV has no MAC address. Add it in TV settings so it can be woken up.', 400
+        )
     try:
         power_on(ip, mac, token=token)
         return {'success': True}
+    except ValueError as e:
+        return _error_response(str(e), 400)
     except FrameTVError as e:
         _log_exception('Failed to power on TV', e)
         return _error_response('Failed to power on TV', 500)

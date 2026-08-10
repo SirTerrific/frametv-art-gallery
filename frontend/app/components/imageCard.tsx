@@ -19,7 +19,14 @@ interface AlbumOption {
 }
 
 interface ImageCardProps {
+  /** what the grid tile shows — may be a downscaled copy */
   src: string;
+  /**
+   * Full-resolution URL for the modal and the cropper. The cropper scales its
+   * coordinates by naturalWidth, so handing it a thumbnail would crop the wrong
+   * region of the original. Defaults to `src`.
+   */
+  fullSrc?: string;
   alt: string;
   filename?: string;
   image?: any;
@@ -40,6 +47,7 @@ interface ImageCardProps {
 
 const ImageCard: React.FC<ImageCardProps> = ({
   src,
+  fullSrc,
   alt,
   filename,
   image,
@@ -61,7 +69,8 @@ const ImageCard: React.FC<ImageCardProps> = ({
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [showCropModal, setShowCropModal] = useState(false);
   const [showControlsModal, setShowControlsModal] = useState(false);
-  const [imageURL, setImageURL] = useState(src);
+  const [tileURL, setTileURL] = useState(src);
+  const [imageURL, setImageURL] = useState(fullSrc ?? src);
   const [selectedAlbum, setSelectedAlbum] = useState('');
   const [assigning, setAssigning] = useState(false);
   const [assignMessage, setAssignMessage] = useState('');
@@ -81,8 +90,9 @@ const ImageCard: React.FC<ImageCardProps> = ({
   }, [tvsProp]);
 
   useEffect(() => {
-    setImageURL(src);
-  }, [src]);
+    setTileURL(src);
+    setImageURL(fullSrc ?? src);
+  }, [src, fullSrc]);
 
   const handleSendToTV = async () => {
     if (!selectedTvIp) {
@@ -198,8 +208,9 @@ const ImageCard: React.FC<ImageCardProps> = ({
         )}
         <div className={`w-full bg-muted flex items-center justify-center overflow-hidden ` + (large ? 'h-72' : 'h-52')} >
           <img
-            src={imageURL}
+            src={tileURL}
             alt={alt}
+            loading="lazy"
             className={`max-h-full max-w-full object-contain transition-transform duration-200 group-hover:scale-105 cursor-pointer`}
             onClick={(event) => {
               // While selecting, clicking the image extends the selection instead of
@@ -230,6 +241,8 @@ const ImageCard: React.FC<ImageCardProps> = ({
           onClose={() => setShowCropModal(false)}
           onCropSuccess={(newUrl) => {
             setImageURL(newUrl);
+            // A crop rewrites the original, so the cached tile has to be re-fetched too.
+            setTileURL(`${src}${src.includes('?') ? '&' : '?'}t=${Date.now()}`);
             setShowCropModal(false);
             onCrop?.();
           }}
