@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.4.0](https://github.com/SirTerrific/frametv-art-gallery/compare/v1.3.0...v1.4.0) (2026-08-10)
+
+
+### Features
+
+* thumbnails, wake-on-lan, slideshow, search, duplicates and backup ([f2f23dc](https://github.com/SirTerrific/frametv-art-gallery/commit/f2f23dca02218616de2261ce350f3bda1e1abd5f))
+
+
+### Bug Fixes
+
+* stamp a newly created database so migrations do not replay over it ([7d4e952](https://github.com/SirTerrific/frametv-art-gallery/commit/7d4e952b42a806c9044f567b63ee8a9e16f52542))
+
 ## [1.3.0](https://github.com/SirTerrific/frametv-art-gallery/compare/v1.2.0...v1.3.0) (2026-08-10)
 
 
