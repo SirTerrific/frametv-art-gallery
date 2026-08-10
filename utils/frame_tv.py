@@ -131,10 +131,10 @@ def _is_connection_error(err: Exception) -> bool:
     ) or _is_timeout_error(err)
 
 
-def _raise_tv_connection_error(ip: str, operation: str, err: Exception) -> None:
+def _raise_tv_connection_error(ip: str, action_description: str, err: Exception) -> None:
     if _is_timeout_error(err):
-        raise FrameTVTimeoutError(f"Timeout while {operation} TV {ip}") from err
-    raise FrameTVConnectionError(f"Error while {operation} TV {ip}") from err
+        raise FrameTVTimeoutError(f"Timeout while {action_description} TV {ip}") from err
+    raise FrameTVConnectionError(f"Error while {action_description} TV {ip}") from err
 
 
 # --- Bounded TV calls ---
@@ -281,7 +281,7 @@ class _TVSession:
 
 def _tv_call(
     ip: str,
-    operation: str,
+    action_description: str,
     action: Callable[["_TVSession"], Any],
     *,
     token: Optional[str] = None,
@@ -307,7 +307,7 @@ def _tv_call(
     cooldown = _tv_cooldown_remaining(ip) if skip_when_down else 0
     if cooldown > 0:
         raise FrameTVUnavailableError(
-            f"TV {ip} did not answer recently; skipping {operation} it for another {cooldown:.0f}s"
+            f"TV {ip} did not answer recently; skipping {action_description} it for another {cooldown:.0f}s"
         )
 
     # One operation at a time per TV: concurrent art channels corrupt each other.
@@ -329,13 +329,13 @@ def _tv_call(
                 session.close()
             _mark_tv_down(ip)
             raise FrameTVTimeoutError(
-                f"Timeout after {deadline}s while {operation} TV {ip}"
+                f"Timeout after {deadline}s while {action_description} TV {ip}"
             ) from err
         except Exception as err:
             session.close()
             if _is_connection_error(err):
                 _mark_tv_down(ip)
-                _raise_tv_connection_error(ip, operation, err)
+                _raise_tv_connection_error(ip, action_description, err)
             raise
 
         _mark_tv_up(ip)
