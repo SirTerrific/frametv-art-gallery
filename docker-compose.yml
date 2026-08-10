@@ -1,6 +1,6 @@
 services:
   frametv:
-    image: ghcr.io/mrtncode/frametv-art-gallery:latest
+    image: ghcr.io/sirterrific/frametv-art-gallery:latest
     container_name: frametv_artgallery
     restart: always
     ports:

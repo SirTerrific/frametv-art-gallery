@@ -1,18 +1,21 @@
 <p align="center">
     <picture>
-      <img alt="Header" width="500" src="https://raw.githubusercontent.com/mrtncode/frametv-art-gallery/refs/heads/main/docs/header_dark.png" >
-      <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/mrtncode/frametv-art-gallery/refs/heads/main/docs/header_light.png">
+      <img alt="Header" width="500" src="https://raw.githubusercontent.com/SirTerrific/frametv-art-gallery/refs/heads/main/docs/header_dark.png" >
+      <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/SirTerrific/frametv-art-gallery/refs/heads/main/docs/header_light.png">
     </picture>
 </p>
 
 
 # frametv-art-gallery
 
-[![Release](https://img.shields.io/github/v/release/mrtncode/frametv-art-gallery)](https://github.com/mrtncode/frametv-art-gallery/releases/latest) 
-[![Build](https://github.com/mrtncode/frametv-art-gallery/actions/workflows/build_image.yaml/badge.svg)](https://github.com/mrtncode/frametv-art-gallery/actions/workflows/build_image.yaml) 
-[![License](https://img.shields.io/github/license/mrtncode/frametv-art-gallery)](https://github.com/mrtncode/frametv-art-gallery/blob/main/LICENSE) 
+> A fork of [mrtncode/frametv-art-gallery](https://github.com/mrtncode/frametv-art-gallery).
+> The badges, images and container below refer to this fork; upstream keeps its own.
+
+[![Release](https://img.shields.io/github/v/release/SirTerrific/frametv-art-gallery)](https://github.com/SirTerrific/frametv-art-gallery/releases/latest) 
+[![Build](https://github.com/SirTerrific/frametv-art-gallery/actions/workflows/build_image.yaml/badge.svg)](https://github.com/SirTerrific/frametv-art-gallery/actions/workflows/build_image.yaml) 
+[![License](https://img.shields.io/github/license/SirTerrific/frametv-art-gallery)](https://github.com/SirTerrific/frametv-art-gallery/blob/main/LICENSE) 
 [![Python](https://img.shields.io/badge/python-%3E%3D3.11-blue)](https://www.python.org/) 
-[![Stars](https://img.shields.io/github/stars/mrtncode/frametv-art-gallery?style=social)](https://github.com/mrtncode/frametv-art-gallery/stargazers)
+[![Stars](https://img.shields.io/github/stars/SirTerrific/frametv-art-gallery?style=social)](https://github.com/SirTerrific/frametv-art-gallery/stargazers)
 
 frametv-art-gallery is an independent, open-source, self-hosted gallery manager for Samsung Frame TVs. Not affiliated with Samsung. It lets you create and manage a personal gallery of images, photos, or artworks locally on your TV.
 
@@ -69,7 +72,7 @@ docker run -d \
   -p 8000:8000 \
   frametvartgallery:latest
 
-Or use the docker-compose.yml file: https://github.com/mrtncode/frametv-art-gallery/blob/main/docker-compose.yml
+Or use the docker-compose.yml file: https://github.com/SirTerrific/frametv-art-gallery/blob/main/docker-compose.yml
 
 # Update
 ## Docker (docker run)
