@@ -46,7 +46,9 @@ This project uses local websocket APIs provided by the TVs.
 - **Send a whole album to a TV.** One button uploads every image in the album, in order,
   showing progress and stopping early if the TV goes quiet.
 - **Light and dark mode.** Follows the system preference, with a toggle in the header.
-- **Slideshow.** Rotate through an album on a TV at a chosen interval.
+- **Slideshow.** Rotate through an album on a TV at a chosen interval. It only moves art
+  that is already on screen, so it never pulls the TV into art mode while you are watching
+  something — it picks back up on its own once the TV returns to art mode.
 - **Wake the TV.** Wake-on-LAN, using the MAC address stored with the TV.
 - **Search and sort** the gallery, newest first by default.
 - **Duplicate warning.** The same artwork uploaded under another name is flagged.

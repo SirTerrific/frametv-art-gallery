@@ -67,7 +67,21 @@ def _next_content_id(uploaded, last_content_id: Optional[str]) -> Optional[str]:
     return content_ids[0]
 
 
-def start(app, db, models, play_uploaded_content, frame_tv_errors) -> None:
+def _is_showing_art(tv, is_art_mode_on, frame_tv_errors) -> bool:
+    """Whether the TV is on art mode and can be rotated without interrupting anyone.
+
+    Selecting an image with show=True pulls a Frame TV into art mode, so a rotation
+    would cut across whatever someone is watching. A TV that cannot be read is treated
+    as in use: skipping a rotation is harmless, interrupting one is not.
+    """
+    try:
+        return bool(is_art_mode_on(tv.ip, token=tv.token))
+    except frame_tv_errors as err:
+        logger.info("Slideshow could not read art mode on TV %s: %s", tv.ip, err)
+        return False
+
+
+def start(app, db, models, play_uploaded_content, is_art_mode_on, frame_tv_errors) -> None:
     """Start the rotation loop in this process if no other worker owns it."""
     # `flask db upgrade` imports the app too. Starting there would have the loop query
     # tables the migration is still in the middle of altering.
@@ -84,6 +98,13 @@ def start(app, db, models, play_uploaded_content, frame_tv_errors) -> None:
     TV, Image, UploadedImage = models
 
     def rotate_one(tv) -> None:
+        # The rotation only ever moves art that is already on screen. Nothing is
+        # recorded when skipping, so it resumes on the next tick rather than waiting
+        # out another full interval once the TV goes back to art mode.
+        if not _is_showing_art(tv, is_art_mode_on, frame_tv_errors):
+            logger.debug("TV %s is in use; leaving the slideshow paused", tv.ip)
+            return
+
         uploaded = (
             UploadedImage.query
             .join(Image, UploadedImage.image_id == Image.id)

@@ -219,6 +219,34 @@ def test_an_incomplete_slideshow_never_runs(tv):
     assert not slideshow._due(tv, datetime(2026, 1, 1, 12, 0))
 
 
+def test_a_tv_in_use_is_left_alone():
+    """Showing an image switches a Frame TV to art mode, cutting across whoever is watching."""
+    tv = FakeTV(ip="192.0.2.30", token="1")
+    asked = []
+
+    def art_mode(ip, token=None):
+        asked.append(ip)
+        return False
+
+    assert slideshow._is_showing_art(tv, art_mode, (OSError,)) is False
+    assert asked == ["192.0.2.30"], "the TV should have been asked, not assumed"
+
+
+def test_a_tv_already_showing_art_is_rotated():
+    tv = FakeTV(ip="192.0.2.31", token="1")
+    assert slideshow._is_showing_art(tv, lambda ip, token=None: True, (OSError,)) is True
+
+
+def test_a_tv_that_cannot_be_read_is_treated_as_in_use():
+    """Skipping a rotation is harmless; interrupting one is not."""
+    tv = FakeTV(ip="192.0.2.32", token="1")
+
+    def unreachable(ip, token=None):
+        raise OSError("no route to host")
+
+    assert slideshow._is_showing_art(tv, unreachable, (OSError,)) is False
+
+
 def test_the_rotation_wraps_around():
     uploaded = [type("U", (), {"content_id": c})() for c in ("A", "B", "C")]
     assert slideshow._next_content_id(uploaded, None) == "A"

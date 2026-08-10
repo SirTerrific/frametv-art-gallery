@@ -154,6 +154,7 @@ if os.environ.get('FRAME_TV_SLIDESHOW', '1').lower() not in ('0', 'false', 'no')
         db,
         (TV, Image, UploadedImage),
         play_uploaded_content,
+        is_art_mode_on,
         (FrameTVError, OSError),
     )
 
