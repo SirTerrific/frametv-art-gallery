@@ -34,6 +34,17 @@ This project uses local websocket APIs provided by the TVs.
 > **Always create backups of your data before updating** to a new version. While we strive to maintain compatibility, updates may introduce breaking changes or require data migrations. You are responsible for ensuring you have a complete backup of your uploads and database before proceeding with any update.
 
 
+## Features
+
+- **Upload straight into an album.** The upload form and drag-and-drop both ask where the
+  images should land, and can create the album on the spot.
+- **Work on several images at once.** Tick the boxes in the gallery, or shift-click a range,
+  then move the selection to an album or delete it in one go.
+- **Send a whole album to a TV.** One button uploads every image in the album, in order,
+  showing progress and stopping early if the TV goes quiet.
+- **Light and dark mode.** Follows the system preference, with a toggle in the header.
+- **Immich import.** Browse your Immich albums and push any photo to the TV.
+
 ## Images
 You can use any kind of image! Either upload your own personal photos or import them from Immich. Or download copyright-free artwork from the internet and import it into Frame TV Gallery.
 
@@ -91,6 +102,18 @@ pytest
 ```
 
 # Troubleshooting
+
+## The TV gallery shows placeholders instead of thumbnails
+
+The TV stopped answering. Every request to a TV is given a deadline, and a TV that misses
+it is skipped for `FRAME_TV_DOWN_COOLDOWN` seconds so one silent set cannot tie up the
+whole app — the page then falls back to whatever thumbnails are already cached on disk.
+
+Deliberate actions (playing an image, deleting one, uploading) ignore that cooldown and
+still try, so the TV waking up is noticed immediately. If it persists, check that the TV is
+on and reachable, then look for a single `Timeout after …` line in the logs: the skipped
+requests that follow are deliberately silent.
+
 ## Errors when uploading images to the TV:
 
 -> Check that the TV is on and has enough free storage space. When the storage space for art images is full, the upload fails. 
