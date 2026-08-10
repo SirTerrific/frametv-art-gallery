@@ -113,17 +113,36 @@ app.register_blueprint(provider_config_routes)
 
 # ...models are now imported from models.py...
 
+migrate = Migrate(app, db)
+
+
 # Create database
 def init_db():
-    """Ensure database and all tables exist."""
+    """Ensure database and all tables exist.
+
+    create_all() builds the schema straight from the models, so a brand new database
+    already matches the code — but alembic_version stays empty, and the migrations
+    then replay from the beginning over tables that are already complete. That only
+    ever worked by luck: the first migration to rebuild a table alembic has to reflect
+    trips over any column create_all added ahead of it.
+
+    A database created here is therefore stamped as up to date, which is what
+    `flask db upgrade` expects to find. An existing database is left untouched and
+    migrates normally.
+    """
     with app.app_context():
+        fresh = not os.path.exists(frametv_db_path)
         app.logger.info("Initializing database")
         db.create_all()
-        app.logger.info("Database initialized")
+        if fresh:
+            from flask_migrate import stamp
+            stamp(revision='head')
+            app.logger.info("New database created and stamped as up to date")
+        else:
+            app.logger.info("Database initialized")
 
 # Initialize database on startup
 init_db()
-migrate = Migrate(app, db)
 
 # One gunicorn worker out of several picks up the slideshow loop; see utils/slideshow.py.
 app.config['SLIDESHOW_LOCK_PATH'] = os.path.join(INSTANCE_FOLDER, 'slideshow.lock')
