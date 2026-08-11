@@ -1,6 +1,7 @@
 import React from 'react'
 import { Link } from 'react-router'
-import { getTvs, addTv, removeTv, removeAllTvImages, updateTv } from '~/utils/tvApi';
+import { getTvs, addTv, removeTv, removeAllTvImages, updateTv, type TVUpdate } from '~/utils/tvApi';
+import { fetchAlbums } from '~/utils/galleryApi';
 import { Input } from '~/components/ui/input';
 import { Button } from '~/components/ui/button';
 import { getProviders, setProvider, getProvider, deleteProvider } from '~/utils/providerApi';
@@ -12,6 +13,9 @@ interface TV {
   name?: string;
   mac?: string;
   delete_other_images_on_upload?: boolean;
+  slideshow_enabled?: boolean;
+  slideshow_album_id?: number | null;
+  slideshow_interval_minutes?: number | null;
 }
 
 export default function Settings() {
@@ -32,6 +36,9 @@ export default function Settings() {
   const [immichEnabled, setImmichEnabled] = React.useState(false);
   const [providerError, setProviderError] = React.useState("");
   const [providerSaving, setProviderSaving] = React.useState(false);
+
+  // Albums feed the slideshow picker.
+  const [albums, setAlbums] = React.useState<{ id: string; name: string }[]>([]);
 
   // Fetch TVs
   const fetchTvs = React.useCallback(async () => {
@@ -61,6 +68,7 @@ export default function Settings() {
   React.useEffect(() => {
     fetchTvs();
     fetchProviders();
+    fetchAlbums().then(setAlbums).catch(() => setAlbums([]));
   }, [fetchTvs, fetchProviders]);
 
   // TV handlers
@@ -115,6 +123,18 @@ export default function Settings() {
       await fetchTvs();
     } catch (e: any) {
       setError(e.message || 'Failed to update TV setting');
+    }
+  };
+
+  const handleSlideshow = async (tvIp: string, updates: TVUpdate) => {
+    setError('');
+    try {
+      await updateTv(tvIp, updates);
+    } catch (e: any) {
+      setError(e.message || 'Failed to update the slideshow');
+    } finally {
+      // Refetched either way, so a rejected change does not linger in the form.
+      await fetchTvs();
     }
   };
 
@@ -212,6 +232,48 @@ export default function Settings() {
                     />
                     <span>Delete other images on upload</span>
                   </label>
+
+                  <fieldset className="mb-4 border border-gray-200 rounded-lg p-3">
+                    <legend className="text-sm font-medium px-1">Slideshow</legend>
+                    <p className="text-xs text-gray-500 mb-2">
+                      Rotates through images of an album that are already on this TV. It only
+                      moves art that is already on screen, so it never interrupts what you are
+                      watching.
+                    </p>
+                    <div className="flex flex-col gap-2">
+                      <select
+                        value={tv.slideshow_album_id ?? ''}
+                        onChange={e => handleSlideshow(tv.ip, { slideshow_album_id: e.target.value || null })}
+                        aria-label="Slideshow album"
+                        className="border px-2 py-2 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-200"
+                      >
+                        <option value="">No album</option>
+                        {albums.map(album => (
+                          <option key={album.id} value={album.id}>{album.name}</option>
+                        ))}
+                      </select>
+                      <div className="flex items-center gap-2">
+                        <Input
+                          type="number"
+                          min={1}
+                          value={tv.slideshow_interval_minutes ?? ''}
+                          onChange={e => handleSlideshow(tv.ip, { slideshow_interval_minutes: e.target.value || null })}
+                          placeholder="Every … minutes"
+                          aria-label="Slideshow interval in minutes"
+                        />
+                        <span className="text-sm text-gray-500 whitespace-nowrap">min</span>
+                      </div>
+                      <label className="flex items-center gap-2 text-sm">
+                        <input
+                          type="checkbox"
+                          checked={!!tv.slideshow_enabled}
+                          onChange={e => handleSlideshow(tv.ip, { slideshow_enabled: e.target.checked })}
+                          className="accent-blue-600"
+                        />
+                        <span>Enabled</span>
+                      </label>
+                    </div>
+                  </fieldset>
 
                   <div className="flex flex-col gap-2">
                     <Link to={`/tv-gallery?ip=${encodeURIComponent(tv.ip)}`} className="bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium py-2 px-4 rounded-lg text-center">

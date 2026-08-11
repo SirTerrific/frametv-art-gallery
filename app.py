@@ -123,6 +123,21 @@ def init_db():
 # Initialize database on startup
 init_db()
 
+# One gunicorn worker out of several picks up the slideshow loop; see utils/slideshow.py.
+app.config['SLIDESHOW_LOCK_PATH'] = os.path.join(INSTANCE_FOLDER, 'slideshow.lock')
+if os.environ.get('FRAME_TV_SLIDESHOW', '1').lower() not in ('0', 'false', 'no'):
+    from utils import slideshow as _slideshow
+
+    _slideshow.start(
+        app,
+        db,
+        (TV, Image, UploadedImage),
+        play_uploaded_content,
+        is_art_mode_on,
+        (FrameTVError, OSError),
+        (ResponseError,),
+    )
+
 
 # --- Helpers ---
 def allowed_file(filename: str) -> bool:
@@ -483,7 +498,10 @@ def api_get_tvs():
             'ip': tv.ip,
             'name': tv.name,
             'mac': tv.mac,
-            'delete_other_images_on_upload': getattr(tv, 'delete_other_images_on_upload', False)
+            'delete_other_images_on_upload': getattr(tv, 'delete_other_images_on_upload', False),
+            'slideshow_enabled': bool(getattr(tv, 'slideshow_enabled', False)),
+            'slideshow_album_id': getattr(tv, 'slideshow_album_id', None),
+            'slideshow_interval_minutes': getattr(tv, 'slideshow_interval_minutes', None),
         } for tv in tvs
     ]}
 
@@ -492,9 +510,40 @@ def api_update_tv(ip):
     tv = TV.query.filter_by(ip=ip).first()
     if not tv:
         return {'error': 'TV not found'}, 404
-    data = request.get_json()
+    data = request.get_json() or {}
     if 'delete_other_images_on_upload' in data:
         tv.delete_other_images_on_upload = bool(data['delete_other_images_on_upload'])
+
+    if 'slideshow_enabled' in data:
+        tv.slideshow_enabled = bool(data['slideshow_enabled'])
+    if 'slideshow_album_id' in data:
+        album_id = data['slideshow_album_id']
+        if album_id in (None, ''):
+            tv.slideshow_album_id = None
+        else:
+            try:
+                album = Album.query.get(int(album_id))
+            except (TypeError, ValueError):
+                return {'error': 'Invalid album'}, 400
+            if not album:
+                return {'error': 'Album not found'}, 404
+            tv.slideshow_album_id = album.id
+    if 'slideshow_interval_minutes' in data:
+        raw = data['slideshow_interval_minutes']
+        if raw in (None, ''):
+            tv.slideshow_interval_minutes = None
+        else:
+            try:
+                minutes = int(raw)
+            except (TypeError, ValueError):
+                return {'error': 'Interval must be a whole number of minutes'}, 400
+            if minutes < 1:
+                return {'error': 'Interval must be at least one minute'}, 400
+            tv.slideshow_interval_minutes = minutes
+
+    if tv.slideshow_enabled and not (tv.slideshow_album_id and tv.slideshow_interval_minutes):
+        return {'error': 'Pick an album and an interval before enabling the slideshow'}, 400
+
     db.session.commit()
     return {'success': True}
 
