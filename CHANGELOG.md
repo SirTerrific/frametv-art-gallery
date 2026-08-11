@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.4](https://github.com/SirTerrific/frametv-art-gallery/compare/v1.5.3...v1.5.4) (2026-08-11)
+
+
+### Bug Fixes
+
+* file a TV thumbnail under the content id the gallery looks up ([b94785a](https://github.com/SirTerrific/frametv-art-gallery/commit/b94785a855bcfe846f9445578782898f49034d5f))
+
 ## [1.5.3](https://github.com/SirTerrific/frametv-art-gallery/compare/v1.5.2...v1.5.3) (2026-08-11)
 
 
