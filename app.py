@@ -158,6 +158,7 @@ if os.environ.get('FRAME_TV_SLIDESHOW', '1').lower() not in ('0', 'false', 'no')
         play_uploaded_content,
         is_art_mode_on,
         (FrameTVError, OSError),
+        (ResponseError,),
     )
 
 
@@ -203,6 +204,26 @@ def _normalized_static_path(path: str) -> Path:
     if not (normalized == STATIC_ROOT or STATIC_ROOT in normalized.parents):
         raise ValueError('Invalid path')
     return normalized
+
+
+def _forget_uploaded(tv, content_ids=None, keep=None) -> int:
+    """Drop the record that images are on a TV once they are not.
+
+    Every path that removes art from a TV has to come through here: a content id left
+    behind makes the app offer to play something the set no longer has, which it
+    answers with `select_image request failed with error number -10`.
+
+    Pass `content_ids` to forget those, or `keep` to forget everything else.
+    """
+    query = UploadedImage.query.filter_by(tv_id=tv.id)
+    if content_ids is not None:
+        query = query.filter(UploadedImage.content_id.in_(list(content_ids)))
+    elif keep is not None:
+        query = query.filter(UploadedImage.content_id != keep)
+
+    removed = query.delete(synchronize_session=False)
+    db.session.commit()
+    return removed
 
 
 def _file_sha256(path: str) -> Optional[str]:
@@ -847,10 +868,17 @@ def api_send_to_tv():
             exists = UploadedImage.query.filter(
                 and_(UploadedImage.image_id == image.id, UploadedImage.tv_id == tv.id)
             ).first()
-            if not exists:
-                uploaded = UploadedImage(image_id=image.id, tv_id=tv.id, content_id=str(content_id))
-                db.session.add(uploaded)
-                db.session.commit()
+            if exists:
+                # The TV assigns a fresh content id on every upload; keeping the old
+                # one would point at something that no longer exists.
+                exists.content_id = str(content_id)
+            else:
+                db.session.add(UploadedImage(image_id=image.id, tv_id=tv.id, content_id=str(content_id)))
+            db.session.commit()
+
+            # This option wipes everything else off the TV, so those records go too.
+            if delete_others:
+                _forget_uploaded(tv, keep=str(content_id))
         return jsonify({'success': True, 'content_id': content_id})
     except (FrameTVError, HttpApiError) as e:
         _log_exception('Failed to send artwork to TV', e)
@@ -869,6 +897,7 @@ def api_remove_all_tv_images(ip):
         return jsonify({'error': 'TV not found'}), 404
     try:
         delete_all_images_from_tv(ip, token=tv.token)
+        _forget_uploaded(tv, content_ids=[u.content_id for u in tv.uploaded_images])
         return jsonify({'success': True})
     except Exception as e:
         db.session.rollback()
@@ -957,6 +986,7 @@ def api_delete_tv_images(ip):
 
     try:
         deleted = delete_tv_images(ip, content_ids, token=tv.token)
+        _forget_uploaded(tv, content_ids=content_ids)
         return jsonify({'deleted': deleted})
     except FrameTVTimeoutError as e:
         _log_exception('Timeout while deleting TV images', e)
@@ -1064,6 +1094,7 @@ def api_delete_tv_image(ip, content_id):
         return jsonify({'error': 'TV not found'}), 404
     try:
         delete_tv_image(ip, content_id, token=tv.token)
+        _forget_uploaded(tv, content_ids=[content_id])
         return jsonify({'success': True})
     except FrameTVTimeoutError as e:
         _log_exception('Timeout while deleting TV image', e)

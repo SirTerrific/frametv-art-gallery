@@ -219,6 +219,83 @@ def test_an_incomplete_slideshow_never_runs(tv):
     assert not slideshow._due(tv, datetime(2026, 1, 1, 12, 0))
 
 
+# --- keeping the database in step with what is actually on the TV ---
+
+def _tv_with_uploads(client, ip, pairs):
+    """A TV plus the record that some images sit on it under given content ids."""
+    with backend.app.app_context():
+        tv = backend.TV(ip=ip, name="TV", token="1")
+        backend.db.session.add(tv)
+        backend.db.session.commit()
+        for filename, content_id in pairs:
+            image = backend.Image.query.filter_by(filename=filename).first()
+            backend.db.session.add(
+                backend.UploadedImage(image_id=image.id, tv_id=tv.id, content_id=content_id)
+            )
+        backend.db.session.commit()
+        return tv.id
+
+
+def _content_ids(tv_id):
+    with backend.app.app_context():
+        return {u.content_id for u in backend.UploadedImage.query.filter_by(tv_id=tv_id).all()}
+
+
+def test_deleting_one_image_from_the_tv_forgets_it(client, monkeypatch):
+    upload(client, "a.png")
+    upload(client, "b.png")
+    tv_id = _tv_with_uploads(client, "192.0.2.60", [("a.png", "C1"), ("b.png", "C2")])
+
+    monkeypatch.setattr(backend, "delete_tv_image", lambda *a, **k: True)
+    assert client.delete("/api/tv/192.0.2.60/gallery/C1").status_code == 200
+    assert _content_ids(tv_id) == {"C2"}
+
+
+def test_deleting_a_selection_forgets_all_of_it(client, monkeypatch):
+    for name in ("a.png", "b.png", "c.png"):
+        upload(client, name)
+    tv_id = _tv_with_uploads(client, "192.0.2.61", [("a.png", "C1"), ("b.png", "C2"), ("c.png", "C3")])
+
+    monkeypatch.setattr(backend, "delete_tv_images", lambda ip, ids, token=None: len(ids))
+    assert client.post("/api/tv/192.0.2.61/gallery/delete", json={"content_ids": ["C1", "C3"]}).status_code == 200
+    assert _content_ids(tv_id) == {"C2"}
+
+
+def test_emptying_the_tv_forgets_everything(client, monkeypatch):
+    upload(client, "a.png")
+    tv_id = _tv_with_uploads(client, "192.0.2.62", [("a.png", "C1")])
+
+    monkeypatch.setattr(backend, "delete_all_images_from_tv", lambda *a, **k: None)
+    assert client.delete("/api/tv/192.0.2.62/images").status_code == 200
+    assert _content_ids(tv_id) == set()
+
+
+def test_a_stale_content_id_is_dropped_rather_than_retried(client):
+    """A TV that refuses an image no longer holds it, whatever the database says.
+
+    Left in place it was requested again on every tick, which is what filled the log
+    with `select_image request failed with error number -10`.
+    """
+    upload(client, "a.png")
+    upload(client, "b.png")
+    tv_id = _tv_with_uploads(client, "192.0.2.63", [("a.png", "GONE"), ("b.png", "STILL_THERE")])
+
+    with backend.app.app_context():
+        removed = slideshow._forget_content(backend.db, backend.UploadedImage, tv_id, "GONE")
+
+    assert removed == 1
+    assert _content_ids(tv_id) == {"STILL_THERE"}, "only the refused one should go"
+
+
+def test_forgetting_an_unknown_content_id_is_harmless(client):
+    upload(client, "a.png")
+    tv_id = _tv_with_uploads(client, "192.0.2.64", [("a.png", "C1")])
+
+    with backend.app.app_context():
+        assert slideshow._forget_content(backend.db, backend.UploadedImage, tv_id, "NEVER") == 0
+    assert _content_ids(tv_id) == {"C1"}
+
+
 # --- reading what the TV reports about its content ---
 
 def test_the_content_date_is_turned_into_something_a_browser_can_parse():

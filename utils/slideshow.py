@@ -81,7 +81,21 @@ def _is_showing_art(tv, is_art_mode_on, frame_tv_errors) -> bool:
         return False
 
 
-def start(app, db, models, play_uploaded_content, is_art_mode_on, frame_tv_errors) -> None:
+def _forget_content(db, UploadedImage, tv_id, content_id) -> int:
+    """Drop the record that an image sits on a TV, once the TV says otherwise.
+
+    A refused content id left in place is requested again on every tick, which is how
+    one deleted image fills the log with `select_image request failed with error
+    number -10`.
+    """
+    removed = UploadedImage.query.filter_by(tv_id=tv_id, content_id=content_id).delete(
+        synchronize_session=False
+    )
+    db.session.commit()
+    return removed
+
+
+def start(app, db, models, play_uploaded_content, is_art_mode_on, frame_tv_errors, content_gone_errors) -> None:
     """Start the rotation loop in this process if no other worker owns it."""
     # `flask db upgrade` imports the app too. Starting there would have the loop query
     # tables the migration is still in the middle of altering.
@@ -127,6 +141,13 @@ def start(app, db, models, play_uploaded_content, is_art_mode_on, frame_tv_error
 
         try:
             play_uploaded_content(tv.ip, content_id, token=tv.token)
+        except content_gone_errors as err:
+            # The TV refused the image rather than failing to answer — it no longer
+            # holds that content id, whatever this database still says. Forgetting it
+            # is what stops the loop retrying the same dead entry every tick.
+            logger.info("TV %s no longer holds %s, forgetting it: %s", tv.ip, content_id, err)
+            _forget_content(db, UploadedImage, tv.id, content_id)
+            return
         except frame_tv_errors as err:
             # An unreachable TV is expected — it may simply be off. Try again next tick.
             logger.info("Slideshow could not reach TV %s: %s", tv.ip, err)
