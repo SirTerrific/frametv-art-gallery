@@ -135,10 +135,12 @@ so a gallery fills in over a few visits even on a set that keeps giving up. If y
 still stops early, lower the batch size and look for
 `TV … stopped answering after N of M thumbnails` in the logs.
 
-Some of the art a Frame TV ships with has no preview to give: the batch endpoint omits
-it and the single-image call answers with nothing. Those entries keep a placeholder,
-and the logs say `TV … returned no thumbnail for SAM-…` once rather than on every page
-load. Anything uploaded from here always has one.
+Some of the art a Frame TV ships with has no preview to give, and asking for one takes
+the whole batch down with it — the set closes the socket instead of leaving that entry
+out. A refused batch is therefore asked for again one image at a time, so a single
+unservable entry costs only itself. Those keep a placeholder, and the logs say
+`TV … has no preview for SAM-…` once rather than on every page load. Anything uploaded
+from here always has a thumbnail.
 
 Deliberate actions (playing an image, deleting one, uploading) ignore that cooldown and
 still try, so the TV waking up is noticed immediately. If it persists, check that the TV is

@@ -716,17 +716,19 @@ def _content_id_of(name: str, wanted: List[str]) -> Optional[str]:
 
 
 def _single_thumbnail(art, ip: str, content_id: str) -> Optional[bytes]:
-    """One thumbnail through the single-image endpoint, or None if the TV has none."""
+    """One thumbnail through the single-image endpoint, or None if it did not come.
+
+    Whether that means the image has no preview or the TV has stopped talking is not
+    decided here — the caller can tell, because it knows what the same TV answered for
+    the images around it.
+    """
     try:
         thumbnail = art.get_thumbnail(content_id)
     except Exception as err:
-        logger.info("TV %s has no thumbnail for %s: %s", ip, content_id, err)
-        _remember_no_thumbnail(ip, content_id)
+        logger.debug("TV %s did not return %s: %s", ip, content_id, err)
         return None
     if isinstance(thumbnail, (bytes, bytearray)) and thumbnail:
         return bytes(thumbnail)
-    logger.info("TV %s returned no thumbnail for %s", ip, content_id)
-    _remember_no_thumbnail(ip, content_id)
     return None
 
 
@@ -743,6 +745,10 @@ def _collect_thumbnails(
     finishes or is lost entirely — a set with forty 4K images never finished. Asking
     in batches means each one is saved as it lands, so a gallery fills in over a few
     visits instead of staying blank forever.
+
+    One unservable image takes its whole batch down with it: the TV closes the socket
+    rather than skipping the entry. So a refused batch is asked for again one at a
+    time, which isolates the offender and saves the rest of it.
     """
     found: Dict[str, bytes] = {}
     missing: List[str] = []
@@ -756,45 +762,66 @@ def _collect_thumbnails(
     if not missing or not fetch_missing:
         return found
 
+    def keep(cid: str, data) -> bool:
+        if not isinstance(data, (bytes, bytearray)) or not data:
+            return False
+        payload = bytes(data)
+        found[cid] = payload
+        _thumb_disk_set(ip, cid, payload)
+        _cache_set((ip, cid), payload)
+        return True
+
+    # A refusal only says something about the image if the TV goes on to answer for
+    # another one. A set that stops mid-gallery would otherwise have every image left
+    # in the list written off as previewless, and a page of placeholders is worse than
+    # a slow one. So refusals are noted and judged at the end.
+    refusals: List[tuple] = []
+    answered = 0
+
     for start in range(0, len(missing), TV_THUMBNAIL_BATCH):
         batch = missing[start:start + TV_THUMBNAIL_BATCH]
         try:
-            thumb_map = art.get_thumbnail_list(batch)
+            thumb_map = art.get_thumbnail_list(batch) or {}
         except Exception as err:
-            # Whatever earlier batches returned is already cached, so the next visit
-            # starts from there rather than from nothing.
-            logger.warning(
-                "TV %s stopped answering after %d of %d thumbnails: %s",
-                ip, len(found), len(content_ids), err,
+            logger.info(
+                "TV %s refused a batch of %d thumbnails (%s); asking one at a time",
+                ip, len(batch), err,
             )
-            return found
+            thumb_map = {}
 
-        if not isinstance(thumb_map, dict):
-            continue
-        for name, data in thumb_map.items():
-            if not isinstance(data, (bytes, bytearray)):
-                continue
-            cid = _content_id_of(name, batch)
-            if cid is None:
-                logger.debug("TV %s answered with an unexpected thumbnail %r", ip, name)
-                continue
-            payload = bytes(data)
-            found[cid] = payload
-            _thumb_disk_set(ip, cid, payload)
-            _cache_set((ip, cid), payload)
+        if isinstance(thumb_map, dict):
+            for name, data in thumb_map.items():
+                cid = _content_id_of(name, batch)
+                if cid is None:
+                    logger.debug("TV %s answered with an unexpected thumbnail %r", ip, name)
+                    continue
+                if keep(cid, data):
+                    answered += 1
 
-        # The batch endpoint skips some content silently — art store items, in my own
-        # set — so anything it left out is asked for on its own before giving up. That
-        # single call is what used to be the only path, and it answers for them.
         for cid in batch:
             if cid in found or _known_to_have_no_thumbnail(ip, cid):
                 continue
             payload = _single_thumbnail(art, ip, cid)
             if payload is None:
+                refusals.append((cid, answered))
                 continue
-            found[cid] = payload
-            _thumb_disk_set(ip, cid, payload)
-            _cache_set((ip, cid), payload)
+            if keep(cid, payload):
+                answered += 1
+
+        if answered == 0:
+            # A whole batch, then every one of its images on its own, and not a single
+            # answer: the set is away rather than out of previews. Walking the rest of
+            # the gallery one dead call at a time would only make the page slower.
+            logger.warning("TV %s is not answering for thumbnails; giving up", ip)
+            return found
+
+    for cid, answered_before in refusals:
+        if answered > answered_before:
+            # The TV kept working after refusing this one, so it is the image that has
+            # no preview, not the connection. Asking again every visit would cost a
+            # round trip to be told the same nothing.
+            logger.info("TV %s has no preview for %s", ip, cid)
+            _remember_no_thumbnail(ip, cid)
     return found
 
 

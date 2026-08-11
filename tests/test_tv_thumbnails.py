@@ -29,33 +29,42 @@ def clean_caches():
 class FakeArt:
     """Answers like samsungtvws does: keyed `fileID.fileType`, not by content id.
 
-    Optionally stops after a while, like a set that gives up mid-gallery.
+    `unservable` are ids the set will not preview. Asking for one takes its whole batch
+    down, which is what a real Frame TV does — it closes the socket rather than leaving
+    the entry out. `dies_after` stands in for a set that stops talking mid-gallery.
     """
 
-    def __init__(self, fail_after=None, suffix=".jpg"):
-        self.fail_after = fail_after
+    def __init__(self, unservable=(), dies_after=None, suffix=".jpg"):
+        self.unservable = set(unservable)
+        self.dies_after = dies_after
         self.suffix = suffix
         self.requests = []
         self.singles = []
         self.served = 0
 
     def __repr__(self):
-        return f"FakeArt(requests={self.requests})"
+        return f"FakeArt(requests={self.requests}, singles={self.singles})"
+
+    def _check_alive(self):
+        if self.dies_after is not None and self.served >= self.dies_after:
+            raise OSError("the TV stopped answering")
 
     def get_thumbnail_list(self, content_ids):
         self.requests.append(list(content_ids))
-        if self.fail_after is not None and self.served >= self.fail_after:
-            raise OSError("the TV stopped answering")
+        self._check_alive()
+        if self.unservable.intersection(content_ids):
+            raise ConnectionError({"reason": "socket closed"})
         self.served += len(content_ids)
-        # Art store content is skipped by the batch endpoint on my own set.
         return {
-            f"{cid}{self.suffix}": bytearray(b"jpeg-" + cid.encode())
-            for cid in content_ids
-            if not cid.startswith("SAM-")
+            f"{cid}{self.suffix}": bytearray(b"jpeg-" + cid.encode()) for cid in content_ids
         }
 
     def get_thumbnail(self, content_id):
         self.singles.append(content_id)
+        self._check_alive()
+        if content_id in self.unservable:
+            raise ConnectionError({"reason": "socket closed"})
+        self.served += 1
         return bytearray(b"single-" + content_id.encode())
 
 
@@ -77,44 +86,53 @@ def test_an_answer_that_matches_nothing_asked_for_is_dropped():
     assert frame_tv._collect_thumbnails(art, "192.0.2.34", ["MY_F0440"]) == {}
 
 
-def test_content_the_batch_skips_is_asked_for_on_its_own():
-    """The batch endpoint returns nothing for art store items; the single call does."""
-    art = FakeArt()
+def test_one_unservable_image_does_not_cost_the_rest_of_its_batch():
+    """The TV closes the socket on the whole request, so the batch is retried singly.
 
-    found = frame_tv._collect_thumbnails(art, "192.0.2.35", ["MY_F0473", "SAM-S5714"])
+    Observed on a real set: `stopped answering after 0 of 2`, both entries blank, while
+    the same images answered one at a time.
+    """
+    art = FakeArt(unservable={"SAM-S5714"})
+    wanted = ["MY_F0473", "MY_F0472", "SAM-S5714"]
 
-    assert set(found) == {"MY_F0473", "SAM-S5714"}
-    assert art.singles == ["SAM-S5714"], "only what the batch left out"
-    assert found["SAM-S5714"] == b"single-SAM-S5714"
+    found = frame_tv._collect_thumbnails(art, "192.0.2.35", wanted)
 
-
-def test_a_thumbnail_the_tv_simply_does_not_have_is_left_out():
-    art = FakeArt()
-    art.get_thumbnail = lambda cid: None
-
-    found = frame_tv._collect_thumbnails(art, "192.0.2.36", ["MY_F0473", "SAM-S5714"])
-
-    assert set(found) == {"MY_F0473"}, "a missing thumbnail must not break the page"
+    assert set(found) == {"MY_F0473", "MY_F0472"}, "the batch must not take its neighbours down"
+    assert sorted(art.singles) == sorted(wanted), "every id of the refused batch is retried"
 
 
-def test_content_with_no_preview_is_not_asked_for_again():
-    """Otherwise every page load pays a round trip to be told the same nothing."""
-    asked = []
+def test_an_image_the_tv_will_not_preview_is_not_asked_for_again():
+    """It answered for the others, so the refusal is about that image. Remember it."""
+    art = FakeArt(unservable={"SAM-S5714"})
+    wanted = ["SAM-S5714", "MY_F0473"]
 
-    art = FakeArt()
-    art.get_thumbnail = lambda cid: asked.append(cid)  # returns None
+    frame_tv._collect_thumbnails(art, "192.0.2.37", wanted)
+    assert frame_tv._known_to_have_no_thumbnail("192.0.2.37", "SAM-S5714")
 
-    for _ in range(3):
-        frame_tv._collect_thumbnails(art, "192.0.2.37", ["SAM-S5714"])
+    before = len(art.singles)
+    frame_tv._collect_thumbnails(art, "192.0.2.37", wanted)
+    assert art.singles[before:] == [], "asked the TV again for a preview it does not have"
 
-    assert asked == ["SAM-S5714"], f"asked {len(asked)} times instead of once"
+
+def test_a_tv_that_stops_talking_is_not_mistaken_for_missing_previews():
+    """Otherwise one power-off blanks the gallery for an hour."""
+    art = FakeArt(dies_after=frame_tv.TV_THUMBNAIL_BATCH)
+    wanted = [f"C{n}" for n in range(20)]
+
+    frame_tv._collect_thumbnails(art, "192.0.2.39", wanted)
+
+    unanswered = [cid for cid in wanted if frame_tv._cached_thumbnail("192.0.2.39", cid) is None]
+    assert unanswered, "the set died halfway, so some are still missing"
+    for cid in unanswered:
+        assert not frame_tv._known_to_have_no_thumbnail("192.0.2.39", cid), (
+            f"{cid} was written off because the TV went away, not because it has no preview"
+        )
 
 
 def test_the_tv_is_asked_again_once_the_answer_has_aged():
     """A firmware that starts answering should be picked up without a restart."""
-    art = FakeArt()
-    art.get_thumbnail = lambda cid: None
-    frame_tv._collect_thumbnails(art, "192.0.2.38", ["SAM-S5714"])
+    art = FakeArt(unservable={"SAM-S5714"})
+    frame_tv._collect_thumbnails(art, "192.0.2.38", ["SAM-S5714", "MY_F0473"])
     assert frame_tv._known_to_have_no_thumbnail("192.0.2.38", "SAM-S5714")
 
     frame_tv._NO_THUMBNAIL[("192.0.2.38", "SAM-S5714")] -= frame_tv._NO_THUMBNAIL_TTL + 1
@@ -134,7 +152,7 @@ def test_thumbnails_are_asked_for_in_batches():
 
 def test_what_arrived_before_the_tv_gave_up_is_kept():
     """The point of batching: a set that stops halfway still fills part of the page."""
-    art = FakeArt(fail_after=frame_tv.TV_THUMBNAIL_BATCH)
+    art = FakeArt(dies_after=frame_tv.TV_THUMBNAIL_BATCH)
     wanted = [f"C{n}" for n in range(20)]
 
     found = frame_tv._collect_thumbnails(art, "192.0.2.31", wanted)
