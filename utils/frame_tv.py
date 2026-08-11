@@ -799,18 +799,26 @@ def delete_tv_images(ip: str, content_ids: List[str], token: Optional[str] = Non
     return len(wanted)
 
 
-def get_tv_device_info(ip: str, token: Optional[str] = None) -> Optional[Dict]:
-    """Whatever the TV reports about itself.
+def get_tv_device_info(ip: str, token: Optional[str] = None) -> Dict:
+    """Whatever the TV reports about itself, plus one raw content entry.
 
-    There is no storage endpoint in the art API, so this is the only place any
-    capacity figure could turn up — and whether it does depends on the firmware.
+    There is no storage endpoint in the art API. `tv_flash_size` gives the total
+    capacity but nothing reports what is used, so the content list is sampled here:
+    if entries carry a per-image size, occupancy can be summed from them.
     """
-    return _tv_call(
-        ip,
-        "reading device info from",
-        lambda session: session.art().get_device_info(),
-        token=token,
-    )
+    def action(session: _TVSession) -> Dict:
+        art = session.art()
+        info = art.get_device_info() or {}
+        sample = None
+        try:
+            available = art.available() or []
+            if available:
+                sample = available[0]
+        except Exception:
+            logger.debug("Could not sample the content list of TV %s", ip, exc_info=True)
+        return {'device_info': info, 'sample_content': sample}
+
+    return _tv_call(ip, "reading device info from", action, token=token)
 
 
 def get_tv_gallery_thumbnail(ip: str, content_id: str, token: Optional[str] = None) -> Optional[bytes]:

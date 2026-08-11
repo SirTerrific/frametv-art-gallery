@@ -965,7 +965,7 @@ def api_tv_device_info(ip):
     if not tv:
         return jsonify({'error': 'TV not found'}), 404
     try:
-        return jsonify({'device_info': get_tv_device_info(ip, token=tv.token)})
+        return jsonify(get_tv_device_info(ip, token=tv.token))
     except FrameTVConnectionError as e:
         _log_exception('TV connection failed while reading device info', e)
         return jsonify({'error': 'TV is unavailable'}), 503
