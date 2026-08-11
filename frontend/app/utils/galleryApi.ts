@@ -19,8 +19,15 @@ export async function fetchProviderAlbumImages(albumId: string) {
 export function getProviderImageStreamUrl(imageId: string, size: string = "fullsize") {
   return `${API_BASE}/api/provider/images/${encodeURIComponent(imageId)}/stream?size=${encodeURIComponent(size)}`;
 }
-export async function fetchImages() {
-  const res = await fetch(`${API_BASE}/api/images`);
+export type ImageSort = 'newest' | 'oldest' | 'name';
+
+export async function fetchImages(options: { q?: string; sort?: ImageSort } = {}) {
+  const params = new URLSearchParams();
+  if (options.q) params.set('q', options.q);
+  if (options.sort && options.sort !== 'newest') params.set('sort', options.sort);
+  const query = params.toString();
+
+  const res = await fetch(`${API_BASE}/api/images${query ? `?${query}` : ''}`);
   if (!res.ok) throw new Error('Failed to fetch images');
   return (await res.json()).images;
 }
