@@ -679,6 +679,20 @@ def _cached_thumbnail(ip: str, content_id: str) -> Optional[bytes]:
     return disk
 
 
+def _content_id_of(name: str, wanted: List[str]) -> Optional[str]:
+    """The content id a batch thumbnail belongs to.
+
+    samsungtvws keys the batch answer by `fileID.fileType` — "MY_F0440.jpg", not
+    "MY_F0440" — because that is how the TV labels each file on the D2D socket. Keeping
+    the key verbatim meant every thumbnail was filed under a name nothing ever looked
+    up, so a gallery stayed blank while the bytes were arriving perfectly well.
+    """
+    if name in wanted:
+        return name
+    stem = name.rsplit('.', 1)[0]
+    return stem if stem in wanted else None
+
+
 def _collect_thumbnails(
     art, ip: str, content_ids: List[str], fetch_missing: bool = True
 ) -> Dict[str, bytes]:
@@ -720,8 +734,12 @@ def _collect_thumbnails(
 
         if not isinstance(thumb_map, dict):
             continue
-        for cid, data in thumb_map.items():
+        for name, data in thumb_map.items():
             if not isinstance(data, (bytes, bytearray)):
+                continue
+            cid = _content_id_of(name, batch)
+            if cid is None:
+                logger.debug("TV %s answered with an unexpected thumbnail %r", ip, name)
                 continue
             payload = bytes(data)
             found[cid] = payload

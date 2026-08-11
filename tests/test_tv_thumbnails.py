@@ -26,11 +26,14 @@ def clean_caches():
 
 
 class FakeArt:
-    """Answers a bounded number of thumbnails, then stops — like a set that gives up."""
+    """Answers like samsungtvws does: keyed `fileID.fileType`, not by content id.
 
-    def __init__(self, answers=None, fail_after=None):
-        self.answers = answers or {}
+    Optionally stops after a while, like a set that gives up mid-gallery.
+    """
+
+    def __init__(self, fail_after=None, suffix=".jpg"):
         self.fail_after = fail_after
+        self.suffix = suffix
         self.requests = []
         self.served = 0
 
@@ -39,7 +42,24 @@ class FakeArt:
         if self.fail_after is not None and self.served >= self.fail_after:
             raise OSError("the TV stopped answering")
         self.served += len(content_ids)
-        return {cid: bytearray(b"jpeg-" + cid.encode()) for cid in content_ids}
+        return {f"{cid}{self.suffix}": bytearray(b"jpeg-" + cid.encode()) for cid in content_ids}
+
+
+def test_a_thumbnail_is_filed_under_its_content_id():
+    """The TV labels each file `fileID.fileType`; the gallery looks up the bare id."""
+    art = FakeArt()
+
+    found = frame_tv._collect_thumbnails(art, "192.0.2.33", ["MY_F0440", "MY_F0469"])
+
+    assert set(found) == {"MY_F0440", "MY_F0469"}, "keys must be content ids, not filenames"
+    assert frame_tv._cached_thumbnail("192.0.2.33", "MY_F0440") == b"jpeg-MY_F0440"
+
+
+def test_an_answer_that_matches_nothing_asked_for_is_dropped():
+    art = FakeArt(suffix="")
+    art.get_thumbnail_list = lambda ids: {"SOMETHING_ELSE.jpg": bytearray(b"x")}
+
+    assert frame_tv._collect_thumbnails(art, "192.0.2.34", ["MY_F0440"]) == {}
 
 
 def test_thumbnails_are_asked_for_in_batches():
