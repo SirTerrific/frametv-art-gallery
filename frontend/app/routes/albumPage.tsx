@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
+import { toast } from 'sonner';
 import ImageGrid from '../components/imageGrid';
-import { fetchAlbum, fetchImages, addImageToAlbum, deleteAlbum, removeImageFromAlbum } from '../utils/galleryApi';
+import { Button } from '../components/ui/button';
+import { fetchAlbum, deleteAlbum, removeImageFromAlbum } from '../utils/galleryApi';
+import { getTvs, sendToTV, type TVInfo } from '../utils/tvApi';
 
 type AlbumImage = { id: number; filename: string };
 
@@ -15,12 +18,13 @@ export default function AlbumPage() {
   const { albumId } = useParams();
   const navigate = useNavigate();
   const [album, setAlbum] = useState<AlbumDetail | null>(null);
-  const [images, setImages] = useState<string[]>([]);
-  const [selectedImage, setSelectedImage] = useState('');
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  const [tvs, setTvs] = useState<TVInfo[]>([]);
+  const [selectedTvIp, setSelectedTvIp] = useState('');
+  const [sendProgress, setSendProgress] = useState('');
 
   const loadAlbum = async () => {
     if (!albumId) return;
@@ -37,38 +41,60 @@ export default function AlbumPage() {
     }
   };
 
-  const loadImages = async () => {
-    try {
-      const imgs = await fetchImages();
-      setImages(imgs || []);
-    } catch {
-      setImages([]);
-    }
-  };
-
   useEffect(() => {
     loadAlbum();
-    loadImages();
   }, [albumId]);
 
-  const handleAddToAlbum = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!album || !selectedImage) {
-      setError('Select a valid image to add.');
-      return;
-    }
+  useEffect(() => {
+    getTvs()
+      .then((list: TVInfo[]) => {
+        setTvs(list || []);
+        if (list?.length) setSelectedTvIp(prev => prev || list[0].ip);
+      })
+      .catch(() => setTvs([]));
+  }, []);
+
+  const selectedTv = tvs.find(tv => tv.ip === selectedTvIp);
+
+  const handleSendAlbumToTv = async () => {
+    if (!album || !selectedTvIp || album.images.length === 0) return;
     setBusy(true);
     setError('');
     setSuccessMessage('');
-    try {
-      await addImageToAlbum(album.name, selectedImage);
-      await loadAlbum();
-      setSuccessMessage('Image added to album successfully.');
-      setSelectedImage('');
-    } catch (e: any) {
-      setError(e.message || 'Failed to add image to album');
-    } finally {
-      setBusy(false);
+
+    let sent = 0;
+    let consecutiveFailures = 0;
+    let lastError = '';
+
+    for (let i = 0; i < album.images.length; i++) {
+      const image = album.images[i];
+      setSendProgress(`Sending ${i + 1} of ${album.images.length}…`);
+      try {
+        // Only display the last one, otherwise the TV flips through the whole album.
+        await sendToTV({
+          payload: { ip: selectedTvIp, filename: image.filename },
+          display: i === album.images.length - 1,
+        });
+        sent++;
+        consecutiveFailures = 0;
+      } catch (e: any) {
+        lastError = e.message || 'Failed to send image';
+        consecutiveFailures++;
+        // A TV that failed three times in a row is not coming back mid-album.
+        if (consecutiveFailures >= 3) {
+          setError(`Stopped after ${i + 1} images: ${lastError}`);
+          break;
+        }
+      }
+    }
+
+    setSendProgress('');
+    setBusy(false);
+    if (sent > 0) {
+      toast.success(`Sent ${sent} of ${album.images.length} images to the TV`, { position: 'top-center' });
+      setSuccessMessage(`Sent ${sent} of ${album.images.length} images to the TV.`);
+    } else if (lastError) {
+      setError(lastError);
     }
   };
 
@@ -106,7 +132,7 @@ export default function AlbumPage() {
       <div className="flex items-center justify-between mb-6">
         <button
           type="button"
-          className="text-sm text-blue-600 hover:underline"
+          className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
           onClick={() => navigate('/gallery')}
         >
           ← Back to Gallery
@@ -123,26 +149,54 @@ export default function AlbumPage() {
 
       {loading ? (
         <div>Loading album…</div>
-      ) : error ? (
-        <div className="text-red-600">{error}</div>
       ) : !album ? (
-        <div className="text-gray-500">Album not found.</div>
+        <div className={error ? 'text-red-600' : 'text-muted-foreground'}>{error || 'Album not found.'}</div>
       ) : (
         <>
-          <div className="bg-white rounded-lg shadow p-6 mb-8">
+          <div className="bg-card rounded-lg shadow p-6 mb-8">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div>
                 <h2 className="text-2xl font-bold">{album.name}</h2>
-                <p className="text-sm text-gray-500">{album.images.length} image{album.images.length === 1 ? '' : 's'} in this album</p>
+                <p className="text-sm text-muted-foreground">{album.images.length} image{album.images.length === 1 ? '' : 's'} in this album</p>
+              </div>
+
+              <div className="flex flex-col gap-2 md:items-end">
+                <div className="flex flex-wrap items-center gap-2">
+                  <select
+                    value={selectedTvIp}
+                    onChange={e => setSelectedTvIp(e.target.value)}
+                    className="border px-2 py-2 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-200"
+                    disabled={busy || tvs.length === 0}
+                  >
+                    {tvs.length === 0 && <option value="">No TV configured</option>}
+                    {tvs.map(tv => (
+                      <option key={tv.ip} value={tv.ip}>{tv.name || tv.ip}</option>
+                    ))}
+                  </select>
+                  <Button
+                    onClick={handleSendAlbumToTv}
+                    disabled={busy || !selectedTvIp || album.images.length === 0}
+                  >
+                    {sendProgress || 'Send album to TV'}
+                  </Button>
+                </div>
+                {selectedTv?.delete_other_images_on_upload && (
+                  <p className="text-xs text-amber-600 md:text-right max-w-xs">
+                    This TV deletes its other images on every upload, so only the last image of the
+                    album would remain. Turn that option off in TV settings first.
+                  </p>
+                )}
               </div>
             </div>
+            {error && <div className="text-red-600 text-sm mt-4">{error}</div>}
+            {successMessage && <div className="text-green-700 text-sm mt-2">{successMessage}</div>}
           </div>
 
 
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-card rounded-lg shadow p-6">
             <h3 className="text-xl font-semibold mb-4">Album Images</h3>
             {album.images.length === 0 ? (
-              <div className="text-gray-500">No images in this album yet.</div>
+              <div className="text-muted-foreground">No images in this album yet.</div>
             ) : (
               <ImageGrid
                 images={album.images.map(img => ({ id: img.id, filename: img.filename, type: 'local' }))}

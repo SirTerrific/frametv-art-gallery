@@ -33,6 +33,9 @@ interface ImageCardProps {
   /** when true, TV controls are shown regardless of size (useful for tests) */
   showControls?: boolean;
   tvs?: TV[];
+  selected?: boolean;
+  /** passing this shows the selection checkbox */
+  onToggleSelect?: (shiftKey: boolean) => void;
 }
 
 const ImageCard: React.FC<ImageCardProps> = ({
@@ -47,7 +50,9 @@ const ImageCard: React.FC<ImageCardProps> = ({
   onAssignSuccess,
   large,
   showControls
-  , tvs: tvsProp
+  , tvs: tvsProp,
+  selected,
+  onToggleSelect
 }) => {
   const [selectedTvIp, setSelectedTvIp] = useState("");
   const [error, setError] = useState("");
@@ -171,23 +176,46 @@ const ImageCard: React.FC<ImageCardProps> = ({
     <>
       <div
         className={
-          `group relative flex flex-col overflow-hidden rounded-lg bg-white shadow-sm transition-shadow duration-200 hover:shadow-lg ` +
-          (large ? 'col-span-2' : '')
+          `group relative flex flex-col overflow-hidden rounded-lg bg-card shadow-sm transition-shadow duration-200 hover:shadow-lg ` +
+          (large ? 'col-span-2 ' : '') +
+          (selected ? 'ring-2 ring-blue-500' : '')
         }
       >
-        <div className={`w-full bg-gray-100 flex items-center justify-center overflow-hidden ` + (large ? 'h-72' : 'h-52')} >
+        {onToggleSelect && (
+          <label
+            className="absolute top-2 left-2 z-10 flex h-7 w-7 cursor-pointer items-center justify-center rounded-md bg-card/90 shadow"
+            title="Select image"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <input
+              type="checkbox"
+              className="h-4 w-4 accent-blue-600"
+              checked={!!selected}
+              onClick={(event) => event.stopPropagation()}
+              onChange={(event) => onToggleSelect((event.nativeEvent as MouseEvent).shiftKey)}
+            />
+          </label>
+        )}
+        <div className={`w-full bg-muted flex items-center justify-center overflow-hidden ` + (large ? 'h-72' : 'h-52')} >
           <img
             src={imageURL}
             alt={alt}
             className={`max-h-full max-w-full object-contain transition-transform duration-200 group-hover:scale-105 cursor-pointer`}
-            onClick={() => {
+            onClick={(event) => {
+              // While selecting, clicking the image extends the selection instead of
+              // opening the modal — the usual file-manager behaviour.
+              if (onToggleSelect && (event.shiftKey || event.ctrlKey || event.metaKey)) {
+                event.preventDefault();
+                onToggleSelect(event.shiftKey);
+                return;
+              }
               setShowControlsModal(true);
               onClick?.();
             }}
           />
         </div>
       {filename && (
-        <div className="px-2 py-1 text-xs text-gray-600 truncate" title={filename}>
+        <div className="px-2 py-1 text-xs text-muted-foreground truncate" title={filename}>
           {filename}
         </div>
       )}

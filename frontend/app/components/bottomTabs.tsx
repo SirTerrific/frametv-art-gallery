@@ -26,7 +26,7 @@ export default function BottomTabs() {
 
   return (
     <div className={`fixed z-50 w-full max-w-lg -translate-x-1/2 ${isIOS ? 'bottom-0' : 'bottom-4'} left-1/2`} >
-      <div className="grid h-16 grid-cols-4 mx-auto bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-700 rounded-full">
+      <div className="grid h-16 grid-cols-4 mx-auto bg-card border border-border rounded-full">
         <style>{`
           .bottom-tab-icon {
             transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), color 0.2s;
@@ -36,7 +36,11 @@ export default function BottomTabs() {
           }
           .bottom-tab-active {
             transform: scale(1.3);
-            color: #2563eb; /* Tailwind blue-600 */;
+            color: #2563eb; /* blue-600 */
+          }
+          /* blue-600 only reaches 3.5:1 on the dark surface, so lift it to blue-400. */
+          :where(.dark) .bottom-tab-active {
+            color: #60a5fa;
           }
         `}</style>
 
