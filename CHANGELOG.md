@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.5.2](https://github.com/SirTerrific/frametv-art-gallery/compare/v1.5.1...v1.5.2) (2026-08-11)
+
+
+### Bug Fixes
+
+* let a deliberate action wait its turn when the TV is busy ([17a51ec](https://github.com/SirTerrific/frametv-art-gallery/commit/17a51ec46dd439fbc57fd0938cb17d1429c58d72))
+
+Also picks up the upstream dependency updates merged from mrtncode/frametv-art-gallery.
+The two fixes upstream squashed into its own history (#62, #64) already shipped here in
+v1.5.0 and v1.5.1, so they are not repeated.
+
 ## [1.5.1](https://github.com/SirTerrific/frametv-art-gallery/compare/v1.5.0...v1.5.1) (2026-08-11)
 
 
