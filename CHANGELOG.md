@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.5.2](https://github.com/SirTerrific/frametv-art-gallery/compare/v1.5.1...v1.5.2) (2026-08-11)
+
+
+### Bug Fixes
+
+* Keep one unresponsive TV from freezing the app ([#62](https://github.com/SirTerrific/frametv-art-gallery/issues/62)) ([0bbc6f9](https://github.com/SirTerrific/frametv-art-gallery/commit/0bbc6f93c7e9a7fc08c7c9e84efd4da02242d148))
+* stamp a newly created database so migrations do not replay over it ([#64](https://github.com/SirTerrific/frametv-art-gallery/issues/64)) ([45c3545](https://github.com/SirTerrific/frametv-art-gallery/commit/45c3545ff63bf9be2253da35effa14bcace264e6))
+
 ## [1.5.1](https://github.com/SirTerrific/frametv-art-gallery/compare/v1.5.0...v1.5.1) (2026-08-11)
 
 
