@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.6](https://github.com/SirTerrific/frametv-art-gallery/compare/v1.5.5...v1.5.6) (2026-08-11)
+
+
+### Bug Fixes
+
+* stop asking a TV for a preview it has already said it does not have ([f793a67](https://github.com/SirTerrific/frametv-art-gallery/commit/f793a6772214d68ef31595f483cd85599a2c86a5))
+
 ## [1.5.5](https://github.com/SirTerrific/frametv-art-gallery/compare/v1.5.4...v1.5.5) (2026-08-11)
 
 
