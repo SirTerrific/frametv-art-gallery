@@ -13,6 +13,8 @@
 [![License](https://img.shields.io/github/license/mrtncode/frametv-art-gallery)](https://github.com/mrtncode/frametv-art-gallery/blob/main/LICENSE) 
 [![Python](https://img.shields.io/badge/python-%3E%3D3.11-blue)](https://www.python.org/) 
 [![Stars](https://img.shields.io/github/stars/mrtncode/frametv-art-gallery?style=social)](https://github.com/mrtncode/frametv-art-gallery/stargazers)
+![GHCR Total downloads](https://ghcr-badge.elias.eu.org/shield/mrtncode/frametv-art-gallery/frametv-art-gallery)
+
 
 frametv-art-gallery is an independent, open-source, self-hosted gallery manager for Samsung Frame TVs. Not affiliated with Samsung. It lets you create and manage a personal gallery of images, photos, or artworks locally on your TV.
 
