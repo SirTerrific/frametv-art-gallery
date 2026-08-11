@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.1](https://github.com/SirTerrific/frametv-art-gallery/compare/v1.5.0...v1.5.1) (2026-08-11)
+
+
+### Bug Fixes
+
+* forget images the TV no longer holds ([f267b48](https://github.com/SirTerrific/frametv-art-gallery/commit/f267b48312caa1d8d81e8babe447df72375ed249))
+
 ## [1.5.0](https://github.com/SirTerrific/frametv-art-gallery/compare/v1.4.0...v1.5.0) (2026-08-11)
 
 
