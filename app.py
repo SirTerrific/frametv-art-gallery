@@ -621,6 +621,12 @@ def api_remove_all_tv_images(ip):
     try:
         delete_all_images_from_tv(ip, token=tv.token)
         return jsonify({'success': True})
+    except FrameTVUnavailableError as e:
+        # Another operation held the TV for the whole wait — nothing was deleted, and
+        # retrying once the TV is free is all this needs.
+        db.session.rollback()
+        app.logger.info('Could not remove all images: %s', e)
+        return jsonify({'error': 'The TV is busy with another request, try again', 'tv_busy': True}), 503
     except Exception as e:
         db.session.rollback()
         _log_exception('Failed to remove all images from TV', e)

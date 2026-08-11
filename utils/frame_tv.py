@@ -36,6 +36,10 @@ TV_PAIRING_TIMEOUT = _env_int("FRAME_TV_PAIRING_TIMEOUT", 45)
 # How long a TV is skipped after it failed to answer, so one dead set cannot
 # turn a page full of thumbnails into a page full of stuck requests.
 TV_DOWN_COOLDOWN = _env_int("FRAME_TV_DOWN_COOLDOWN", 30)
+# How long a deliberate action queues behind another operation on the same TV. A page
+# of thumbnails holds the TV for far longer than one call's deadline, and someone who
+# pressed a button would rather wait for their turn than be told the TV is busy.
+TV_BUSY_WAIT = _env_int("FRAME_TV_BUSY_WAIT", 90)
 # Simple in-memory cache to reduce repeated TV requests
 # Structure: { (ip, 'gallery'): (timestamp, value), (ip, content_id): (timestamp, bytes) }
 _CACHE: dict = {}
@@ -215,7 +219,9 @@ def _local_tv_lock(ip: str) -> threading.Lock:
 def _tv_exclusive(ip: str, wait: float):
     """Hold a TV for one operation at a time, across threads and gunicorn workers."""
     give_up_at = time.monotonic() + wait
-    busy = FrameTVUnavailableError(f"TV {ip} is busy with another request")
+    busy = FrameTVUnavailableError(
+        f"TV {ip} stayed busy with another request for more than {wait:.0f}s"
+    )
 
     local = _local_tv_lock(ip)
     if not local.acquire(timeout=max(0.0, wait)):
@@ -310,8 +316,11 @@ def _tv_call(
             f"TV {ip} did not answer recently; skipping {action_description} it for another {cooldown:.0f}s"
         )
 
-    # One operation at a time per TV: concurrent art channels corrupt each other.
-    with _tv_exclusive(ip, wait=deadline):
+    # One operation at a time per TV: concurrent art channels corrupt each other. The
+    # same split as the cooldown applies to the queue: a background read gives up as
+    # soon as its own deadline is gone, a deliberate action waits for its turn.
+    busy_wait = deadline if skip_when_down else max(deadline, TV_BUSY_WAIT)
+    with _tv_exclusive(ip, wait=busy_wait):
         session = _TVSession(ip, token, DEFAULT_TIMEOUT)
 
         def run():

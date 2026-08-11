@@ -160,6 +160,39 @@ def test_a_second_tv_is_not_held_up_by_the_first():
     holder.join(timeout=10)
 
 
+def test_a_deliberate_action_queues_behind_a_long_read(monkeypatch):
+    """A page of thumbnails holds the TV far longer than one call's deadline.
+
+    The background read gives up as soon as its own budget is gone, so it cannot tie up
+    a worker; the deliberate action waits for its turn instead of failing.
+    """
+    monkeypatch.setattr(frame_tv, "TV_BUSY_WAIT", 5)
+
+    holding = threading.Event()
+    holder = threading.Thread(
+        target=lambda: frame_tv._tv_call(
+            "192.0.2.20",
+            "holding",
+            lambda s: (holding.set(), time.sleep(0.8)),
+            open_remote=False,
+            skip_when_down=False,
+        )
+    )
+    holder.start()
+    assert holding.wait(timeout=5), "the holder never started"
+
+    with pytest.raises(FrameTVUnavailableError):
+        frame_tv._tv_call(
+            "192.0.2.20", "reading", lambda s: "never", open_remote=False, deadline=0.2
+        )
+
+    assert frame_tv._tv_call(
+        "192.0.2.20", "deleting", lambda s: "done", open_remote=False,
+        deadline=0.2, skip_when_down=False,
+    ) == "done"
+    holder.join(timeout=10)
+
+
 def test_the_unavailable_error_stays_a_connection_error():
     """Existing handlers catch FrameTVConnectionError; the new type must not escape them."""
     assert issubclass(FrameTVUnavailableError, FrameTVConnectionError)
