@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.3](https://github.com/SirTerrific/frametv-art-gallery/compare/v1.5.2...v1.5.3) (2026-08-11)
+
+
+### Bug Fixes
+
+* fetch TV thumbnails in batches so a gallery stops coming back blank ([b94b8c9](https://github.com/SirTerrific/frametv-art-gallery/commit/b94b8c9de1d221b085540f7863afeb28a70280bc))
+
 ## [1.5.2](https://github.com/SirTerrific/frametv-art-gallery/compare/v1.5.1...v1.5.2) (2026-08-11)
 
 
