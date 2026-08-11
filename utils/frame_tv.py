@@ -41,6 +41,13 @@ TV_DOWN_COOLDOWN = _env_int("FRAME_TV_DOWN_COOLDOWN", 30)
 # of thumbnails holds the TV for far longer than one call's deadline, and someone who
 # pressed a button would rather wait for their turn than be told the TV is busy.
 TV_BUSY_WAIT = _env_int("FRAME_TV_BUSY_WAIT", 90)
+# How many thumbnails are asked for in one request. The TV streams the whole answer
+# down one socket before the call returns, so a large batch is a single long transfer
+# that is lost in full if it does not finish.
+TV_THUMBNAIL_BATCH = _env_int("FRAME_TV_THUMBNAIL_BATCH", 8)
+# Fetching a page of thumbnails is several of those transfers, so it gets its own
+# budget rather than a single call's.
+TV_THUMBNAIL_DEADLINE = _env_int("FRAME_TV_THUMBNAIL_DEADLINE", 120)
 # Simple in-memory cache to reduce repeated TV requests
 # Structure: { (ip, 'gallery'): (timestamp, value), (ip, content_id): (timestamp, bytes) }
 _CACHE: dict = {}
@@ -672,11 +679,19 @@ def _cached_thumbnail(ip: str, content_id: str) -> Optional[bytes]:
     return disk
 
 
-def _collect_thumbnails(art, ip: str, content_ids: List[str]) -> Dict[str, bytes]:
-    """Thumbnails for `content_ids`: cache first, then whatever is left in one TV call.
+def _collect_thumbnails(
+    art, ip: str, content_ids: List[str], fetch_missing: bool = True
+) -> Dict[str, bytes]:
+    """Thumbnails for `content_ids`: cache first, then whatever is left, in batches.
 
     Serving the cache keeps a TV that has gone quiet from blanking a gallery it has
     already answered for once.
+
+    The TV streams every thumbnail of a request down one D2D socket before the call
+    returns, so asking for a whole gallery at once is a single transfer that either
+    finishes or is lost entirely — a set with forty 4K images never finished. Asking
+    in batches means each one is saved as it lands, so a gallery fills in over a few
+    visits instead of staying blank forever.
     """
     found: Dict[str, bytes] = {}
     missing: List[str] = []
@@ -687,16 +702,24 @@ def _collect_thumbnails(art, ip: str, content_ids: List[str]) -> Dict[str, bytes
         else:
             missing.append(cid)
 
-    if not missing:
+    if not missing or not fetch_missing:
         return found
 
-    try:
-        thumb_map = art.get_thumbnail_list(missing)
-    except Exception:
-        logger.debug("Batch thumbnail retrieval failed for TV %s", ip, exc_info=True)
-        return found
+    for start in range(0, len(missing), TV_THUMBNAIL_BATCH):
+        batch = missing[start:start + TV_THUMBNAIL_BATCH]
+        try:
+            thumb_map = art.get_thumbnail_list(batch)
+        except Exception as err:
+            # Whatever earlier batches returned is already cached, so the next visit
+            # starts from there rather than from nothing.
+            logger.warning(
+                "TV %s stopped answering after %d of %d thumbnails: %s",
+                ip, len(found), len(content_ids), err,
+            )
+            return found
 
-    if isinstance(thumb_map, dict):
+        if not isinstance(thumb_map, dict):
+            continue
         for cid, data in thumb_map.items():
             if not isinstance(data, (bytes, bytearray)):
                 continue
@@ -733,6 +756,7 @@ def get_tv_gallery_thumbnails(
             "fetching thumbnails from",
             lambda session: _collect_thumbnails(session.art(), ip, missing),
             token=token,
+            deadline=TV_THUMBNAIL_DEADLINE,
         )
     except FrameTVError as err:
         # Hand back whatever was cached rather than blanking a whole page because one
@@ -775,8 +799,11 @@ def get_tv_gallery_images(ip: str, token: Optional[str] = None) -> List[Dict]:
                 })
                 seen_content_ids.append(content_id)
 
+        # Cached thumbnails only: the listing has to come back quickly, and the page
+        # asks for whatever is still missing in its own request afterwards.
         by_content_id = {img["content_id"]: img for img in images}
-        for cid, data in _collect_thumbnails(art, ip, list(by_content_id)).items():
+        thumbnails = _collect_thumbnails(art, ip, list(by_content_id), fetch_missing=False)
+        for cid, data in thumbnails.items():
             img = by_content_id.get(cid)
             if img is not None:
                 img["thumbnail"] = base64.b64encode(data).decode("ascii")

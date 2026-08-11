@@ -14,6 +14,9 @@ import {
   type TVGalleryImage,
 } from "~/utils/tvApi";
 
+/** How many thumbnails are asked for per request. Matches the backend's own batch. */
+const THUMBNAIL_BATCH = 8;
+
 export default function TVGallery() {
   const [searchParams] = useSearchParams();
   const tvIp = searchParams.get("ip");
@@ -68,8 +71,15 @@ export default function TVGallery() {
         setThumbnailsLoading(true);
         (async () => {
           try {
-            const thumbs = await fetchTvGalleryThumbnails(selectedTvIp, missing);
-            setImages((prev) => prev.map((img) => ({ ...img, thumbnail: img.thumbnail || thumbs[img.content_id] || null })));
+            // A batch at a time, in order, so the rows fill in as the TV answers
+            // instead of the whole page waiting on one long transfer. Sequential on
+            // purpose: the set serves a single art channel.
+            for (let from = 0; from < missing.length; from += THUMBNAIL_BATCH) {
+              const batch = missing.slice(from, from + THUMBNAIL_BATCH);
+              const thumbs = await fetchTvGalleryThumbnails(selectedTvIp, batch);
+              if (Object.keys(thumbs).length === 0) break; // the TV stopped answering
+              setImages((prev) => prev.map((img) => ({ ...img, thumbnail: img.thumbnail || thumbs[img.content_id] || null })));
+            }
           } catch (err) {
             console.warn("Failed to batch-fetch thumbnails", err);
           } finally {
