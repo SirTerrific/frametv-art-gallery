@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.3.0](https://github.com/mrtncode/frametv-art-gallery/compare/v1.2.0...v1.3.0) (2026-08-11)
+
+
+### Features
+
+* Album selection, bulk actions ([#59](https://github.com/mrtncode/frametv-art-gallery/issues/59)) and a dark mode ([#63](https://github.com/mrtncode/frametv-art-gallery/issues/63)) ([e51dd36](https://github.com/mrtncode/frametv-art-gallery/commit/e51dd36a2aa5a6e0441c43cdb5a4c6c9a89dca41))
+
+
+### Bug Fixes
+
+* Keep one unresponsive TV from freezing the app ([#62](https://github.com/mrtncode/frametv-art-gallery/issues/62)) ([0bbc6f9](https://github.com/mrtncode/frametv-art-gallery/commit/0bbc6f93c7e9a7fc08c7c9e84efd4da02242d148))
+* stamp a newly created database so migrations do not replay over it ([#64](https://github.com/mrtncode/frametv-art-gallery/issues/64)) ([45c3545](https://github.com/mrtncode/frametv-art-gallery/commit/45c3545ff63bf9be2253da35effa14bcace264e6))
+
 ## [1.2.0](https://github.com/mrtncode/frametv-art-gallery/compare/v1.1.5...v1.2.0) (2026-06-13)
 
 
