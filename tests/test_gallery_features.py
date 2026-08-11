@@ -219,6 +219,56 @@ def test_an_incomplete_slideshow_never_runs(tv):
     assert not slideshow._due(tv, datetime(2026, 1, 1, 12, 0))
 
 
+# --- bulk delete on the TV ---
+
+@pytest.mark.parametrize("payload,expected", [
+    ({}, 400),
+    ({"content_ids": "SAM-1"}, 400),
+    ({"content_ids": ["SAM-1", 2]}, 400),
+])
+def test_bulk_tv_delete_rejects_bad_payloads(client, payload, expected):
+    with backend.app.app_context():
+        backend.db.session.add(backend.TV(ip="192.0.2.40", name="TV", token="1"))
+        backend.db.session.commit()
+    assert client.post("/api/tv/192.0.2.40/gallery/delete", json=payload).status_code == expected
+
+
+def test_bulk_tv_delete_with_nothing_selected_touches_no_tv(client, monkeypatch):
+    with backend.app.app_context():
+        backend.db.session.add(backend.TV(ip="192.0.2.41", name="TV", token="1"))
+        backend.db.session.commit()
+
+    called = []
+    monkeypatch.setattr(backend, "delete_tv_images", lambda *a, **k: called.append(a))
+    res = client.post("/api/tv/192.0.2.41/gallery/delete", json={"content_ids": []})
+    assert res.status_code == 200 and res.get_json()["deleted"] == 0
+    assert called == []
+
+
+def test_bulk_tv_delete_sends_the_whole_list_at_once(client, monkeypatch):
+    """One call for the selection: the TV takes a list and serves one art channel."""
+    with backend.app.app_context():
+        backend.db.session.add(backend.TV(ip="192.0.2.42", name="TV", token="tok"))
+        backend.db.session.commit()
+
+    calls = []
+
+    def fake_delete(ip, content_ids, token=None):
+        calls.append((ip, list(content_ids), token))
+        return len(content_ids)
+
+    monkeypatch.setattr(backend, "delete_tv_images", fake_delete)
+    res = client.post("/api/tv/192.0.2.42/gallery/delete", json={"content_ids": ["A", "B", "C"]})
+
+    assert res.status_code == 200 and res.get_json()["deleted"] == 3
+    assert len(calls) == 1, "the whole selection should go in a single call"
+    assert calls[0] == ("192.0.2.42", ["A", "B", "C"], "tok")
+
+
+def test_bulk_tv_delete_needs_a_known_tv(client):
+    assert client.post("/api/tv/192.0.2.99/gallery/delete", json={"content_ids": ["A"]}).status_code == 404
+
+
 def test_a_tv_in_use_is_left_alone():
     """Showing an image switches a Frame TV to art mode, cutting across whoever is watching."""
     tv = FakeTV(ip="192.0.2.30", token="1")

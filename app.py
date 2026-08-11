@@ -56,6 +56,8 @@ from utils.frame_tv import (
     get_tv_gallery_images,
     get_tv_gallery_thumbnails,
     delete_tv_image,
+    delete_tv_images,
+    get_tv_device_info,
     play_uploaded_content,
     get_tv_gallery_thumbnail,
 )
@@ -919,6 +921,58 @@ def api_play_tv_image(ip, content_id):
     except Exception as e:
         _log_exception('Unexpected error playing TV image', e)
         return jsonify({'error': 'Unexpected error'}), 500
+
+@app.route("/api/tv/<ip>/gallery/delete", methods=['POST'])
+def api_delete_tv_images(ip):
+    """Delete several images from the TV at once.
+
+    POST rather than DELETE with a body, since a body on DELETE is easy for proxies
+    to drop. The TV takes the whole list in one call.
+    """
+    tv = TV.query.filter_by(ip=ip).first()
+    if not tv:
+        return jsonify({'error': 'TV not found'}), 404
+
+    data = request.get_json(silent=True) or {}
+    content_ids = data.get('content_ids')
+    if not isinstance(content_ids, list) or not all(isinstance(c, str) and c for c in content_ids):
+        return jsonify({'error': 'content_ids must be a list of strings'}), 400
+    if not content_ids:
+        return jsonify({'deleted': 0})
+
+    try:
+        deleted = delete_tv_images(ip, content_ids, token=tv.token)
+        return jsonify({'deleted': deleted})
+    except FrameTVTimeoutError as e:
+        _log_exception('Timeout while deleting TV images', e)
+        return jsonify({'error': 'TV request timed out'}), 504
+    except FrameTVConnectionError as e:
+        _log_exception('TV connection failed while deleting images', e)
+        return jsonify({'error': 'TV is unavailable'}), 503
+    except Exception as e:
+        _log_exception('Failed to delete TV images', e)
+        return jsonify({'error': 'Failed to delete the images'}), 500
+
+
+@app.route("/api/tv/<ip>/info", methods=['GET'])
+def api_tv_device_info(ip):
+    """What the TV reports about itself, verbatim.
+
+    Diagnostic: the art API has no storage endpoint, so this is where a capacity
+    figure would have to appear if the firmware exposes one at all.
+    """
+    tv = TV.query.filter_by(ip=ip).first()
+    if not tv:
+        return jsonify({'error': 'TV not found'}), 404
+    try:
+        return jsonify({'device_info': get_tv_device_info(ip, token=tv.token)})
+    except FrameTVConnectionError as e:
+        _log_exception('TV connection failed while reading device info', e)
+        return jsonify({'error': 'TV is unavailable'}), 503
+    except Exception as e:
+        _log_exception('Failed to read TV device info', e)
+        return jsonify({'error': 'Failed to read device info'}), 500
+
 
 @app.route("/api/tv/<ip>/gallery/thumbnails", methods=['POST'])
 def api_tv_gallery_thumbnails(ip):
