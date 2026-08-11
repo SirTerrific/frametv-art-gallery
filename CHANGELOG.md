@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.5](https://github.com/SirTerrific/frametv-art-gallery/compare/v1.5.4...v1.5.5) (2026-08-11)
+
+
+### Bug Fixes
+
+* show a thumbnail for the art the batch endpoint skips ([929bda6](https://github.com/SirTerrific/frametv-art-gallery/commit/929bda6113c53a61f8f514cce39772c105c065d4))
+
 ## [1.5.4](https://github.com/SirTerrific/frametv-art-gallery/compare/v1.5.3...v1.5.4) (2026-08-11)
 
 
