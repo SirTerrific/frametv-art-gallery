@@ -1,4 +1,5 @@
 import base64
+import hashlib
 import shutil
 import sqlite3
 import tempfile
@@ -211,6 +212,19 @@ def _forget_uploaded(tv, content_ids=None, keep=None) -> int:
     removed = query.delete(synchronize_session=False)
     db.session.commit()
     return removed
+
+
+def _file_sha256(path: str) -> Optional[str]:
+    """Content hash of a file, or None if it cannot be read."""
+    digest = hashlib.sha256()
+    try:
+        with open(path, 'rb') as handle:
+            for chunk in iter(lambda: handle.read(1024 * 1024), b''):
+                digest.update(chunk)
+    except OSError:
+        app.logger.warning('Could not hash %s', path, exc_info=True)
+        return None
+    return digest.hexdigest()
 
 
 def _guess_image_mimetype(image_bytes: bytes) -> str:
@@ -500,6 +514,7 @@ def upload():
     except ValueError as e:
         return {'error': str(e)}, 400
     file.save(file_path)
+    digest = _file_sha256(file_path)
 
     # Re-uploading the same filename overwrites the file, so reuse its row instead of
     # leaving a second one behind pointing at the same image.
@@ -507,10 +522,27 @@ def upload():
     if not img:
         img = Image(filename=filename)
         db.session.add(img)
+
+    # The same artwork under another name still uploads — silently dropping a file
+    # someone asked for would be worse — but the caller is told, so it can say so.
+    duplicate_of = None
+    if digest:
+        twin = Image.query.filter(
+            Image.sha256 == digest, Image.filename != filename
+        ).first()
+        if twin and os.path.isfile(os.path.join(app.config['UPLOAD_FOLDER'], twin.filename)):
+            duplicate_of = twin.filename
+        img.sha256 = digest
+
     if album:
         img.album = album
     db.session.commit()
-    return {'success': True, 'filename': filename, 'album_id': album.id if album else None}
+    return {
+        'success': True,
+        'filename': filename,
+        'album_id': album.id if album else None,
+        'duplicate_of': duplicate_of,
+    }
     
 # --- Play Uploaded Image on TV ---
 @app.route('/api/tv/play_uploaded', methods=['POST'])

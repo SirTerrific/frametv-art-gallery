@@ -13,6 +13,9 @@ class Image(db.Model):
     filename = db.Column(db.String(255), nullable=False)
     album_id = db.Column(db.Integer, db.ForeignKey('album.id'), nullable=True)
     created_at = db.Column(db.DateTime, nullable=False, server_default=db.func.now())
+    # Content hash, used to spot the same artwork uploaded twice under different names.
+    # Null for rows that predate this column and have not been re-uploaded since.
+    sha256 = db.Column(db.String(64), nullable=True, index=True)
 
 class TV(db.Model):
     id = db.Column(db.Integer, primary_key=True)
