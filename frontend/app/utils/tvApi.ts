@@ -152,6 +152,18 @@ export async function deleteTvGalleryImage(ip: string, contentId: string) {
   return await res.json();
 }
 
+/** Delete several images from the TV in one call. Returns how many were sent. */
+export async function deleteTvGalleryImages(ip: string, contentIds: string[]): Promise<number> {
+  if (contentIds.length === 0) return 0;
+  const res = await fetch(`${API_BASE}/api/tv/${encodeURIComponent(ip)}/gallery/delete`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ content_ids: contentIds }),
+  });
+  if (!res.ok) throw new Error((await res.json()).error || 'Failed to delete the images');
+  return (await res.json()).deleted ?? 0;
+}
+
 export async function sendToTV({payload, brightness, display }: { payload: any, brightness?: number, display?: boolean }) {
   console.log("received payload", payload)
   const res = await fetch(`${API_BASE}/api/tv/send`, {

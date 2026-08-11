@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "react-router";
 import { SparklesIcon, ArrowPathIcon } from "@heroicons/react/24/outline";
 import TVGalleryImageCard from "~/components/TVGalleryImageCard";
@@ -6,6 +6,7 @@ import TVGalleryImageCard from "~/components/TVGalleryImageCard";
 import { toast } from "sonner";
 import {
   deleteTvGalleryImage,
+  deleteTvGalleryImages,
   fetchTvGalleryThumbnails,
   getTvGalleryImages,
   getTvs,
@@ -22,6 +23,10 @@ export default function TVGallery() {
   const [thumbnailsLoading, setThumbnailsLoading] = useState(false);
   const [selectedTvIp, setSelectedTvIp] = useState<string>(tvIp || "");
   const [tvs, setTvs] = useState<any[]>([]);
+  // Multi-select, plus the last clicked row so shift-click can span a range.
+  const [selected, setSelected] = useState<string[]>([]);
+  const lastClickedIndex = useRef<number | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     fetchTVs();
@@ -102,6 +107,44 @@ export default function TVGallery() {
     }
   };
 
+  function toggleSelect(contentId: string, index: number, shiftKey: boolean) {
+    setSelected(prev => {
+      const anchor = lastClickedIndex.current;
+      if (shiftKey && anchor !== null) {
+        const [from, to] = anchor <= index ? [anchor, index] : [index, anchor];
+        const range = images.slice(from, to + 1).map(img => img.content_id);
+        const next = new Set(prev);
+        const selecting = !prev.includes(contentId);
+        range.forEach(id => (selecting ? next.add(id) : next.delete(id)));
+        return Array.from(next);
+      }
+      return prev.includes(contentId) ? prev.filter(id => id !== contentId) : [...prev, contentId];
+    });
+    lastClickedIndex.current = index;
+  }
+
+  const handleDeleteSelected = async () => {
+    const count = selected.length;
+    if (count === 0) return;
+    if (!confirm(`Delete ${count} image${count === 1 ? "" : "s"} from the TV? This cannot be undone.`)) return;
+
+    setDeleting(true);
+    try {
+      // One call for the whole selection: the TV takes the list, and it only serves
+      // a single art channel anyway.
+      const deleted = await deleteTvGalleryImages(selectedTvIp, selected);
+      toast.success(`Deleted ${deleted} image${deleted === 1 ? "" : "s"} from the TV`);
+      setSelected([]);
+      lastClickedIndex.current = null;
+      await fetchGallery();
+    } catch (error: any) {
+      console.error("Failed to delete images:", error);
+      toast.error(error.message || "Failed to delete the images");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   const formatDate = (dateString: string): string => {
     if (!dateString || dateString === "Unknown") return "Unknown";
     try {
@@ -148,20 +191,58 @@ export default function TVGallery() {
             </div>
           ) : (
             <div className="space-y-3">
-              <p className="text-sm text-muted-foreground mb-4">
-                {images.length} image{images.length !== 1 ? "s" : ""} on TV
-              </p>
-              {images.map((image) => (
+              <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+                <p className="text-sm text-muted-foreground">
+                  {images.length} image{images.length !== 1 ? "s" : ""} on TV
+                </p>
+                <button
+                  type="button"
+                  className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+                  onClick={() => {
+                    setSelected(selected.length === images.length ? [] : images.map(img => img.content_id));
+                    lastClickedIndex.current = null;
+                  }}
+                >
+                  {selected.length === images.length ? "Clear selection" : "Select all"}
+                </button>
+              </div>
+
+              {images.map((image, index) => (
                 <TVGalleryImageCard
                   key={image.content_id}
                   image={image}
                   selectedTvIp={selectedTvIp}
                   thumbnailsLoading={thumbnailsLoading}
+                  selected={selected.includes(image.content_id)}
+                  onToggleSelect={(shiftKey) => toggleSelect(image.content_id, index, shiftKey)}
                   onPlay={handlePlayImage}
                   onDelete={handleDeleteImage}
                   formatDate={formatDate}
                 />
               ))}
+
+              {selected.length > 0 && (
+                <div className="sticky bottom-20 z-30 flex flex-wrap items-center gap-3 rounded-lg border border-border bg-card p-3 shadow-lg">
+                  <span className="text-sm font-medium">
+                    {selected.length} selected
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleDeleteSelected}
+                    disabled={deleting}
+                    className="bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white text-sm font-medium py-2 px-4 rounded-lg"
+                  >
+                    {deleting ? "Deleting…" : "Delete from TV"}
+                  </button>
+                  <button
+                    type="button"
+                    className="text-sm text-muted-foreground hover:underline"
+                    onClick={() => { setSelected([]); lastClickedIndex.current = null; }}
+                  >
+                    Clear
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </>
