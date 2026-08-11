@@ -17,6 +17,7 @@ from utils import frame_tv
 @pytest.fixture(autouse=True)
 def clean_caches():
     frame_tv._CACHE.clear()
+    frame_tv._NO_THUMBNAIL.clear()
     shutil.rmtree(frame_tv.TV_THUMB_DIR, ignore_errors=True)
     frame_tv.TV_THUMB_DIR.mkdir(parents=True, exist_ok=True)
     yield
@@ -94,6 +95,30 @@ def test_a_thumbnail_the_tv_simply_does_not_have_is_left_out():
     found = frame_tv._collect_thumbnails(art, "192.0.2.36", ["MY_F0473", "SAM-S5714"])
 
     assert set(found) == {"MY_F0473"}, "a missing thumbnail must not break the page"
+
+
+def test_content_with_no_preview_is_not_asked_for_again():
+    """Otherwise every page load pays a round trip to be told the same nothing."""
+    asked = []
+
+    art = FakeArt()
+    art.get_thumbnail = lambda cid: asked.append(cid)  # returns None
+
+    for _ in range(3):
+        frame_tv._collect_thumbnails(art, "192.0.2.37", ["SAM-S5714"])
+
+    assert asked == ["SAM-S5714"], f"asked {len(asked)} times instead of once"
+
+
+def test_the_tv_is_asked_again_once_the_answer_has_aged():
+    """A firmware that starts answering should be picked up without a restart."""
+    art = FakeArt()
+    art.get_thumbnail = lambda cid: None
+    frame_tv._collect_thumbnails(art, "192.0.2.38", ["SAM-S5714"])
+    assert frame_tv._known_to_have_no_thumbnail("192.0.2.38", "SAM-S5714")
+
+    frame_tv._NO_THUMBNAIL[("192.0.2.38", "SAM-S5714")] -= frame_tv._NO_THUMBNAIL_TTL + 1
+    assert not frame_tv._known_to_have_no_thumbnail("192.0.2.38", "SAM-S5714")
 
 
 def test_thumbnails_are_asked_for_in_batches():

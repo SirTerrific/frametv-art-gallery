@@ -105,6 +105,7 @@ All optional, with sensible defaults. Set them as environment variables on the c
 | `FRAME_TV_BUSY_WAIT` | `90` | How long a deliberate action queues behind another operation on the same TV. |
 | `FRAME_TV_THUMBNAIL_BATCH` | `8` | Thumbnails asked for per request. Lower it if a TV drops long transfers. |
 | `FRAME_TV_THUMBNAIL_DEADLINE` | `120` | Seconds a page of thumbnails may take in total. |
+| `FRAME_TV_NO_THUMBNAIL_TTL` | `3600` | How long content the TV has no preview for is left alone before asking again. |
 | `FRAME_TV_MAX_PARALLEL_CALLS` | `8` | Concurrent TV requests per worker. |
 | `FRAME_TV_SLIDESHOW` | `1` | Set to `0` to stop the slideshow loop from running at all. |
 
@@ -133,6 +134,11 @@ every row blank on a set holding dozens of 4K images. Each batch is cached as it
 so a gallery fills in over a few visits even on a set that keeps giving up. If yours
 still stops early, lower the batch size and look for
 `TV … stopped answering after N of M thumbnails` in the logs.
+
+Some of the art a Frame TV ships with has no preview to give: the batch endpoint omits
+it and the single-image call answers with nothing. Those entries keep a placeholder,
+and the logs say `TV … returned no thumbnail for SAM-…` once rather than on every page
+load. Anything uploaded from here always has one.
 
 Deliberate actions (playing an image, deleting one, uploading) ignore that cooldown and
 still try, so the TV waking up is noticed immediately. If it persists, check that the TV is

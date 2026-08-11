@@ -679,6 +679,28 @@ def _cached_thumbnail(ip: str, content_id: str) -> Optional[bytes]:
     return disk
 
 
+# Content the TV has no preview for at all — some of the art it ships with. Asking
+# again on every page load costs a round trip each time and always gets the same
+# nothing, so the answer is remembered; the window is short enough that a firmware
+# that starts answering is picked up on its own.
+_NO_THUMBNAIL_TTL = _env_int("FRAME_TV_NO_THUMBNAIL_TTL", 3600)
+_NO_THUMBNAIL: Dict[tuple, float] = {}
+
+
+def _remember_no_thumbnail(ip: str, content_id: str) -> None:
+    _NO_THUMBNAIL[(ip, content_id)] = time.time()
+
+
+def _known_to_have_no_thumbnail(ip: str, content_id: str) -> bool:
+    seen_at = _NO_THUMBNAIL.get((ip, content_id))
+    if seen_at is None:
+        return False
+    if time.time() - seen_at > _NO_THUMBNAIL_TTL:
+        del _NO_THUMBNAIL[(ip, content_id)]
+        return False
+    return True
+
+
 def _content_id_of(name: str, wanted: List[str]) -> Optional[str]:
     """The content id a batch thumbnail belongs to.
 
@@ -693,15 +715,18 @@ def _content_id_of(name: str, wanted: List[str]) -> Optional[str]:
     return stem if stem in wanted else None
 
 
-def _single_thumbnail(art, content_id: str) -> Optional[bytes]:
+def _single_thumbnail(art, ip: str, content_id: str) -> Optional[bytes]:
     """One thumbnail through the single-image endpoint, or None if the TV has none."""
     try:
         thumbnail = art.get_thumbnail(content_id)
-    except Exception:
-        logger.debug("No single thumbnail for %s", content_id, exc_info=True)
+    except Exception as err:
+        logger.info("TV %s has no thumbnail for %s: %s", ip, content_id, err)
+        _remember_no_thumbnail(ip, content_id)
         return None
     if isinstance(thumbnail, (bytes, bytearray)) and thumbnail:
         return bytes(thumbnail)
+    logger.info("TV %s returned no thumbnail for %s", ip, content_id)
+    _remember_no_thumbnail(ip, content_id)
     return None
 
 
@@ -762,9 +787,9 @@ def _collect_thumbnails(
         # set — so anything it left out is asked for on its own before giving up. That
         # single call is what used to be the only path, and it answers for them.
         for cid in batch:
-            if cid in found:
+            if cid in found or _known_to_have_no_thumbnail(ip, cid):
                 continue
-            payload = _single_thumbnail(art, cid)
+            payload = _single_thumbnail(art, ip, cid)
             if payload is None:
                 continue
             found[cid] = payload
