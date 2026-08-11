@@ -35,14 +35,27 @@ class FakeArt:
         self.fail_after = fail_after
         self.suffix = suffix
         self.requests = []
+        self.singles = []
         self.served = 0
+
+    def __repr__(self):
+        return f"FakeArt(requests={self.requests})"
 
     def get_thumbnail_list(self, content_ids):
         self.requests.append(list(content_ids))
         if self.fail_after is not None and self.served >= self.fail_after:
             raise OSError("the TV stopped answering")
         self.served += len(content_ids)
-        return {f"{cid}{self.suffix}": bytearray(b"jpeg-" + cid.encode()) for cid in content_ids}
+        # Art store content is skipped by the batch endpoint on my own set.
+        return {
+            f"{cid}{self.suffix}": bytearray(b"jpeg-" + cid.encode())
+            for cid in content_ids
+            if not cid.startswith("SAM-")
+        }
+
+    def get_thumbnail(self, content_id):
+        self.singles.append(content_id)
+        return bytearray(b"single-" + content_id.encode())
 
 
 def test_a_thumbnail_is_filed_under_its_content_id():
@@ -58,8 +71,29 @@ def test_a_thumbnail_is_filed_under_its_content_id():
 def test_an_answer_that_matches_nothing_asked_for_is_dropped():
     art = FakeArt(suffix="")
     art.get_thumbnail_list = lambda ids: {"SOMETHING_ELSE.jpg": bytearray(b"x")}
+    art.get_thumbnail = lambda cid: None
 
     assert frame_tv._collect_thumbnails(art, "192.0.2.34", ["MY_F0440"]) == {}
+
+
+def test_content_the_batch_skips_is_asked_for_on_its_own():
+    """The batch endpoint returns nothing for art store items; the single call does."""
+    art = FakeArt()
+
+    found = frame_tv._collect_thumbnails(art, "192.0.2.35", ["MY_F0473", "SAM-S5714"])
+
+    assert set(found) == {"MY_F0473", "SAM-S5714"}
+    assert art.singles == ["SAM-S5714"], "only what the batch left out"
+    assert found["SAM-S5714"] == b"single-SAM-S5714"
+
+
+def test_a_thumbnail_the_tv_simply_does_not_have_is_left_out():
+    art = FakeArt()
+    art.get_thumbnail = lambda cid: None
+
+    found = frame_tv._collect_thumbnails(art, "192.0.2.36", ["MY_F0473", "SAM-S5714"])
+
+    assert set(found) == {"MY_F0473"}, "a missing thumbnail must not break the page"
 
 
 def test_thumbnails_are_asked_for_in_batches():

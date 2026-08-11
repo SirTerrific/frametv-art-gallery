@@ -693,6 +693,18 @@ def _content_id_of(name: str, wanted: List[str]) -> Optional[str]:
     return stem if stem in wanted else None
 
 
+def _single_thumbnail(art, content_id: str) -> Optional[bytes]:
+    """One thumbnail through the single-image endpoint, or None if the TV has none."""
+    try:
+        thumbnail = art.get_thumbnail(content_id)
+    except Exception:
+        logger.debug("No single thumbnail for %s", content_id, exc_info=True)
+        return None
+    if isinstance(thumbnail, (bytes, bytearray)) and thumbnail:
+        return bytes(thumbnail)
+    return None
+
+
 def _collect_thumbnails(
     art, ip: str, content_ids: List[str], fetch_missing: bool = True
 ) -> Dict[str, bytes]:
@@ -742,6 +754,19 @@ def _collect_thumbnails(
                 logger.debug("TV %s answered with an unexpected thumbnail %r", ip, name)
                 continue
             payload = bytes(data)
+            found[cid] = payload
+            _thumb_disk_set(ip, cid, payload)
+            _cache_set((ip, cid), payload)
+
+        # The batch endpoint skips some content silently — art store items, in my own
+        # set — so anything it left out is asked for on its own before giving up. That
+        # single call is what used to be the only path, and it answers for them.
+        for cid in batch:
+            if cid in found:
+                continue
+            payload = _single_thumbnail(art, cid)
+            if payload is None:
+                continue
             found[cid] = payload
             _thumb_disk_set(ip, cid, payload)
             _cache_set((ip, cid), payload)
@@ -911,15 +936,9 @@ def get_tv_gallery_thumbnail(ip: str, content_id: str, token: Optional[str] = No
         return cached
 
     def action(session: _TVSession) -> Optional[bytes]:
-        art = session.art()
-        # The D2D list endpoint is the reliable path on recent firmware; the single
-        # get_thumbnail call is only a fallback for sets that do not answer it.
-        thumbnail_bytes = _collect_thumbnails(art, ip, [content_id]).get(content_id)
-        if thumbnail_bytes is None:
-            thumbnail = art.get_thumbnail(content_id)
-            if isinstance(thumbnail, (bytes, bytearray)):
-                thumbnail_bytes = bytes(thumbnail)
-        return thumbnail_bytes
+        # The batch endpoint is the reliable path on recent firmware and already falls
+        # back to the single call for content it skips.
+        return _collect_thumbnails(session.art(), ip, [content_id]).get(content_id)
 
     thumbnail_bytes = _tv_call(ip, f"fetching thumbnail {content_id} from", action, token=token)
     if thumbnail_bytes is not None:
