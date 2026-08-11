@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.7](https://github.com/SirTerrific/frametv-art-gallery/compare/v1.5.6...v1.5.7) (2026-08-11)
+
+
+### Bug Fixes
+
+* retry a refused thumbnail batch one image at a time ([ae4a20d](https://github.com/SirTerrific/frametv-art-gallery/commit/ae4a20d41e11e686bb2411a2dad21c6d57dd56a3))
+
 ## [1.5.6](https://github.com/SirTerrific/frametv-art-gallery/compare/v1.5.5...v1.5.6) (2026-08-11)
 
 
