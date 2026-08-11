@@ -61,3 +61,53 @@ def test_a_twin_whose_file_is_gone_is_not_reported(client):
     os.remove(os.path.join(backend.app.config["UPLOAD_FOLDER"], "original.png"))
 
     assert upload(client, "copy.png", colour="blue").get_json()["duplicate_of"] is None
+
+
+# --- reconcile ---
+
+def test_reconcile_picks_up_and_drops_files(client):
+    upload(client, "kept.png")
+
+    # A file dropped in by hand, and a row whose file went away.
+    stray = os.path.join(backend.app.config["UPLOAD_FOLDER"], "stray.png")
+    PILImage.new("RGB", (120, 80), "purple").save(stray)
+    with backend.app.app_context():
+        backend.db.session.add(backend.Image(filename="ghost.png"))
+        backend.db.session.commit()
+
+    report = client.post("/api/images/reconcile").get_json()
+    assert report["added"] == 1 and report["removed"] == 1
+
+    with backend.app.app_context():
+        names = {img.filename for img in backend.Image.query.all()}
+    assert names == {"kept.png", "stray.png"}
+
+
+def test_reconcile_backfills_hashes_and_names_duplicates(client):
+    upload(client, "a.png", colour="teal")
+    upload(client, "b.png", colour="teal")
+    with backend.app.app_context():
+        for img in backend.Image.query.all():
+            img.sha256 = None
+        backend.db.session.commit()
+
+    report = client.post("/api/images/reconcile").get_json()
+    assert report["hashed"] == 2
+    assert sorted(report["duplicate_groups"][0]) == ["a.png", "b.png"]
+
+
+def test_reconcile_leaves_album_membership_alone(client):
+    upload(client, "kept.png")
+    with backend.app.app_context():
+        album = backend.Album(name="Holiday")
+        backend.db.session.add(album)
+        backend.db.session.commit()
+        image = backend.Image.query.filter_by(filename="kept.png").first()
+        image.album_id = album.id
+        backend.db.session.commit()
+        album_id = album.id
+
+    client.post("/api/images/reconcile")
+
+    with backend.app.app_context():
+        assert backend.Image.query.filter_by(filename="kept.png").first().album_id == album_id

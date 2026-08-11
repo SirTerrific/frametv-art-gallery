@@ -308,6 +308,57 @@ def api_backup():
         return _error_response('Failed to build the backup archive', 500)
 
 
+@app.route('/api/images/reconcile', methods=['POST'])
+def api_reconcile_images():
+    """Realign the database with the uploads folder.
+
+    Files can be added or removed underneath the app, and rows predating the hash
+    column have none. This adds rows for untracked files, drops rows whose file is
+    gone, and fills in missing hashes. Album membership is never touched.
+    """
+    upload_folder = app.config['UPLOAD_FOLDER']
+    on_disk = {
+        f for f in os.listdir(upload_folder)
+        if os.path.isfile(os.path.join(upload_folder, f)) and allowed_file(f)
+    }
+
+    rows = Image.query.all()
+    known = {img.filename for img in rows}
+
+    removed = 0
+    for img in rows:
+        if img.filename not in on_disk:
+            UploadedImage.query.filter_by(image_id=img.id).delete()
+            db.session.delete(img)
+            removed += 1
+
+    added = 0
+    for filename in sorted(on_disk - known):
+        db.session.add(Image(filename=filename, sha256=_file_sha256(os.path.join(upload_folder, filename))))
+        added += 1
+
+    hashed = 0
+    for img in rows:
+        if img.filename in on_disk and not img.sha256:
+            img.sha256 = _file_sha256(os.path.join(upload_folder, img.filename))
+            hashed += 1
+
+    db.session.commit()
+
+    # Reported once the hashes exist, so the answer covers the whole library.
+    duplicates = {}
+    for img in Image.query.filter(Image.sha256.isnot(None)).order_by(Image.id).all():
+        duplicates.setdefault(img.sha256, []).append(img.filename)
+    duplicate_groups = [names for names in duplicates.values() if len(names) > 1]
+
+    return {
+        'added': added,
+        'removed': removed,
+        'hashed': hashed,
+        'duplicate_groups': duplicate_groups,
+    }
+
+
 @app.route('/api/images/added_this_month', methods=['GET'])
 def api_images_added_this_month():
     now = datetime.now()

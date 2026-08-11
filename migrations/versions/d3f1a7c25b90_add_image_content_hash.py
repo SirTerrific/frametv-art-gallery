@@ -9,7 +9,7 @@ alembic_version — adding it again would abort the upgrade and leave the contai
 restarting.
 
 Revision ID: d3f1a7c25b90
-Revises: 601a7cee3cbb
+Revises: b7c3d1e9f204
 Create Date: 2026-08-11 12:00:00.000000
 
 """
@@ -19,7 +19,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = 'd3f1a7c25b90'
-down_revision = '601a7cee3cbb'
+down_revision = 'b7c3d1e9f204'
 branch_labels = None
 depends_on = None
 
