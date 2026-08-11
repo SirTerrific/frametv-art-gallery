@@ -31,7 +31,8 @@ export default function ImageGrid({
         {images.map((img: any, index: number) => (
           <ImageCard
             key={img.id}
-            src={getUploadUrl(img.filename)}
+            src={getUploadUrl(img.filename, 400)}
+            fullSrc={getUploadUrl(img.filename)}
             alt={img.filename}
             filename={img.filename}
             image={img}

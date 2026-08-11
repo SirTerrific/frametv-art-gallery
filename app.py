@@ -1,11 +1,12 @@
 import base64
-from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory, jsonify, Response
+from flask import Flask, render_template, request, redirect, url_for, flash, send_file, send_from_directory, jsonify, Response
 import os
 from werkzeug.utils import secure_filename
 from pathlib import Path
 import sys
 from flask_sqlalchemy import SQLAlchemy
 from utils.crop_image import crop_image_file, CropImageError, get_preset_crop_box, CROP_PRESETS
+from utils.thumbnails import get_or_create, parse_width
 from samsungtvws.exceptions import HttpApiError, ResponseError
 from const import CONNECTION_NAME
 from typing import Tuple, Optional
@@ -63,6 +64,9 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(INSTANCE_FOLDER, exist_ok=True)
 
 frametv_db_path = os.path.abspath(os.path.join(INSTANCE_FOLDER, 'frametv.db'))
+
+# Downscaled copies of the uploads, rebuilt on demand and safe to delete.
+THUMBNAIL_DIR = Path(INSTANCE_FOLDER).joinpath('thumbnails')
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 
@@ -461,12 +465,24 @@ def api_play_uploaded_image():
 
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
+    """Serve an uploaded image, or a downscaled copy with ?w=<width>.
+
+    Without the parameter this behaves exactly as before, so existing links keep
+    returning the original file.
+    """
     try:
-        safe_name, _ = _normalized_upload_path(filename, must_exist=True)
+        safe_name, source_path = _normalized_upload_path(filename, must_exist=True)
     except ValueError:
         return {'error': 'Invalid filename'}, 400
     except FileNotFoundError:
         return {'error': 'Image not found'}, 404
+
+    width = parse_width(request.args.get('w'))
+    if width:
+        thumbnail = get_or_create(THUMBNAIL_DIR, source_path, safe_name, width)
+        if thumbnail:
+            return send_file(thumbnail, mimetype='image/jpeg', max_age=86400)
+
     return send_from_directory(app.config['UPLOAD_FOLDER'], safe_name)
 
 

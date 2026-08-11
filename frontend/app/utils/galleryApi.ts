@@ -143,6 +143,12 @@ export async function deleteAlbum(album: string) {
   return (await res.json()).albums;
 }
 
-export function getUploadUrl(filename: string) {
-  return `${API_BASE}/uploads/${encodeURIComponent(filename)}`;
+/**
+ * URL of an uploaded image. Pass a width to get a downscaled copy instead of the
+ * original — a grid tile does not need a full-resolution artwork. Only 160, 400 and
+ * 800 are generated; anything else silently serves the original.
+ */
+export function getUploadUrl(filename: string, width?: 160 | 400 | 800) {
+  const base = `${API_BASE}/uploads/${encodeURIComponent(filename)}`;
+  return width ? `${base}?w=${width}` : base;
 }
