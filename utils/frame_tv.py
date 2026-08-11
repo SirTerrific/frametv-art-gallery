@@ -730,6 +730,45 @@ def delete_tv_image(ip: str, content_id: str, token: Optional[str] = None) -> bo
     )
     return True
 
+def delete_tv_images(ip: str, content_ids: List[str], token: Optional[str] = None) -> int:
+    """Delete several images from the TV in a single round trip.
+
+    The TV takes a list, so this is one connection rather than one per image — which
+    matters given it only serves a single art channel.
+
+    Returns:
+        int: how many content ids were sent for deletion.
+    """
+    wanted = [cid for cid in content_ids if cid]
+    if not wanted:
+        return 0
+
+    _tv_call(
+        ip,
+        f"deleting {len(wanted)} images from",
+        lambda session: session.art().delete_list(wanted),
+        token=token,
+        skip_when_down=False,
+    )
+    for content_id in wanted:
+        _CACHE.pop((ip, content_id), None)
+    return len(wanted)
+
+
+def get_tv_device_info(ip: str, token: Optional[str] = None) -> Optional[Dict]:
+    """Whatever the TV reports about itself.
+
+    There is no storage endpoint in the art API, so this is the only place any
+    capacity figure could turn up — and whether it does depends on the firmware.
+    """
+    return _tv_call(
+        ip,
+        "reading device info from",
+        lambda session: session.art().get_device_info(),
+        token=token,
+    )
+
+
 def get_tv_gallery_thumbnail(ip: str, content_id: str, token: Optional[str] = None) -> Optional[bytes]:
     """
     Fetch the thumbnail bytes for a TV gallery image.
