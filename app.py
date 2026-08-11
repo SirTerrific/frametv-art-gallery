@@ -883,6 +883,21 @@ def api_get_tv_gallery(ip):
         return jsonify({'error': 'TV not found'}), 404
     try:
         images = get_tv_gallery_images(ip, token=tv.token)
+
+        # The TV does not report a filename, so entries show as "Unknown". Anything
+        # sent from here was recorded with its content id, which gives the real name
+        # back; the rest keep the id, which at least identifies them.
+        known = {
+            uploaded.content_id: image.filename
+            for uploaded, image in db.session.query(UploadedImage, Image)
+            .join(Image, UploadedImage.image_id == Image.id)
+            .filter(UploadedImage.tv_id == tv.id)
+            .all()
+        }
+        for entry in images:
+            if not entry.get('filename'):
+                entry['filename'] = known.get(entry['content_id'], entry['content_id'])
+
         return jsonify({'images': images, 'tv_ip': ip})
     except FrameTVUnavailableError as e:
         app.logger.info('Skipping TV gallery: %s', e)

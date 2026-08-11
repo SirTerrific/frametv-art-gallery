@@ -78,7 +78,10 @@ export default function TVGalleryImageCard({ image, selectedTvIp, thumbnailsLoad
       <div className="flex-1 min-w-0 self-center">
         <p className="font-medium truncate">{image.filename}</p>
         <div className="text-xs text-muted-foreground mt-1 space-y-1">
-          <p>Added: {formatDate(image.date_added)}</p>
+          <p>
+            Added: {formatDate(image.date_added)}
+            {image.width && image.height ? ` · ${image.width}×${image.height}` : ""}
+          </p>
           <p className="text-muted-foreground truncate">ID: {image.content_id}</p>
         </div>
       </div>

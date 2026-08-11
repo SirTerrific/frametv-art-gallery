@@ -3,6 +3,7 @@ import socket
 import threading
 import time
 from concurrent.futures import ThreadPoolExecutor, TimeoutError as FutureTimeoutError
+from datetime import datetime
 from typing import Any, Callable, Dict, List, Optional
 import base64
 import websocket
@@ -635,6 +636,23 @@ def change_matte(ip: str, matte: str, token: Optional[str] = None) -> None:
     except Exception:  # pylint: disable=broad-except
         logger.exception("Error changing matte on TV %s", ip)
 
+def _content_date(item: Dict) -> str:
+    """The date a TV content entry carries, as ISO 8601.
+
+    Firmware reports it as `image_date` in EXIF form ("2026:08:10 14:24:23"), which no
+    date parser in a browser accepts. The older key names are kept as a fallback in
+    case another firmware uses them.
+    """
+    raw = item.get("image_date") or item.get("date_added") or item.get("created_at")
+    if not raw or not isinstance(raw, str):
+        return ""
+    try:
+        return datetime.strptime(raw.strip(), "%Y:%m:%d %H:%M:%S").isoformat()
+    except ValueError:
+        # Already ISO, or a shape we do not know: hand it over untouched.
+        return raw
+
+
 def _cached_thumbnail(ip: str, content_id: str) -> Optional[bytes]:
     cached = _cache_get((ip, content_id))
     if cached is not None:
@@ -739,8 +757,11 @@ def get_tv_gallery_images(ip: str, token: Optional[str] = None) -> List[Dict]:
             if content_id and content_id not in seen_content_ids:
                 images.append({
                     "content_id": content_id,
-                    "filename": item.get("file_name", "Unknown"),
-                    "date_added": item.get("date_added", item.get("created_at", "Unknown")),
+                    "filename": item.get("file_name") or item.get("filename") or "",
+                    "date_added": _content_date(item),
+                    "width": item.get("width"),
+                    "height": item.get("height"),
+                    "matte": item.get("matte_id"),
                     "thumbnail": None,
                 })
                 seen_content_ids.append(content_id)
