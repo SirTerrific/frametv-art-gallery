@@ -4,6 +4,7 @@ import { getTvs, addTv, removeTv, removeAllTvImages, updateTv } from '~/utils/tv
 import { Input } from '~/components/ui/input';
 import { Button } from '~/components/ui/button';
 import { getProviders, setProvider, getProvider, deleteProvider } from '~/utils/providerApi';
+import { getBackupUrl } from '~/utils/galleryApi';
 
 import type { ProviderConfig } from '~/utils/providerApi';
 
@@ -228,6 +229,20 @@ export default function Settings() {
               ))}
             </div>
           )}
+        </div>
+
+        {/* Backup */}
+        <div className="bg-card rounded-2xl border border-border p-5 mb-8">
+          <h2 className="text-lg font-semibold mb-4 text-foreground">Backup</h2>
+          <a
+            href={getBackupUrl()}
+            className="inline-block bg-blue-600 text-white hover:bg-blue-900 text-sm font-medium py-2 px-4 rounded-lg"
+          >
+            Download a backup
+          </a>
+          <p className="text-sm text-muted-foreground mt-3">
+            A zip of your uploads and the database. Take one before updating.
+          </p>
         </div>
 
         {/* Provider Settings */}
