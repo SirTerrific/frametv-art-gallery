@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.5.0](https://github.com/SirTerrific/frametv-art-gallery/compare/v1.4.0...v1.5.0) (2026-08-11)
+
+
+### Features
+
+* sample the TV content list, and offer a 4K crop preset ([4b89728](https://github.com/SirTerrific/frametv-art-gallery/commit/4b89728b68983872400c5fcd644e2b975d21ca4a))
+* select several images on a TV and delete them in one go ([a18bf0d](https://github.com/SirTerrific/frametv-art-gallery/commit/a18bf0d41e47e553d313171b91053b4a4135c634))
+
+
+### Bug Fixes
+
+* never let the slideshow pull a TV into art mode ([0f7600d](https://github.com/SirTerrific/frametv-art-gallery/commit/0f7600d5ac099e4d1d46395b6f8790cbfac40b72))
+* show the real name and date of the images on a TV ([03f696c](https://github.com/SirTerrific/frametv-art-gallery/commit/03f696c102c86f81fbc216bd12b032c23efaa0b8))
+
 ## [1.4.0](https://github.com/SirTerrific/frametv-art-gallery/compare/v1.3.0...v1.4.0) (2026-08-10)
 
 
