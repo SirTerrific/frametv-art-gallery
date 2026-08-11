@@ -5,11 +5,16 @@
 
 version: 2
 updates:
-  - package-ecosystem: "pip" # See documentation for possible values
-    directory: "/" # Location of package manifests
+  - package-ecosystem: "pip"
+    directory: "/"
     schedule:
       interval: "weekly"
-  - package-ecosystem: "npm" # See documentation for possible values
-    directory: "/frontend" # Location of package manifests
+    commit-message:
+      prefix: "chore" 
+
+  - package-ecosystem: "npm"
+    directory: "/frontend"
     schedule:
       interval: "monthly"
+    commit-message:
+      prefix: "chore"
