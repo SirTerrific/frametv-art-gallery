@@ -6,6 +6,8 @@ export interface TVGalleryImage {
   content_id: string;
   filename: string;
   date_added: string;
+  width?: number | null;
+  height?: number | null;
   thumbnail?: string | null; // base64 string when provided by backend
 }
 
@@ -88,8 +90,10 @@ export async function getTvGalleryImages(ip: string): Promise<TVGalleryImage[]> 
   const data = await res.json();
   return (data.images || []).map((img: any) => ({
     content_id: img.content_id,
-    filename: img.filename,
+    filename: img.filename || img.content_id,
     date_added: img.date_added,
+    width: img.width ?? null,
+    height: img.height ?? null,
     thumbnail: img.thumbnail || null,
   }));
 }
