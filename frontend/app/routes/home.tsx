@@ -128,7 +128,7 @@ export default function Home() {
             {images.map((img, idx) => (
               <img
                 key={idx}
-                src={getUploadUrl(img)}
+                src={getUploadUrl(img, 400)}
                 alt={`Artwork ${idx + 1}`}
                 className="w-48 h-32 object-cover rounded-xl shadow-md border border-border"
               />

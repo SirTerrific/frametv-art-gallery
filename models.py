@@ -22,6 +22,13 @@ class TV(db.Model):
     token = db.Column(db.Text, nullable=True)  # Store the TV token as text
     delete_other_images_on_upload = db.Column(db.Boolean, nullable=False, server_default=db.text("0"))
 
+    # Slideshow: rotate through an album on this TV. Off unless switched on.
+    slideshow_enabled = db.Column(db.Boolean, nullable=False, server_default=db.text("0"))
+    slideshow_album_id = db.Column(db.Integer, db.ForeignKey("album.id"), nullable=True)
+    slideshow_interval_minutes = db.Column(db.Integer, nullable=True)
+    slideshow_last_run = db.Column(db.DateTime, nullable=True)
+    slideshow_last_content_id = db.Column(db.String(255), nullable=True)
+
     uploaded_images = db.relationship(
         'UploadedImage',
         back_populates='tv',

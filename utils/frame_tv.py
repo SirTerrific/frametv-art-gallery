@@ -3,6 +3,7 @@ import socket
 import threading
 import time
 from concurrent.futures import ThreadPoolExecutor, TimeoutError as FutureTimeoutError
+from datetime import datetime
 from typing import Any, Callable, Dict, List, Optional
 import base64
 import websocket
@@ -36,6 +37,10 @@ TV_PAIRING_TIMEOUT = _env_int("FRAME_TV_PAIRING_TIMEOUT", 45)
 # How long a TV is skipped after it failed to answer, so one dead set cannot
 # turn a page full of thumbnails into a page full of stuck requests.
 TV_DOWN_COOLDOWN = _env_int("FRAME_TV_DOWN_COOLDOWN", 30)
+# How long a deliberate action queues behind another operation on the same TV. A page
+# of thumbnails holds the TV for far longer than one call's deadline, and someone who
+# pressed a button would rather wait for their turn than be told the TV is busy.
+TV_BUSY_WAIT = _env_int("FRAME_TV_BUSY_WAIT", 90)
 # Simple in-memory cache to reduce repeated TV requests
 # Structure: { (ip, 'gallery'): (timestamp, value), (ip, content_id): (timestamp, bytes) }
 _CACHE: dict = {}
@@ -215,7 +220,9 @@ def _local_tv_lock(ip: str) -> threading.Lock:
 def _tv_exclusive(ip: str, wait: float):
     """Hold a TV for one operation at a time, across threads and gunicorn workers."""
     give_up_at = time.monotonic() + wait
-    busy = FrameTVUnavailableError(f"TV {ip} is busy with another request")
+    busy = FrameTVUnavailableError(
+        f"TV {ip} stayed busy with another request for more than {wait:.0f}s"
+    )
 
     local = _local_tv_lock(ip)
     if not local.acquire(timeout=max(0.0, wait)):
@@ -310,8 +317,11 @@ def _tv_call(
             f"TV {ip} did not answer recently; skipping {action_description} it for another {cooldown:.0f}s"
         )
 
-    # One operation at a time per TV: concurrent art channels corrupt each other.
-    with _tv_exclusive(ip, wait=deadline):
+    # One operation at a time per TV: concurrent art channels corrupt each other. The
+    # same split as the cooldown applies to the queue: a background read gives up as
+    # soon as its own deadline is gone, a deliberate action waits for its turn.
+    busy_wait = deadline if skip_when_down else max(deadline, TV_BUSY_WAIT)
+    with _tv_exclusive(ip, wait=busy_wait):
         session = _TVSession(ip, token, DEFAULT_TIMEOUT)
 
         def run():
@@ -591,6 +601,23 @@ def change_matte(ip: str, matte: str, token: Optional[str] = None) -> None:
     except Exception:  # pylint: disable=broad-except
         logger.exception("Error changing matte on TV %s", ip)
 
+def _content_date(item: Dict) -> str:
+    """The date a TV content entry carries, as ISO 8601.
+
+    Firmware reports it as `image_date` in EXIF form ("2026:08:10 14:24:23"), which no
+    date parser in a browser accepts. The older key names are kept as a fallback in
+    case another firmware uses them.
+    """
+    raw = item.get("image_date") or item.get("date_added") or item.get("created_at")
+    if not raw or not isinstance(raw, str):
+        return ""
+    try:
+        return datetime.strptime(raw.strip(), "%Y:%m:%d %H:%M:%S").isoformat()
+    except ValueError:
+        # Already ISO, or a shape we do not know: hand it over untouched.
+        return raw
+
+
 def _cached_thumbnail(ip: str, content_id: str) -> Optional[bytes]:
     cached = _cache_get((ip, content_id))
     if cached is not None:
@@ -695,8 +722,11 @@ def get_tv_gallery_images(ip: str, token: Optional[str] = None) -> List[Dict]:
             if content_id and content_id not in seen_content_ids:
                 images.append({
                     "content_id": content_id,
-                    "filename": item.get("file_name", "Unknown"),
-                    "date_added": item.get("date_added", item.get("created_at", "Unknown")),
+                    "filename": item.get("file_name") or item.get("filename") or "",
+                    "date_added": _content_date(item),
+                    "width": item.get("width"),
+                    "height": item.get("height"),
+                    "matte": item.get("matte_id"),
                     "thumbnail": None,
                 })
                 seen_content_ids.append(content_id)
@@ -729,6 +759,45 @@ def delete_tv_image(ip: str, content_id: str, token: Optional[str] = None) -> bo
         skip_when_down=False,
     )
     return True
+
+def delete_tv_images(ip: str, content_ids: List[str], token: Optional[str] = None) -> int:
+    """Delete several images from the TV in a single round trip.
+
+    The TV takes a list, so this is one connection rather than one per image — which
+    matters given it only serves a single art channel.
+
+    Returns:
+        int: how many content ids were sent for deletion.
+    """
+    wanted = [cid for cid in content_ids if cid]
+    if not wanted:
+        return 0
+
+    _tv_call(
+        ip,
+        f"deleting {len(wanted)} images from",
+        lambda session: session.art().delete_list(wanted),
+        token=token,
+        skip_when_down=False,
+    )
+    for content_id in wanted:
+        _CACHE.pop((ip, content_id), None)
+    return len(wanted)
+
+
+def get_tv_device_info(ip: str, token: Optional[str] = None) -> Optional[Dict]:
+    """Whatever the TV reports about itself.
+
+    There is no storage endpoint in the art API, so this is the only place any
+    capacity figure could turn up — and whether it does depends on the firmware.
+    """
+    return _tv_call(
+        ip,
+        "reading device info from",
+        lambda session: session.art().get_device_info(),
+        token=token,
+    )
+
 
 def get_tv_gallery_thumbnail(ip: str, content_id: str, token: Optional[str] = None) -> Optional[bytes]:
     """

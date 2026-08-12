@@ -16,19 +16,35 @@ type TVGalleryImageCardProps = {
   selectedTvIp: string;
   /** true while the parent is still batch-fetching the missing thumbnails */
   thumbnailsLoading?: boolean;
+  selected?: boolean;
+  /** passing this shows the selection checkbox */
+  onToggleSelect?: (shiftKey: boolean) => void;
   onPlay: (contentId: string) => void;
   onDelete: (contentId: string) => void;
   formatDate: (dateString: string) => string;
 };
 
-export default function TVGalleryImageCard({ image, selectedTvIp, thumbnailsLoading, onPlay, onDelete, formatDate }: TVGalleryImageCardProps) {
+export default function TVGalleryImageCard({ image, selectedTvIp, thumbnailsLoading, selected, onToggleSelect, onPlay, onDelete, formatDate }: TVGalleryImageCardProps) {
   const [imgLoaded, setImgLoaded] = useState(false);
   const [imgError, setImgError] = useState(false);
   return (
     <div
       key={image.content_id}
-      className="flex gap-4 p-4 bg-card border border-border rounded-lg hover:shadow-md transition-shadow"
+      className={
+        "flex gap-4 p-4 bg-card border rounded-lg hover:shadow-md transition-shadow " +
+        (selected ? "border-blue-500 ring-1 ring-blue-500" : "border-border")
+      }
     >
+      {onToggleSelect && (
+        <label className="flex items-center self-center cursor-pointer" title="Select image">
+          <input
+            type="checkbox"
+            className="h-4 w-4 accent-blue-600"
+            checked={!!selected}
+            onChange={(event) => onToggleSelect((event.nativeEvent as MouseEvent).shiftKey)}
+          />
+        </label>
+      )}
       {/* The thumbnail always comes from the parent's single batched request. Letting the
           <img> fall back to the per-image endpoint fired one TV websocket per card, which
           is what used to pile up and starve the server when a TV stopped answering. */}
@@ -62,7 +78,10 @@ export default function TVGalleryImageCard({ image, selectedTvIp, thumbnailsLoad
       <div className="flex-1 min-w-0 self-center">
         <p className="font-medium truncate">{image.filename}</p>
         <div className="text-xs text-muted-foreground mt-1 space-y-1">
-          <p>Added: {formatDate(image.date_added)}</p>
+          <p>
+            Added: {formatDate(image.date_added)}
+            {image.width && image.height ? ` · ${image.width}×${image.height}` : ""}
+          </p>
           <p className="text-muted-foreground truncate">ID: {image.content_id}</p>
         </div>
       </div>

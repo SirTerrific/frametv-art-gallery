@@ -44,7 +44,7 @@ export default function AlbumCard({
           {Array.isArray(album.images) && album.images.map(img => (
             <img
               key={img}
-              src={getUploadUrl(img)}
+              src={getUploadUrl(img, 160)}
               alt={img}
               className="w-16 h-16 object-cover rounded border"
               onClick={(event) => {

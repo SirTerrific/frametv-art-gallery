@@ -10,6 +10,7 @@ from pathlib import Path
 import sys
 from flask_sqlalchemy import SQLAlchemy
 from utils.crop_image import crop_image_file, CropImageError, get_preset_crop_box, CROP_PRESETS
+from utils.thumbnails import get_or_create, parse_width
 from samsungtvws.exceptions import HttpApiError, ResponseError
 from const import CONNECTION_NAME
 from typing import Tuple, Optional
@@ -53,6 +54,8 @@ from utils.frame_tv import (
     get_tv_gallery_images,
     get_tv_gallery_thumbnails,
     delete_tv_image,
+    delete_tv_images,
+    get_tv_device_info,
     play_uploaded_content,
     get_tv_gallery_thumbnail,
 )
@@ -67,6 +70,9 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(INSTANCE_FOLDER, exist_ok=True)
 
 frametv_db_path = os.path.abspath(os.path.join(INSTANCE_FOLDER, 'frametv.db'))
+
+# Downscaled copies of the uploads, rebuilt on demand and safe to delete.
+THUMBNAIL_DIR = Path(INSTANCE_FOLDER).joinpath('thumbnails')
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 
@@ -127,6 +133,21 @@ def init_db():
 # Initialize database on startup
 init_db()
 
+# One gunicorn worker out of several picks up the slideshow loop; see utils/slideshow.py.
+app.config['SLIDESHOW_LOCK_PATH'] = os.path.join(INSTANCE_FOLDER, 'slideshow.lock')
+if os.environ.get('FRAME_TV_SLIDESHOW', '1').lower() not in ('0', 'false', 'no'):
+    from utils import slideshow as _slideshow
+
+    _slideshow.start(
+        app,
+        db,
+        (TV, Image, UploadedImage),
+        play_uploaded_content,
+        is_art_mode_on,
+        (FrameTVError, OSError),
+        (ResponseError,),
+    )
+
 
 # --- Helpers ---
 def allowed_file(filename: str) -> bool:
@@ -170,6 +191,26 @@ def _normalized_static_path(path: str) -> Path:
     if not (normalized == STATIC_ROOT or STATIC_ROOT in normalized.parents):
         raise ValueError('Invalid path')
     return normalized
+
+
+def _forget_uploaded(tv, content_ids=None, keep=None) -> int:
+    """Drop the record that images are on a TV once they are not.
+
+    Every path that removes art from a TV has to come through here: a content id left
+    behind makes the app offer to play something the set no longer has, which it
+    answers with `select_image request failed with error number -10`.
+
+    Pass `content_ids` to forget those, or `keep` to forget everything else.
+    """
+    query = UploadedImage.query.filter_by(tv_id=tv.id)
+    if content_ids is not None:
+        query = query.filter(UploadedImage.content_id.in_(list(content_ids)))
+    elif keep is not None:
+        query = query.filter(UploadedImage.content_id != keep)
+
+    removed = query.delete(synchronize_session=False)
+    db.session.commit()
+    return removed
 
 
 def _guess_image_mimetype(image_bytes: bytes) -> str:
@@ -504,12 +545,24 @@ def api_play_uploaded_image():
 
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
+    """Serve an uploaded image, or a downscaled copy with ?w=<width>.
+
+    Without the parameter this behaves exactly as before, so existing links keep
+    returning the original file.
+    """
     try:
-        safe_name, _ = _normalized_upload_path(filename, must_exist=True)
+        safe_name, source_path = _normalized_upload_path(filename, must_exist=True)
     except ValueError:
         return {'error': 'Invalid filename'}, 400
     except FileNotFoundError:
         return {'error': 'Image not found'}, 404
+
+    width = parse_width(request.args.get('w'))
+    if width:
+        thumbnail = get_or_create(THUMBNAIL_DIR, source_path, safe_name, width)
+        if thumbnail:
+            return send_file(thumbnail, mimetype='image/jpeg', max_age=86400)
+
     return send_from_directory(app.config['UPLOAD_FOLDER'], safe_name)
 
 
@@ -526,7 +579,10 @@ def api_get_tvs():
             'ip': tv.ip,
             'name': tv.name,
             'mac': tv.mac,
-            'delete_other_images_on_upload': getattr(tv, 'delete_other_images_on_upload', False)
+            'delete_other_images_on_upload': getattr(tv, 'delete_other_images_on_upload', False),
+            'slideshow_enabled': bool(getattr(tv, 'slideshow_enabled', False)),
+            'slideshow_album_id': getattr(tv, 'slideshow_album_id', None),
+            'slideshow_interval_minutes': getattr(tv, 'slideshow_interval_minutes', None),
         } for tv in tvs
     ]}
 
@@ -535,9 +591,40 @@ def api_update_tv(ip):
     tv = TV.query.filter_by(ip=ip).first()
     if not tv:
         return {'error': 'TV not found'}, 404
-    data = request.get_json()
+    data = request.get_json() or {}
     if 'delete_other_images_on_upload' in data:
         tv.delete_other_images_on_upload = bool(data['delete_other_images_on_upload'])
+
+    if 'slideshow_enabled' in data:
+        tv.slideshow_enabled = bool(data['slideshow_enabled'])
+    if 'slideshow_album_id' in data:
+        album_id = data['slideshow_album_id']
+        if album_id in (None, ''):
+            tv.slideshow_album_id = None
+        else:
+            try:
+                album = Album.query.get(int(album_id))
+            except (TypeError, ValueError):
+                return {'error': 'Invalid album'}, 400
+            if not album:
+                return {'error': 'Album not found'}, 404
+            tv.slideshow_album_id = album.id
+    if 'slideshow_interval_minutes' in data:
+        raw = data['slideshow_interval_minutes']
+        if raw in (None, ''):
+            tv.slideshow_interval_minutes = None
+        else:
+            try:
+                minutes = int(raw)
+            except (TypeError, ValueError):
+                return {'error': 'Interval must be a whole number of minutes'}, 400
+            if minutes < 1:
+                return {'error': 'Interval must be at least one minute'}, 400
+            tv.slideshow_interval_minutes = minutes
+
+    if tv.slideshow_enabled and not (tv.slideshow_album_id and tv.slideshow_interval_minutes):
+        return {'error': 'Pick an album and an interval before enabling the slideshow'}, 400
+
     db.session.commit()
     return {'success': True}
 
@@ -641,10 +728,17 @@ def api_send_to_tv():
             exists = UploadedImage.query.filter(
                 and_(UploadedImage.image_id == image.id, UploadedImage.tv_id == tv.id)
             ).first()
-            if not exists:
-                uploaded = UploadedImage(image_id=image.id, tv_id=tv.id, content_id=str(content_id))
-                db.session.add(uploaded)
-                db.session.commit()
+            if exists:
+                # The TV assigns a fresh content id on every upload; keeping the old
+                # one would point at something that no longer exists.
+                exists.content_id = str(content_id)
+            else:
+                db.session.add(UploadedImage(image_id=image.id, tv_id=tv.id, content_id=str(content_id)))
+            db.session.commit()
+
+            # This option wipes everything else off the TV, so those records go too.
+            if delete_others:
+                _forget_uploaded(tv, keep=str(content_id))
         return jsonify({'success': True, 'content_id': content_id})
     except (FrameTVError, HttpApiError) as e:
         _log_exception('Failed to send artwork to TV', e)
@@ -663,7 +757,14 @@ def api_remove_all_tv_images(ip):
         return jsonify({'error': 'TV not found'}), 404
     try:
         delete_all_images_from_tv(ip, token=tv.token)
+        _forget_uploaded(tv, content_ids=[u.content_id for u in tv.uploaded_images])
         return jsonify({'success': True})
+    except FrameTVUnavailableError as e:
+        # Another operation held the TV for the whole wait — nothing was deleted, and
+        # retrying once the TV is free is all this needs.
+        db.session.rollback()
+        app.logger.info('Could not remove all images: %s', e)
+        return jsonify({'error': 'The TV is busy with another request, try again', 'tv_busy': True}), 503
     except Exception as e:
         db.session.rollback()
         _log_exception('Failed to remove all images from TV', e)
@@ -677,6 +778,21 @@ def api_get_tv_gallery(ip):
         return jsonify({'error': 'TV not found'}), 404
     try:
         images = get_tv_gallery_images(ip, token=tv.token)
+
+        # The TV does not report a filename, so entries show as "Unknown". Anything
+        # sent from here was recorded with its content id, which gives the real name
+        # back; the rest keep the id, which at least identifies them.
+        known = {
+            uploaded.content_id: image.filename
+            for uploaded, image in db.session.query(UploadedImage, Image)
+            .join(Image, UploadedImage.image_id == Image.id)
+            .filter(UploadedImage.tv_id == tv.id)
+            .all()
+        }
+        for entry in images:
+            if not entry.get('filename'):
+                entry['filename'] = known.get(entry['content_id'], entry['content_id'])
+
         return jsonify({'images': images, 'tv_ip': ip})
     except FrameTVUnavailableError as e:
         app.logger.info('Skipping TV gallery: %s', e)
@@ -715,6 +831,59 @@ def api_play_tv_image(ip, content_id):
     except Exception as e:
         _log_exception('Unexpected error playing TV image', e)
         return jsonify({'error': 'Unexpected error'}), 500
+
+@app.route("/api/tv/<ip>/gallery/delete", methods=['POST'])
+def api_delete_tv_images(ip):
+    """Delete several images from the TV at once.
+
+    POST rather than DELETE with a body, since a body on DELETE is easy for proxies
+    to drop. The TV takes the whole list in one call.
+    """
+    tv = TV.query.filter_by(ip=ip).first()
+    if not tv:
+        return jsonify({'error': 'TV not found'}), 404
+
+    data = request.get_json(silent=True) or {}
+    content_ids = data.get('content_ids')
+    if not isinstance(content_ids, list) or not all(isinstance(c, str) and c for c in content_ids):
+        return jsonify({'error': 'content_ids must be a list of strings'}), 400
+    if not content_ids:
+        return jsonify({'deleted': 0})
+
+    try:
+        deleted = delete_tv_images(ip, content_ids, token=tv.token)
+        _forget_uploaded(tv, content_ids=content_ids)
+        return jsonify({'deleted': deleted})
+    except FrameTVTimeoutError as e:
+        _log_exception('Timeout while deleting TV images', e)
+        return jsonify({'error': 'TV request timed out'}), 504
+    except FrameTVConnectionError as e:
+        _log_exception('TV connection failed while deleting images', e)
+        return jsonify({'error': 'TV is unavailable'}), 503
+    except Exception as e:
+        _log_exception('Failed to delete TV images', e)
+        return jsonify({'error': 'Failed to delete the images'}), 500
+
+
+@app.route("/api/tv/<ip>/info", methods=['GET'])
+def api_tv_device_info(ip):
+    """What the TV reports about itself, verbatim.
+
+    Diagnostic: the art API has no storage endpoint, so this is where a capacity
+    figure would have to appear if the firmware exposes one at all.
+    """
+    tv = TV.query.filter_by(ip=ip).first()
+    if not tv:
+        return jsonify({'error': 'TV not found'}), 404
+    try:
+        return jsonify({'device_info': get_tv_device_info(ip, token=tv.token)})
+    except FrameTVConnectionError as e:
+        _log_exception('TV connection failed while reading device info', e)
+        return jsonify({'error': 'TV is unavailable'}), 503
+    except Exception as e:
+        _log_exception('Failed to read TV device info', e)
+        return jsonify({'error': 'Failed to read device info'}), 500
+
 
 @app.route("/api/tv/<ip>/gallery/thumbnails", methods=['POST'])
 def api_tv_gallery_thumbnails(ip):
@@ -791,6 +960,7 @@ def api_delete_tv_image(ip, content_id):
         return jsonify({'error': 'TV not found'}), 404
     try:
         delete_tv_image(ip, content_id, token=tv.token)
+        _forget_uploaded(tv, content_ids=[content_id])
         return jsonify({'success': True})
     except FrameTVTimeoutError as e:
         _log_exception('Timeout while deleting TV image', e)
