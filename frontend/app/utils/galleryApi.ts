@@ -25,6 +25,10 @@ export async function fetchImages() {
   return (await res.json()).images;
 }
 
+export function getBackupUrl() {
+  return `${API_BASE}/api/backup`;
+}
+
 export async function deleteImage(filename: string) {
   const res = await fetch(`${API_BASE}/api/images/${encodeURIComponent(filename)}`, {
     method: 'DELETE',

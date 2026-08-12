@@ -1,5 +1,9 @@
 import base64
-from flask import Flask, render_template, request, redirect, url_for, flash, send_file, send_from_directory, jsonify, Response
+import shutil
+import sqlite3
+import tempfile
+import zipfile
+from flask import Flask, after_this_request, render_template, request, redirect, url_for, flash, send_file, send_from_directory, jsonify, Response
 import os
 from werkzeug.utils import secure_filename
 from pathlib import Path
@@ -249,6 +253,45 @@ app.media_provider = media_provider
 def api_list_images():
     files = [f for f in os.listdir(app.config['UPLOAD_FOLDER']) if os.path.isfile(os.path.join(app.config['UPLOAD_FOLDER'], f))]
     return {'images': files}
+
+
+@app.route('/api/backup', methods=['GET'])
+def api_backup():
+    """Download a zip of the uploads and the database."""
+    stamp = datetime.now().strftime('%Y%m%d-%H%M%S')
+    tmp_dir = tempfile.mkdtemp(prefix='frametv-backup-')
+    archive_path = os.path.join(tmp_dir, f'frametv-backup-{stamp}.zip')
+
+    try:
+        db_snapshot = os.path.join(tmp_dir, 'frametv.db')
+        source = sqlite3.connect(frametv_db_path)
+        try:
+            destination = sqlite3.connect(db_snapshot)
+            try:
+                source.backup(destination)
+            finally:
+                destination.close()
+        finally:
+            source.close()
+
+        upload_folder = app.config['UPLOAD_FOLDER']
+        with zipfile.ZipFile(archive_path, 'w', zipfile.ZIP_DEFLATED) as archive:
+            archive.write(db_snapshot, 'instance/frametv.db')
+            for filename in sorted(os.listdir(upload_folder)):
+                full = os.path.join(upload_folder, filename)
+                if os.path.isfile(full):
+                    archive.write(full, f'uploads/{filename}')
+
+        @after_this_request
+        def cleanup(response):
+            shutil.rmtree(tmp_dir, ignore_errors=True)
+            return response
+
+        return send_file(archive_path, as_attachment=True, download_name=os.path.basename(archive_path))
+    except Exception as e:
+        shutil.rmtree(tmp_dir, ignore_errors=True)
+        _log_exception('Failed to build the backup archive', e)
+        return _error_response('Failed to build the backup archive', 500)
 
 
 @app.route('/api/images/added_this_month', methods=['GET'])
