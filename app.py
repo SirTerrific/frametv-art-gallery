@@ -216,12 +216,7 @@ def api_list_images():
 
 @app.route('/api/backup', methods=['GET'])
 def api_backup():
-    """Download a zip of the uploads and the database.
-
-    The README tells people to back up before updating without giving them a way to
-    do it. The database is copied through sqlite's own backup API so the archive
-    holds a consistent snapshot even while the app is being used.
-    """
+    """Download a zip of the uploads and the database."""
     stamp = datetime.now().strftime('%Y%m%d-%H%M%S')
     tmp_dir = tempfile.mkdtemp(prefix='frametv-backup-')
     archive_path = os.path.join(tmp_dir, f'frametv-backup-{stamp}.zip')
