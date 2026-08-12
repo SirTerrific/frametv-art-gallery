@@ -21,6 +21,9 @@ CROP_PRESETS = {
     '1024x768': {'width': 1024, 'height': 768, 'label': '1024x768 (4:3)'},
     '1280x960': {'width': 1280, 'height': 960, 'label': '1280x960 (4:3)'},
     '1920x1080': {'width': 1920, 'height': 1080, 'label': '1920x1080 (16:9)'},
+    # A Frame TV reports resolution_type UHD, so this is the one that fills the panel
+    # without the set having to rescale.
+    '3840x2160': {'width': 3840, 'height': 2160, 'label': '3840x2160 (4K, Frame TV)'},
 }
 
 
