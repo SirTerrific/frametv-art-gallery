@@ -154,6 +154,44 @@ which holds the set for far longer than a single request. A deliberate action qu
 `FRAME_TV_BUSY_WAIT` seconds before giving up; nothing was changed on the TV, so retrying
 once the other operation has finished is all it needs.
 
+## "Wake the TV" does nothing
+
+Wake-on-LAN is a broadcast, not a request. The TV has no network stack running while it
+is off, so the packet cannot be acknowledged and the app can only report that it was
+sent — never that it worked. Three things have to be true, in this order:
+
+**The packet has to reach your LAN.** In Docker's default bridge network it does not: a
+broadcast sent from the container stays on the docker bridge, and Linux does not forward
+a subnet-directed broadcast onto the physical network either. Wake-on-LAN therefore
+needs the container on the host network:
+
+```yaml
+services:
+  frametv:
+    network_mode: host
+```
+
+Nothing else in the app depends on this, so if you would rather not, everything but
+waking the TV keeps working on the default bridge.
+
+**The TV has to be listening.** On a Frame TV: *Settings → General → Network → Expert
+Settings → Power On with Mobile* (called *Wake on LAN* / *Wake on Wireless* on some
+firmware). Off by default on several models.
+
+**The MAC has to be the interface the TV is actually using.** Ethernet and Wi-Fi have
+different MAC addresses, and a TV on Wi-Fi will ignore a packet aimed at its unused
+Ethernet port. Both are listed under *Settings → Support → About This TV*.
+
+To tell the app apart from the network, send a packet from the host itself and watch for
+it on the wire:
+
+```bash
+sudo tcpdump -i any -n 'udp port 9'
+```
+
+If the packet shows up when the app sends it and the TV still does not wake, the problem
+is on the TV, not here.
+
 ## Errors when uploading images to the TV:
 
 -> Check that the TV is on and has enough free storage space. When the storage space for art images is full, the upload fails. 
