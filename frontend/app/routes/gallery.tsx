@@ -216,15 +216,24 @@ export default function Gallery() {
     setError("");
     let uploaded = 0;
     let failed = 0;
+    const duplicates: string[] = [];
 
     for (const file of files) {
       try {
-        await uploadImage(file, albumId);
+        const result = await uploadImage(file, albumId);
         uploaded++;
+        if (result?.duplicate_of) duplicates.push(`${result.filename} (same as ${result.duplicate_of})`);
       } catch (err) {
         failed++;
         console.error(`Failed to upload ${file.name}:`, err);
       }
+    }
+
+    if (duplicates.length > 0) {
+      toast.warning(`Already in the gallery: ${duplicates.join(", ")}`, {
+        position: "top-center",
+        duration: 8000,
+      });
     }
 
     if (uploaded > 0) await loadLocalGallery();

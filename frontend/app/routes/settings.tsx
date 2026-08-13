@@ -5,7 +5,8 @@ import { fetchAlbums } from '~/utils/galleryApi';
 import { Input } from '~/components/ui/input';
 import { Button } from '~/components/ui/button';
 import { getProviders, setProvider, getProvider, deleteProvider } from '~/utils/providerApi';
-import { getBackupUrl } from '~/utils/galleryApi';
+import { getBackupUrl, reconcileImages } from '~/utils/galleryApi';
+import { toast } from 'sonner';
 
 import type { ProviderConfig } from '~/utils/providerApi';
 
@@ -27,6 +28,7 @@ export default function Settings() {
   const [mac, setMac] = React.useState("");
   const [error, setError] = React.useState("");
   const [adding, setAdding] = React.useState(false);
+  const [maintenanceBusy, setMaintenanceBusy] = React.useState(false);
   const [showPairModal, setShowPairModal] = React.useState(false);
   const [pairingIp, setPairingIp] = React.useState("");
 
@@ -136,6 +138,23 @@ export default function Settings() {
     } finally {
       // Refetched either way, so a rejected change does not linger in the form.
       await fetchTvs();
+    }
+  };
+
+  const handleReconcile = async () => {
+    setMaintenanceBusy(true);
+    setError('');
+    try {
+      const report = await reconcileImages();
+      const parts = [`${report.added} added`, `${report.removed} removed`, `${report.hashed} hashed`];
+      if (report.duplicate_groups.length) {
+        parts.push(`${report.duplicate_groups.length} duplicate group${report.duplicate_groups.length === 1 ? '' : 's'}`);
+      }
+      toast.success(`Library checked: ${parts.join(', ')}`, { position: 'top-center', duration: 8000 });
+    } catch (e: any) {
+      setError(e.message || 'Failed to check the library');
+    } finally {
+      setMaintenanceBusy(false);
     }
   };
 
@@ -293,17 +312,25 @@ export default function Settings() {
           )}
         </div>
 
-        {/* Backup */}
+        {/* Library */}
         <div className="bg-card rounded-2xl border border-border p-5 mb-8">
-          <h2 className="text-lg font-semibold mb-4 text-foreground">Backup</h2>
-          <a
-            href={getBackupUrl()}
-            className="inline-block bg-blue-600 text-white hover:bg-blue-900 text-sm font-medium py-2 px-4 rounded-lg"
-          >
-            Download a backup
-          </a>
+          <h2 className="text-lg font-semibold mb-4 text-foreground">Library</h2>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <a
+              href={getBackupUrl()}
+              className="bg-blue-600 text-white hover:bg-blue-900 text-sm font-medium py-2 px-4 rounded-lg text-center"
+            >
+              Download a backup
+            </a>
+            <Button onClick={handleReconcile} disabled={maintenanceBusy}>
+              {maintenanceBusy ? 'Checking…' : 'Check the library'}
+            </Button>
+          </div>
           <p className="text-sm text-muted-foreground mt-3">
-            A zip of your uploads and the database. Take one before updating.
+            The backup is a zip of your uploads and the database — take one before updating.
+            Checking the library picks up files added or removed outside the app, fills in the
+            hashes of images uploaded before this existed, and reports any stored twice under
+            different names.
           </p>
         </div>
 
