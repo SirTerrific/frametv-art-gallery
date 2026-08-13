@@ -206,12 +206,9 @@ app.media_provider = media_provider
 # List all uploaded images (not album-specific)
 @app.route('/api/images', methods=['GET'])
 def api_list_images():
-    """List the uploaded filenames, newest first.
-
-    The directory listing has no meaningful order, so the database's created_at is
-    used where a row exists and the file's own mtime otherwise. Pass ?q= to filter
-    by name and ?sort=oldest|name to change the order. The response stays a plain
-    list of filenames, as before.
+    """
+    List the uploaded filenames, newest first.
+    Pass params "?q=" to search specific filenames or "?sort=" to change the default sorting
     """
     upload_folder = app.config['UPLOAD_FOLDER']
     files = [
