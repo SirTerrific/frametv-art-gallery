@@ -265,7 +265,40 @@ app.media_provider = media_provider
 # List all uploaded images (not album-specific)
 @app.route('/api/images', methods=['GET'])
 def api_list_images():
-    files = [f for f in os.listdir(app.config['UPLOAD_FOLDER']) if os.path.isfile(os.path.join(app.config['UPLOAD_FOLDER'], f))]
+    """
+    List the uploaded filenames, newest first.
+    Pass params "?q=" to search specific filenames or "?sort=" to change the default sorting
+    """
+    upload_folder = app.config['UPLOAD_FOLDER']
+    files = [
+        f for f in os.listdir(upload_folder)
+        if os.path.isfile(os.path.join(upload_folder, f))
+    ]
+
+    query = (request.args.get('q') or '').strip().lower()
+    if query:
+        files = [f for f in files if query in f.lower()]
+
+    added_at = {
+        img.filename: img.created_at
+        for img in Image.query.filter(Image.filename.in_(files)).all()
+    } if files else {}
+
+    def sort_key(filename):
+        known = added_at.get(filename)
+        if known is not None:
+            return known.timestamp()
+        try:
+            return os.path.getmtime(os.path.join(upload_folder, filename))
+        except OSError:
+            return 0.0
+
+    sort = request.args.get('sort')
+    if sort == 'name':
+        files.sort(key=str.lower)
+    else:
+        files.sort(key=sort_key, reverse=sort != 'oldest')
+
     return {'images': files}
 
 
