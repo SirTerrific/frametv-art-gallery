@@ -22,7 +22,8 @@ dependencies = [
     "flask-cors",
     "Pillow",
     "aiohttp",
-    "aiofiles"
+    "aiofiles",
+    "aioimmich"
 ]
 
 [project.optional-dependencies]
