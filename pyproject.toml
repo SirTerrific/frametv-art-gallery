@@ -21,7 +21,8 @@ dependencies = [
     "Flask-Migrate",
     "flask-cors",
     "Pillow",
-    "aiohttp"
+    "aiohttp",
+    "aiofiles"
 ]
 
 [project.optional-dependencies]
