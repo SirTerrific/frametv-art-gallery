@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.1](https://github.com/mrtncode/frametv-art-gallery/compare/v1.4.0...v1.4.1) (2026-08-14)
+
+
+### Bug Fixes
+
+* Let the user set the "PORT" env variable to adjust the port in the host mode (required for auto disovery in v1.4.0) ([3f57567](https://github.com/mrtncode/frametv-art-gallery/commit/3f5756773b16be223dcf9b0399fd74914d499a95))
+
 ## [1.4.0](https://github.com/mrtncode/frametv-art-gallery/compare/v1.3.0...v1.4.0) (2026-08-14)
 
 
