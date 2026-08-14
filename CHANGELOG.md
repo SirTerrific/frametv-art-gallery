@@ -6,6 +6,8 @@
 ### Features
 
 * Add TV auto discovery ([#83](https://github.com/mrtncode/frametv-art-gallery/issues/83)) ([36efdee](https://github.com/mrtncode/frametv-art-gallery/commit/36efdee6a452dfad3a4928b74e06ffb3ce11ab15))
+
+  To use the auto discovery feature, make sure you are using network="host" in docker :)
 * Delete several images from a TV at once ([#75](https://github.com/mrtncode/frametv-art-gallery/issues/75)) ([110aed1](https://github.com/mrtncode/frametv-art-gallery/commit/110aed13347856794eff6b082fcaba653df3ea67))
 * Download a backup of the gallery ([#81](https://github.com/mrtncode/frametv-art-gallery/issues/81)) ([0adceaf](https://github.com/mrtncode/frametv-art-gallery/commit/0adceaf5498bdb66fb6f86f46be8fdef1917d851))
 * offer the Frame TV panel size as a crop preset (4K) ([#82](https://github.com/mrtncode/frametv-art-gallery/issues/82)) ([01017a4](https://github.com/mrtncode/frametv-art-gallery/commit/01017a460e797b0a3ce779d5d2a4be6ee4d54df8))
