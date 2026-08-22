@@ -349,3 +349,56 @@ def test_clearing_one_tv_leaves_another_alone():
     finally:
         frame_tv._forget_inflight(1_000_001)
         frame_tv._forget_inflight(1_000_002)
+
+
+def test_a_call_that_never_comes_back_is_cut_without_waiting_for_the_deadline():
+    """The failure that defeated every guard placed between calls.
+
+    samsungtvws reads frames until it sees the one it asked for, so a single request
+    can outlast any budget while nothing around it gets a chance to run. Observed on a
+    real set as `open: 0.1s, action: 119.9s` — the connection was fine, one call simply
+    never returned.
+    """
+    closed = threading.Event()
+
+    class StalledConnection:
+        def close(self):
+            closed.set()
+
+    def never_comes_back(session):
+        with frame_tv._INFLIGHT_GUARD:
+            frame_tv._INFLIGHT_SOCKETS[threading.get_ident()] = StalledConnection()
+            frame_tv._INFLIGHT_TV[threading.get_ident()] = "192.0.2.75"
+        # No progress is ever reported: this stands in for one library call that blocks.
+        time.sleep(STUCK)
+        return "should not matter"
+
+    # Closing the socket is what makes the blocked read raise on a real TV; a stub
+    # cannot be interrupted, so what is asserted here is that it was closed at all —
+    # and closed on the stall, long before the deadline would have come round.
+    started = time.monotonic()
+    watcher = threading.Thread(
+        target=lambda: frame_tv._tv_call(
+            "192.0.2.75", "testing", never_comes_back,
+            deadline=STUCK * 10, open_remote=False, stall_timeout=1,
+        ),
+        daemon=True,
+    )
+    watcher.start()
+
+    assert closed.wait(timeout=STUCK), "the stalled connection was never closed"
+    assert time.monotonic() - started < STUCK, "waited for the deadline instead of the stall"
+
+
+def test_a_call_that_keeps_reporting_progress_is_left_alone():
+    """A slow but working TV must not be cut off by the stall watchdog."""
+    def slow_but_alive(session):
+        for _ in range(6):
+            time.sleep(0.2)
+            session.note_progress()
+        return "done"
+
+    assert frame_tv._tv_call(
+        "192.0.2.76", "testing", slow_but_alive,
+        deadline=10, open_remote=False, stall_timeout=1,
+    ) == "done"

@@ -58,6 +58,11 @@ TV_THUMBNAIL_GIVE_UP = _env_int("FRAME_TV_THUMBNAIL_GIVE_UP", 3)
 # and each read restarts the clock. A set that has gone quiet would otherwise spend the
 # whole budget to return nothing, with its art channel busy the entire time.
 TV_THUMBNAIL_FIRST_ANSWER = _env_int("FRAME_TV_THUMBNAIL_FIRST_ANSWER", 25)
+# How long one request to the TV may go without the library returning from it before
+# its connection is closed from the outside. Guards that sit between calls cannot help
+# here: samsungtvws reads frames until it sees the one it asked for, so a single call
+# can outlast any budget while nothing around it gets a chance to run.
+TV_STALL_TIMEOUT = _env_int("FRAME_TV_STALL_TIMEOUT", 25)
 # Simple in-memory cache to reduce repeated TV requests
 # Structure: { (ip, 'gallery'): (timestamp, value), (ip, content_id): (timestamp, bytes) }
 _CACHE: dict = {}
@@ -416,6 +421,17 @@ class _TVSession:
         )
         self._art = None
         self._worker_thread_id: Optional[int] = None
+        self._last_progress = time.monotonic()
+
+    def note_progress(self) -> None:
+        """Called each time the library comes back from the TV, however it came back.
+
+        A call that neither returns nor raises is the one thing nothing else can see.
+        """
+        self._last_progress = time.monotonic()
+
+    def idle_for(self) -> float:
+        return time.monotonic() - self._last_progress
 
     def claim_worker(self) -> None:
         """Called from the thread that will talk to the TV, so close() can reach it."""
@@ -473,6 +489,7 @@ def _tv_call(
     deadline: Optional[int] = None,
     open_remote: bool = True,
     skip_when_down: bool = True,
+    stall_timeout: Optional[int] = None,
 ) -> Any:
     """Run `action(session)` against the TV, never blocking longer than `deadline`.
 
@@ -542,9 +559,32 @@ def _tv_call(
                 except Exception:
                     logger.warning("Could not hand on the new token for TV %s", ip, exc_info=True)
 
+        # A stall is a call that never comes back, so no check placed between calls can
+        # see it. This watches from outside and closes the connection, which is what
+        # makes the blocked read raise and hands the TV back.
+        finished = threading.Event()
+        if stall_timeout:
+            def watch_for_a_stall():
+                while not finished.wait(1):
+                    idle = session.idle_for()
+                    if idle >= stall_timeout:
+                        logger.warning(
+                            "TV %s sent nothing for %.0fs while %s; closing the connection",
+                            ip, idle, action_description,
+                        )
+                        session.close()
+                        return
+
+            threading.Thread(
+                target=watch_for_a_stall, name="frametv-stall", daemon=True
+            ).start()
+
         future = _TV_EXECUTOR.submit(run)
         try:
-            result = future.result(timeout=deadline)
+            try:
+                result = future.result(timeout=deadline)
+            finally:
+                finished.set()
         except FutureTimeoutError as err:
             # cancel() succeeds only while the call is still queued; otherwise close the
             # sockets so the recv() blocking the worker thread raises and lets it go.
@@ -956,7 +996,8 @@ def _single_thumbnail(art, ip: str, content_id: str) -> Tuple[Optional[bytes], b
 
 
 def _collect_thumbnails(
-    art, ip: str, content_ids: List[str], fetch_missing: bool = True
+    art, ip: str, content_ids: List[str], fetch_missing: bool = True,
+    on_progress: Optional[Callable[[], None]] = None,
 ) -> Dict[str, bytes]:
     """Thumbnails for `content_ids`: cache first, then whatever is left, in batches.
 
@@ -1018,7 +1059,11 @@ def _collect_thumbnails(
         batch = missing[start:start + TV_THUMBNAIL_BATCH]
         try:
             thumb_map = art.get_thumbnail_list(batch) or {}
+            if on_progress:
+                on_progress()
         except Exception as err:
+            if on_progress:
+                on_progress()
             logger.info(
                 "TV %s refused a batch of %d thumbnails (%s); asking one at a time",
                 ip, len(batch), err,
@@ -1044,6 +1089,8 @@ def _collect_thumbnails(
                 )
                 return found
             payload, still_talking = _single_thumbnail(art, ip, cid)
+            if on_progress:
+                on_progress()
             if payload is None:
                 refusals.append((cid, answered))
                 # A set that will not serve an image closes the socket on it, exactly
@@ -1105,9 +1152,12 @@ def get_tv_gallery_thumbnails(
         fetched = _tv_call(
             ip,
             "fetching thumbnails from",
-            lambda session: _collect_thumbnails(session.art(), ip, missing),
+            lambda session: _collect_thumbnails(
+                session.art(), ip, missing, on_progress=session.note_progress
+            ),
             token=token,
             deadline=TV_THUMBNAIL_DEADLINE,
+            stall_timeout=TV_STALL_TIMEOUT,
         )
     except FrameTVError as err:
         # Hand back whatever was cached rather than blanking a whole page because one
@@ -1168,7 +1218,10 @@ def get_tv_gallery_images(ip: str, token: Optional[str] = None) -> List[Dict]:
 
         return images
 
-    images = _tv_call(ip, "fetching gallery images from", action, token=token)
+    images = _tv_call(
+        ip, "fetching gallery images from", action, token=token,
+        stall_timeout=TV_STALL_TIMEOUT,
+    )
     _remember_gallery(ip, images)
     return images
 
