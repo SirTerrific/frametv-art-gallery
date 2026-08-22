@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.4](https://github.com/SirTerrific/frametv-art-gallery/compare/v1.6.3...v1.6.4) (2026-08-22)
+
+
+### Bug Fixes
+
+* stop a silent TV from holding the gallery for two minutes ([e51c1ed](https://github.com/SirTerrific/frametv-art-gallery/commit/e51c1ed117b28f9a30de444cced1a26949369081))
+
 ## [1.6.3](https://github.com/SirTerrific/frametv-art-gallery/compare/v1.6.2...v1.6.3) (2026-08-22)
 
 
