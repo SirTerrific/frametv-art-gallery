@@ -175,6 +175,16 @@ def _log_exception(context: str, exc: Exception):
     app.logger.error("%s: %s", context, exc, exc_info=True)
 
 
+def _log_tv_unreachable(context: str, exc: Exception):
+    """A TV that does not answer is expected — it may simply be off or asleep.
+
+    One line rather than a stack trace. The traceback is always the same walk through
+    websocket internals, it says nothing the message does not, and forty lines of it
+    per page load buries anything that is a real fault.
+    """
+    app.logger.warning("%s: %s", context, exc)
+
+
 def _error_response(public_message: str, status_code: int = 500):
     return {'error': public_message}, status_code
 
@@ -948,10 +958,10 @@ def api_get_tv_gallery(ip):
         app.logger.info('Skipping TV gallery: %s', e)
         return jsonify({'error': 'TV is unavailable', 'tv_unavailable': True}), 503
     except FrameTVTimeoutError as e:
-        _log_exception('Timeout while fetching TV gallery', e)
+        _log_tv_unreachable('Timeout while fetching TV gallery', e)
         return jsonify({'error': 'TV request timed out'}), 504
     except FrameTVConnectionError as e:
-        _log_exception('TV gallery connection failed', e)
+        _log_tv_unreachable('TV gallery connection failed', e)
         return jsonify({'error': 'TV is unavailable'}), 503
     except Exception as e:
         _log_exception('Failed to fetch TV gallery', e)
@@ -970,10 +980,10 @@ def api_play_tv_image(ip, content_id):
         play_uploaded_content(ip, content_id, token=tv.token)
         return jsonify({'success': True})
     except FrameTVTimeoutError as e:
-        _log_exception('Timeout while playing TV image', e)
+        _log_tv_unreachable('Timeout while playing TV image', e)
         return jsonify({'error': 'TV request timed out'}), 504
     except FrameTVConnectionError as e:
-        _log_exception('TV connection failed while playing image', e)
+        _log_tv_unreachable('TV connection failed while playing image', e)
         return jsonify({'error': 'TV is unavailable'}), 503
     except FrameTVError as e:
         _log_exception('Failed to play TV image', e)
@@ -1005,10 +1015,10 @@ def api_delete_tv_images(ip):
         _forget_uploaded(tv, content_ids=content_ids)
         return jsonify({'deleted': deleted})
     except FrameTVTimeoutError as e:
-        _log_exception('Timeout while deleting TV images', e)
+        _log_tv_unreachable('Timeout while deleting TV images', e)
         return jsonify({'error': 'TV request timed out'}), 504
     except FrameTVConnectionError as e:
-        _log_exception('TV connection failed while deleting images', e)
+        _log_tv_unreachable('TV connection failed while deleting images', e)
         return jsonify({'error': 'TV is unavailable'}), 503
     except Exception as e:
         _log_exception('Failed to delete TV images', e)
@@ -1028,7 +1038,7 @@ def api_tv_device_info(ip):
     try:
         return jsonify(get_tv_device_info(ip, token=tv.token))
     except FrameTVConnectionError as e:
-        _log_exception('TV connection failed while reading device info', e)
+        _log_tv_unreachable('TV connection failed while reading device info', e)
         return jsonify({'error': 'TV is unavailable'}), 503
     except Exception as e:
         _log_exception('Failed to read TV device info', e)
@@ -1066,10 +1076,10 @@ def api_tv_gallery_thumbnails(ip):
         app.logger.info('Skipping TV thumbnails: %s', e)
         return jsonify({'error': 'TV is unavailable', 'tv_unavailable': True}), 503
     except FrameTVTimeoutError as e:
-        _log_exception('Timeout while fetching TV thumbnails', e)
+        _log_tv_unreachable('Timeout while fetching TV thumbnails', e)
         return jsonify({'error': 'TV request timed out', 'tv_unavailable': True}), 504
     except FrameTVConnectionError as e:
-        _log_exception('TV connection failed while fetching thumbnails', e)
+        _log_tv_unreachable('TV connection failed while fetching thumbnails', e)
         return jsonify({'error': 'TV is unavailable', 'tv_unavailable': True}), 503
     except Exception as e:
         _log_exception('Failed to fetch TV thumbnails', e)
@@ -1093,10 +1103,10 @@ def api_tv_gallery_thumbnail(ip, content_id):
         app.logger.info('Skipping TV thumbnail: %s', e)
         return jsonify({'error': 'TV is unavailable', 'tv_unavailable': True}), 503
     except FrameTVTimeoutError as e:
-        _log_exception('Timeout while fetching TV thumbnail', e)
+        _log_tv_unreachable('Timeout while fetching TV thumbnail', e)
         return jsonify({'error': 'TV request timed out', 'tv_unavailable': True}), 504
     except FrameTVConnectionError as e:
-        _log_exception('TV connection failed while fetching thumbnail', e)
+        _log_tv_unreachable('TV connection failed while fetching thumbnail', e)
         return jsonify({'error': 'TV is unavailable', 'tv_unavailable': True}), 503
     except Exception as e:
         _log_exception('Failed to fetch TV thumbnail', e)
@@ -1113,10 +1123,10 @@ def api_delete_tv_image(ip, content_id):
         _forget_uploaded(tv, content_ids=[content_id])
         return jsonify({'success': True})
     except FrameTVTimeoutError as e:
-        _log_exception('Timeout while deleting TV image', e)
+        _log_tv_unreachable('Timeout while deleting TV image', e)
         return jsonify({'error': 'TV request timed out'}), 504
     except FrameTVConnectionError as e:
-        _log_exception('TV connection failed while deleting TV image', e)
+        _log_tv_unreachable('TV connection failed while deleting TV image', e)
         return jsonify({'error': 'TV is unavailable'}), 503
     except Exception as e:
         _log_exception('Failed to delete TV image', e)

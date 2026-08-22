@@ -23,6 +23,7 @@ export default function TVGallery() {
 
   const [images, setImages] = useState<TVGalleryImage[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState(false);
   const [thumbnailsLoading, setThumbnailsLoading] = useState(false);
   const [selectedTvIp, setSelectedTvIp] = useState<string>(tvIp || "");
   const [tvs, setTvs] = useState<any[]>([]);
@@ -59,6 +60,7 @@ export default function TVGallery() {
   const fetchGallery = async () => {
     if (!selectedTvIp) return;
     setLoading(true);
+    setLoadError(false);
     try {
       const tvImages = await getTvGalleryImages(selectedTvIp);
       setImages(tvImages || []);
@@ -90,6 +92,9 @@ export default function TVGallery() {
     } catch (error) {
       console.error("Failed to fetch gallery:", error);
       toast.error("Failed to load TV gallery");
+      // Kept apart from an empty gallery: saying "No images on TV" when the set never
+      // answered claims something we did not find out.
+      setLoadError(true);
       setLoading(false);
       setThumbnailsLoading(false);
     }
@@ -194,6 +199,22 @@ export default function TVGallery() {
           {loading ? (
             <div className="flex items-center justify-center py-12">
               <ArrowPathIcon className="w-8 h-8 animate-spin text-blue-600 dark:text-blue-400" />
+            </div>
+          ) : loadError ? (
+            <div className="text-center py-12 space-y-3">
+              <p className="text-muted-foreground">Could not reach this TV</p>
+              <p className="text-sm text-muted-foreground max-w-md mx-auto">
+                It answered on the network but not on the art channel. Check that it is
+                on, and that this app is still allowed under Device Connection Manager
+                on the TV — a revoked authorisation looks exactly like this.
+              </p>
+              <button
+                type="button"
+                onClick={fetchGallery}
+                className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+              >
+                Try again
+              </button>
             </div>
           ) : images.length === 0 ? (
             <div className="text-center py-12">
