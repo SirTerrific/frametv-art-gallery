@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.9](https://github.com/SirTerrific/frametv-art-gallery/compare/v1.6.8...v1.6.9) (2026-08-22)
+
+
+### Bug Fixes
+
+* cut a call that never comes back, without waiting out the deadline ([0037ba9](https://github.com/SirTerrific/frametv-art-gallery/commit/0037ba934bdc31fc8b864bb1ab992d0946c75e3e))
+
 ## [1.6.8](https://github.com/SirTerrific/frametv-art-gallery/compare/v1.6.7...v1.6.8) (2026-08-22)
 
 
