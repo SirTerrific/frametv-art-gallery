@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.3](https://github.com/SirTerrific/frametv-art-gallery/compare/v1.6.2...v1.6.3) (2026-08-22)
+
+
+### Bug Fixes
+
+* keep the token the TV hands back, so it stops asking to allow the app ([0579ed5](https://github.com/SirTerrific/frametv-art-gallery/commit/0579ed5075f32dbcec58926e71abd9ce7bbcee79))
+
 ## [1.6.2](https://github.com/SirTerrific/frametv-art-gallery/compare/v1.6.1...v1.6.2) (2026-08-22)
 
 
