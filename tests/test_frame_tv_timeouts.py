@@ -283,3 +283,69 @@ def test_a_call_that_finishes_leaves_nothing_behind():
     ) == "done"
 
     assert frame_tv._INFLIGHT_SOCKETS == {}, "a completed call left a connection recorded"
+
+
+def test_a_connection_left_behind_is_closed_before_the_next_call_starts():
+    """Taking the lock means nothing else may talk to that TV, so ghosts can go.
+
+    An abandoned call keeps the set's one art channel busy. Opening a second one while
+    it lingers is what a Frame TV answers by refusing both, so the next request clears
+    the field before it tries.
+    """
+    closed = threading.Event()
+
+    class GhostConnection:
+        def close(self):
+            closed.set()
+
+    def abandoned(_session):
+        with frame_tv._INFLIGHT_GUARD:
+            frame_tv._INFLIGHT_SOCKETS[threading.get_ident()] = GhostConnection()
+            frame_tv._INFLIGHT_TV[threading.get_ident()] = "192.0.2.72"
+        time.sleep(STUCK)
+
+    def hold_until_abandoned():
+        with pytest.raises(FrameTVTimeoutError):
+            frame_tv._tv_call(
+                "192.0.2.72", "holding", abandoned, deadline=1, open_remote=False,
+            )
+
+    holder = threading.Thread(target=hold_until_abandoned)
+    holder.start()
+    holder.join(timeout=10)
+
+    # The abandoned worker is still asleep; its connection must not survive into the
+    # next call for that TV.
+    closed.clear()
+    with frame_tv._INFLIGHT_GUARD:
+        frame_tv._INFLIGHT_SOCKETS[9_999_999] = GhostConnection()
+        frame_tv._INFLIGHT_TV[9_999_999] = "192.0.2.72"
+
+    frame_tv._tv_call(
+        "192.0.2.72", "testing", lambda s: "ok", open_remote=False, skip_when_down=False,
+    )
+
+    assert closed.is_set(), "a stale connection survived into the next call"
+
+
+def test_clearing_one_tv_leaves_another_alone():
+    class Connection:
+        def __init__(self):
+            self.closed = False
+
+        def close(self):
+            self.closed = True
+
+    mine, neighbour = Connection(), Connection()
+    with frame_tv._INFLIGHT_GUARD:
+        frame_tv._INFLIGHT_SOCKETS[1_000_001] = mine
+        frame_tv._INFLIGHT_TV[1_000_001] = "192.0.2.73"
+        frame_tv._INFLIGHT_SOCKETS[1_000_002] = neighbour
+        frame_tv._INFLIGHT_TV[1_000_002] = "192.0.2.74"
+
+    try:
+        assert frame_tv.reset_connections("192.0.2.73") == 1
+        assert mine.closed and not neighbour.closed
+    finally:
+        frame_tv._forget_inflight(1_000_001)
+        frame_tv._forget_inflight(1_000_002)

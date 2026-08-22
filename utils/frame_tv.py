@@ -322,6 +322,9 @@ def set_token_observer(observer: Optional[Callable[[str, str], None]]) -> None:
 # gives close() something to act on. Only samsungtvws sees the wrapper.
 
 _INFLIGHT_SOCKETS: Dict[int, Any] = {}
+# Which TV each worker thread is talking to, so a connection left behind can be traced
+# back to the set it is still holding.
+_INFLIGHT_TV: Dict[int, str] = {}
 _INFLIGHT_GUARD = threading.Lock()
 
 
@@ -351,6 +354,35 @@ def _install_connection_tracker() -> None:
 def _forget_inflight(thread_id: int) -> None:
     with _INFLIGHT_GUARD:
         _INFLIGHT_SOCKETS.pop(thread_id, None)
+        _INFLIGHT_TV.pop(thread_id, None)
+
+
+def _claim_inflight(thread_id: int, ip: str) -> None:
+    with _INFLIGHT_GUARD:
+        _INFLIGHT_TV[thread_id] = ip
+
+
+def reset_connections(ip: str) -> int:
+    """Close every connection still recorded against a TV. Returns how many.
+
+    Only safe to call while holding that TV's lock: nothing else may be talking to it,
+    so anything still open belongs to a call that was abandoned and is doing nothing
+    but occupying the one art channel the set has.
+    """
+    with _INFLIGHT_GUARD:
+        stale = [tid for tid, owner in _INFLIGHT_TV.items() if owner == ip]
+        connections = [(tid, _INFLIGHT_SOCKETS.pop(tid, None)) for tid in stale]
+
+    closed = 0
+    for thread_id, connection in connections:
+        if connection is None:
+            continue
+        try:
+            connection.close()
+            closed += 1
+        except Exception:
+            logger.debug("Error closing a stale connection to TV %s", ip, exc_info=True)
+    return closed
 
 
 def _close_inflight(thread_id: int) -> bool:
@@ -388,6 +420,7 @@ class _TVSession:
     def claim_worker(self) -> None:
         """Called from the thread that will talk to the TV, so close() can reach it."""
         self._worker_thread_id = threading.get_ident()
+        _claim_inflight(self._worker_thread_id, self.ip)
 
     def release_worker(self) -> None:
         if self._worker_thread_id is not None:
@@ -467,14 +500,29 @@ def _tv_call(
     # soon as its own deadline is gone, a deliberate action waits for its turn.
     busy_wait = deadline if skip_when_down else max(deadline, TV_BUSY_WAIT)
     with _tv_exclusive(ip, wait=busy_wait):
+        # Holding the lock means nothing else may be talking to this TV, so anything
+        # still recorded against it is a call that was abandoned and never let go. It
+        # would otherwise keep the set's one art channel busy while this request tried
+        # to open a second — which the TV answers by refusing both.
+        stale = reset_connections(ip)
+        if stale:
+            logger.info("Closed %d stale connection(s) to TV %s before starting", stale, ip)
+
         session = _TVSession(ip, token, DEFAULT_TIMEOUT)
+        phases: Dict[str, float] = {}
 
         def run():
             session.claim_worker()
+            started = time.monotonic()
             try:
                 if open_remote:
                     session.tv.open()
-                return action(session)
+                phases['open'] = time.monotonic() - started
+                acting = time.monotonic()
+                try:
+                    return action(session)
+                finally:
+                    phases['action'] = time.monotonic() - acting
             finally:
                 # Whether it finished or raised, nothing here is half-open any more.
                 session.release_worker()
@@ -504,6 +552,14 @@ def _tv_call(
                 session.close()
             keep_any_new_token()
             _mark_tv_down(ip)
+            # Which step ran out of road. An absent phase never finished, which is the
+            # useful half: "open: unfinished" says the set never let us in at all.
+            logger.warning(
+                "TV %s timed out %s — open: %s, action: %s",
+                ip, action_description,
+                f"{phases['open']:.1f}s" if 'open' in phases else 'unfinished',
+                f"{phases['action']:.1f}s" if 'action' in phases else 'unfinished',
+            )
             raise FrameTVTimeoutError(
                 f"Timeout after {deadline}s while {action_description} TV {ip}"
             ) from err
