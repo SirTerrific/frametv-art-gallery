@@ -78,6 +78,10 @@ const ImageCard: React.FC<ImageCardProps> = ({
   const [assignMessage, setAssignMessage] = useState('');
   const [matteStyle, setMatteStyle] = useState('none');
   const [matteColor, setMatteColor] = useState<string>(MATTE_COLORS[0]);
+  // Whether this send should carry a matte of its own. Left false, the request omits
+  // it and the TV's configured default applies server-side — one source of truth
+  // instead of the picker silently echoing the default back as an explicit choice.
+  const [matteTouched, setMatteTouched] = useState(false);
 
   const isLocalImage = image?.type === 'local' || !image?.type;
   const availableAlbums = (albums || []).filter(album => filename && !album.images.includes(filename));
@@ -98,14 +102,16 @@ const ImageCard: React.FC<ImageCardProps> = ({
     setImageURL(fullSrc ?? src);
   }, [src, fullSrc]);
 
-  // Pick up the TV's own default matte when it is (re)selected, so opening the
-  // picker starts from what that set is normally sent with rather than "none".
+  // Show the TV's own default, so the picker starts from what that set is normally
+  // sent with rather than "none". Keyed on the value rather than on the `tvs` array,
+  // whose identity changes on every refetch and would wipe a choice mid-flow.
+  const selectedTvDefaultMatte = tvs.find(t => t.ip === selectedTvIp)?.default_matte ?? null;
   useEffect(() => {
-    const tv = tvs.find(t => t.ip === selectedTvIp);
-    const { style, color } = splitMatte(tv?.default_matte);
+    const { style, color } = splitMatte(selectedTvDefaultMatte);
     setMatteStyle(style);
     setMatteColor(color);
-  }, [selectedTvIp, tvs]);
+    setMatteTouched(false);
+  }, [selectedTvIp, selectedTvDefaultMatte]);
 
   const handleSendToTV = async () => {
     if (!selectedTvIp) {
@@ -114,7 +120,8 @@ const ImageCard: React.FC<ImageCardProps> = ({
     }
     setTvLoading(true);
     try {
-      let payload: any = { ip: selectedTvIp, filename: image?.filename, matte: combineMatte(matteStyle, matteColor) };
+      let payload: any = { ip: selectedTvIp, filename: image?.filename };
+      if (matteTouched) payload.matte = combineMatte(matteStyle, matteColor);
       if (image?.type === "provider") {
         payload.provider_id = image.id;
         payload.provider = image.provider;
@@ -275,9 +282,9 @@ const ImageCard: React.FC<ImageCardProps> = ({
         selectedTvIp={selectedTvIp}
         setSelectedTvIp={setSelectedTvIp}
         matteStyle={matteStyle}
-        setMatteStyle={setMatteStyle}
+        setMatteStyle={(style: string) => { setMatteStyle(style); setMatteTouched(true); }}
         matteColor={matteColor}
-        setMatteColor={setMatteColor}
+        setMatteColor={(color: string) => { setMatteColor(color); setMatteTouched(true); }}
         tvLoading={tvLoading}
         handleSendToTV={handleSendToTV}
         handlePlayUploadedImage={handlePlayUploadedImage}
