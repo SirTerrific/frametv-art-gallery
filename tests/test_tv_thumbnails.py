@@ -8,6 +8,7 @@ Run with: pytest tests/test_tv_thumbnails.py
 """
 
 import shutil
+import time
 
 import pytest
 
@@ -244,3 +245,61 @@ def test_the_cached_listing_expires():
         frame_tv._GALLERY_CACHE["192.0.2.52"][1],
     )
     assert frame_tv._cached_gallery("192.0.2.52") is None
+
+
+def test_a_slow_tv_that_gives_nothing_is_abandoned_mid_batch(monkeypatch):
+    """Giving up after a whole batch is not soon enough when each call is slow.
+
+    One art request can run far longer than the socket timeout — samsungtvws reads
+    frames until it sees the one it asked for, and each read restarts its own clock.
+    A batch is nine such calls, which is how a page load spent its entire two-minute
+    budget to return nothing, with the TV's art channel busy throughout. The walk has
+    to be cut on the clock, part way through a batch, not only at the end of one.
+    """
+    monkeypatch.setattr(frame_tv, "TV_THUMBNAIL_FIRST_ANSWER", 0.15)
+    class SlowRefusingArt:
+        """Dawdles, then declines cleanly — never closing a socket.
+
+        This is the shape that defeats a failure count: nothing looks like a dead
+        connection, so the walk would keep going image by image, each one costing real
+        time, holding the TV's art channel throughout.
+        """
+
+        def __init__(self):
+            self.calls = 0
+
+        def get_thumbnail_list(self, content_ids):
+            self.calls += 1
+            time.sleep(0.05)
+            return {}
+
+        def get_thumbnail(self, content_id):
+            self.calls += 1
+            time.sleep(0.05)
+            return None
+
+    art = SlowRefusingArt()
+    # One batch: the list call plus one single per image in it.
+    calls_in_a_full_batch = 1 + frame_tv.TV_THUMBNAIL_BATCH
+    wanted = [f"C{n}" for n in range(frame_tv.TV_THUMBNAIL_BATCH * 4)]
+
+    frame_tv._collect_thumbnails(art, "192.0.2.60", wanted)
+
+    assert art.calls < calls_in_a_full_batch, (
+        f"made {art.calls} calls — it saw the batch out instead of stopping on the clock"
+    )
+
+
+def test_a_tv_that_answers_is_given_its_full_run(monkeypatch):
+    """The clock only ends the walk while nothing at all has come back.
+
+    The threshold is tight here on purpose: a set that keeps answering has to finish
+    its gallery even when the budget for the first answer has long since passed.
+    """
+    monkeypatch.setattr(frame_tv, "TV_THUMBNAIL_FIRST_ANSWER", 0.2)
+    art = FakeArt()
+    wanted = [f"C{n}" for n in range(20)]
+
+    found = frame_tv._collect_thumbnails(art, "192.0.2.61", wanted)
+
+    assert set(found) == set(wanted), "a TV that is answering must not be cut off"

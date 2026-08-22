@@ -52,6 +52,12 @@ TV_THUMBNAIL_DEADLINE = _env_int("FRAME_TV_THUMBNAIL_DEADLINE", 120)
 # gallery is left for next time. Each one costs a socket timeout, and the TV is locked
 # for the whole walk, so this bounds how long one page load can hold it.
 TV_THUMBNAIL_GIVE_UP = _env_int("FRAME_TV_THUMBNAIL_GIVE_UP", 3)
+# How long the walk may go without a single thumbnail before it stops. Counting failures
+# is not enough on its own: one request to the art channel can run far longer than the
+# socket timeout, because samsungtvws reads frames until it sees the one it asked for
+# and each read restarts the clock. A set that has gone quiet would otherwise spend the
+# whole budget to return nothing, with its art channel busy the entire time.
+TV_THUMBNAIL_FIRST_ANSWER = _env_int("FRAME_TV_THUMBNAIL_FIRST_ANSWER", 25)
 # Simple in-memory cache to reduce repeated TV requests
 # Structure: { (ip, 'gallery'): (timestamp, value), (ip, content_id): (timestamp, bytes) }
 _CACHE: dict = {}
@@ -858,8 +864,20 @@ def _collect_thumbnails(
     refusals: List[tuple] = []
     answered = 0
     dead_in_a_row = 0
+    started = time.monotonic()
+
+    def nothing_is_coming() -> bool:
+        """True once the walk has run a while with nothing at all to show for it."""
+        return answered == 0 and time.monotonic() - started > TV_THUMBNAIL_FIRST_ANSWER
 
     for start in range(0, len(missing), TV_THUMBNAIL_BATCH):
+        if nothing_is_coming():
+            logger.warning(
+                "TV %s gave nothing in %ds; leaving its thumbnails for next time",
+                ip, TV_THUMBNAIL_FIRST_ANSWER,
+            )
+            return found
+
         batch = missing[start:start + TV_THUMBNAIL_BATCH]
         try:
             thumb_map = art.get_thumbnail_list(batch) or {}
@@ -882,6 +900,12 @@ def _collect_thumbnails(
         for cid in batch:
             if cid in found or _known_to_have_no_thumbnail(ip, cid):
                 continue
+            if nothing_is_coming():
+                logger.warning(
+                    "TV %s gave nothing in %ds; leaving its thumbnails for next time",
+                    ip, TV_THUMBNAIL_FIRST_ANSWER,
+                )
+                return found
             payload, still_talking = _single_thumbnail(art, ip, cid)
             if payload is None:
                 refusals.append((cid, answered))
