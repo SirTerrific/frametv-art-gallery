@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.5.0](https://github.com/mrtncode/frametv-art-gallery/compare/v1.4.1...v1.5.0) (2026-08-22)
+
+
+### Features
+
+* add one slot TV image mode ([#89](https://github.com/mrtncode/frametv-art-gallery/issues/89)) ([301d5cc](https://github.com/mrtncode/frametv-art-gallery/commit/301d5cce6b9b2d49ecdfc4a7d7e546ba92b2dc94))
+* Choose the matte style and color when sending art to a TV ([#87](https://github.com/mrtncode/frametv-art-gallery/issues/87)) ([d7c03d3](https://github.com/mrtncode/frametv-art-gallery/commit/d7c03d3fe1d0d6d13970f57c6e6abc79a9f79adb))
+
+
+### Bug Fixes
+
+* Dependencies for immich ([fd3e63f](https://github.com/mrtncode/frametv-art-gallery/commit/fd3e63f31917fcdae24f6344d209fe1e39c15f44))
+* Improve tv gallery stability ([409eed1](https://github.com/mrtncode/frametv-art-gallery/commit/409eed1b072195a858c53e967930b8a9022fb8c3))
+
 ## [1.4.1](https://github.com/mrtncode/frametv-art-gallery/compare/v1.4.0...v1.4.1) (2026-08-14)
 
 
