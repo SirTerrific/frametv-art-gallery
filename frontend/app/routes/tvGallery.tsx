@@ -44,8 +44,6 @@ export default function TVGallery() {
       setTvs(tvList || []);
       if (tvIp) {
         setSelectedTvIp(tvIp);
-      } else if (tvList?.length > 0) {
-        setSelectedTvIp(tvList[0].ip);
       }
     } catch (error) {
       console.error("Failed to fetch TVs:", error);
@@ -170,9 +168,17 @@ export default function TVGallery() {
             <label className="block text-sm font-medium mb-2">Select TV</label>
             <select
               value={selectedTvIp}
-              onChange={(e) => setSelectedTvIp(e.target.value)}
+              onChange={(e) => {
+                setSelectedTvIp(e.target.value);
+                setImages([]);
+                setSelected([]);
+                lastClickedIndex.current = null;
+              }}
               className="w-full p-2 border border-border rounded-lg bg-card"
             >
+              <option value="" disabled>
+                Select a TV
+              </option>
               {tvs.map((tv) => (
                 <option key={tv.ip} value={tv.ip}>
                   {tv.name || tv.ip}
@@ -181,7 +187,15 @@ export default function TVGallery() {
             </select>
           </div>
 
-          {loading ? (
+          {!selectedTvIp ? (
+            <div className="rounded-xl border border-dashed border-blue-200 bg-blue-50 px-6 py-10 text-center dark:border-blue-900 dark:bg-blue-950/30">
+              <SparklesIcon className="mx-auto mb-3 h-10 w-10 text-blue-600 dark:text-blue-400" />
+              <h2 className="text-lg font-semibold text-foreground">Select a TV to view its gallery</h2>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Choose a TV above to load its artwork.
+              </p>
+            </div>
+          ) : loading ? (
             <div className="flex items-center justify-center py-12">
               <ArrowPathIcon className="w-8 h-8 animate-spin text-blue-600 dark:text-blue-400" />
             </div>

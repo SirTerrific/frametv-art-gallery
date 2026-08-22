@@ -650,13 +650,30 @@ def _collect_thumbnails(art, ip: str, content_ids: List[str]) -> Dict[str, bytes
         thumb_map = art.get_thumbnail_list(missing)
     except Exception:
         logger.debug("Batch thumbnail retrieval failed for TV %s", ip, exc_info=True)
-        return found
+        thumb_map = {}
 
     if isinstance(thumb_map, dict):
         for cid, data in thumb_map.items():
             if not isinstance(data, (bytes, bytearray)):
                 continue
             payload = bytes(data)
+            if cid in missing:
+                found[cid] = payload
+                _thumb_disk_set(ip, cid, payload)
+                _cache_set((ip, cid), payload)
+
+    # The batch D2D response is keyed by the TV's file name, which is not always the
+    # content id requested above. Fall back per missing id and key the bytes ourselves.
+    for cid in missing:
+        if cid in found:
+            continue
+        try:
+            thumbnail = art.get_thumbnail(cid)
+        except Exception:
+            logger.debug("Single thumbnail retrieval failed for TV %s (%s)", ip, cid, exc_info=True)
+            continue
+        if isinstance(thumbnail, (bytes, bytearray)):
+            payload = bytes(thumbnail)
             found[cid] = payload
             _thumb_disk_set(ip, cid, payload)
             _cache_set((ip, cid), payload)
