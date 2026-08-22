@@ -32,6 +32,11 @@ class TV(db.Model):
     slideshow_last_run = db.Column(db.DateTime, nullable=True)
     slideshow_last_content_id = db.Column(db.String(255), nullable=True)
 
+    # Matte applied to art sent to this TV when the upload does not specify one.
+    # Stored as the API's own token ("modernthin_polar", "none"); null means the app's
+    # own default (also "none") applies.
+    default_matte = db.Column(db.String(64), nullable=True)
+
     uploaded_images = db.relationship(
         'UploadedImage',
         back_populates='tv',

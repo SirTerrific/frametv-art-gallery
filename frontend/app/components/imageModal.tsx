@@ -1,6 +1,7 @@
 import React from "react";
 import { ArrowUpTrayIcon, ExclamationCircleIcon, TrashIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { Button } from "./ui/button";
+import { MATTE_STYLES, MATTE_COLORS } from "../utils/matte";
 
 interface TV {
   ip: string;
@@ -25,6 +26,10 @@ interface ImageModalProps {
   tvs: TV[];
   selectedTvIp: string;
   setSelectedTvIp: (ip: string) => void;
+  matteStyle: string;
+  setMatteStyle: (style: string) => void;
+  matteColor: string;
+  setMatteColor: (color: string) => void;
   tvLoading: boolean;
   handleSendToTV: () => void;
   handlePlayUploadedImage: () => void;
@@ -55,6 +60,10 @@ const ImageModal: React.FC<ImageModalProps> = ({
   tvs,
   selectedTvIp,
   setSelectedTvIp,
+  matteStyle,
+  setMatteStyle,
+  matteColor,
+  setMatteColor,
   tvLoading,
   handleSendToTV,
   handlePlayUploadedImage,
@@ -162,6 +171,31 @@ const ImageModal: React.FC<ImageModalProps> = ({
                 </option>
               ))}
             </select>
+
+            {/* Matte: the framing border the TV draws around the art. "none" takes no color. */}
+            <div className="grid grid-cols-2 gap-2">
+              <select
+                className="border border-border px-2 py-2 rounded-lg text-sm"
+                value={matteStyle}
+                onChange={e => setMatteStyle(e.target.value)}
+                aria-label="Matte style"
+              >
+                {MATTE_STYLES.map(style => (
+                  <option key={style} value={style}>{style === 'none' ? 'No matte' : style}</option>
+                ))}
+              </select>
+              <select
+                className="border border-border px-2 py-2 rounded-lg text-sm disabled:opacity-50"
+                value={matteColor}
+                onChange={e => setMatteColor(e.target.value)}
+                disabled={matteStyle === 'none'}
+                aria-label="Matte color"
+              >
+                {MATTE_COLORS.map(color => (
+                  <option key={color} value={color}>{color}</option>
+                ))}
+              </select>
+            </div>
 
             <button
               className="w-full bg-blue-600 text-white text-sm py-2 rounded-lg disabled:opacity-50 hover:bg-blue-700 flex items-center justify-center gap-2"

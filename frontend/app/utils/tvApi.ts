@@ -19,6 +19,7 @@ export interface TVInfo {
   slideshow_enabled?: boolean;
   slideshow_album_id?: number | null;
   slideshow_interval_minutes?: number | null;
+  default_matte?: string | null;
 }
 
 export interface DiscoveredTV {
@@ -34,6 +35,7 @@ export interface TVUpdate {
   slideshow_enabled?: boolean;
   slideshow_album_id?: number | string | null;
   slideshow_interval_minutes?: number | string | null;
+  default_matte?: string | null;
 }
 
 export class TVError extends Error {
