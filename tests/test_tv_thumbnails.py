@@ -202,3 +202,45 @@ def test_scattered_unservable_images_do_not_stop_it():
 
     assert set(found) == set(wanted) - {"C1", "C5", "C9"}
     assert len(found) == 9, "everything the TV would serve should still be here"
+
+
+# --- the listing must not queue behind a slow walk of thumbnails ---
+
+def test_the_listing_is_reused_briefly_so_a_reload_does_not_wait_on_the_tv():
+    """Reloading while a thumbnail walk holds the TV used to queue, then fail."""
+    calls = []
+
+    def fake_call(ip, description, action, **kwargs):
+        calls.append(description)
+        return [{"content_id": "C1", "filename": "", "date_added": "", "thumbnail": None}]
+
+    original = frame_tv._tv_call
+    frame_tv._tv_call = fake_call
+    frame_tv.forget_gallery("192.0.2.50")
+    try:
+        first = frame_tv.get_tv_gallery_images("192.0.2.50")
+        second = frame_tv.get_tv_gallery_images("192.0.2.50")
+    finally:
+        frame_tv._tv_call = original
+        frame_tv.forget_gallery("192.0.2.50")
+
+    assert first == second
+    assert len(calls) == 1, "the reload should not have gone to the TV again"
+
+
+def test_changing_what_is_on_the_tv_drops_the_cached_listing():
+    """A delete or an upload has to be visible at once, not up to a TTL later."""
+    frame_tv._remember_gallery("192.0.2.51", [{"content_id": "C1"}])
+    assert frame_tv._cached_gallery("192.0.2.51") is not None
+
+    frame_tv.forget_gallery("192.0.2.51")
+    assert frame_tv._cached_gallery("192.0.2.51") is None
+
+
+def test_the_cached_listing_expires():
+    frame_tv._remember_gallery("192.0.2.52", [{"content_id": "C1"}])
+    frame_tv._GALLERY_CACHE["192.0.2.52"] = (
+        frame_tv._GALLERY_CACHE["192.0.2.52"][0] - frame_tv.TV_GALLERY_TTL - 1,
+        frame_tv._GALLERY_CACHE["192.0.2.52"][1],
+    )
+    assert frame_tv._cached_gallery("192.0.2.52") is None

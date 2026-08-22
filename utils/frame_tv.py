@@ -83,6 +83,34 @@ if not _DATA_DIR.is_absolute():
 TV_THUMB_DIR = _DATA_DIR.joinpath('instance', 'tv_thumbnails')
 TV_THUMB_DIR.mkdir(parents=True, exist_ok=True)
 
+# The gallery listing, held just long enough that reloading a page does not have to
+# queue behind whatever else is talking to the TV. Anything here that changes the set's
+# contents drops it, so a delete or an upload is still seen immediately; only a change
+# made elsewhere — the TV's own remote — can be up to this stale.
+TV_GALLERY_TTL = _env_int("FRAME_TV_GALLERY_TTL", 15)
+_GALLERY_CACHE: Dict[str, tuple] = {}
+
+
+def _cached_gallery(ip: str) -> Optional[List[Dict]]:
+    entry = _GALLERY_CACHE.get(ip)
+    if entry is None:
+        return None
+    cached_at, images = entry
+    if time.time() - cached_at > TV_GALLERY_TTL:
+        _GALLERY_CACHE.pop(ip, None)
+        return None
+    return images
+
+
+def _remember_gallery(ip: str, images: List[Dict]) -> None:
+    _GALLERY_CACHE[ip] = (time.time(), images)
+
+
+def forget_gallery(ip: str) -> None:
+    """Drop the cached listing for a TV whose contents just changed."""
+    _GALLERY_CACHE.pop(ip, None)
+
+
 def _thumb_disk_path(ip: str, content_id: str) -> Path:
     safe_ip = ip.replace(':', '_')
     return TV_THUMB_DIR.joinpath(safe_ip, content_id)
@@ -464,7 +492,9 @@ def upload_artwork(
             _delete_other_images(art, content_id, debug=True)
         return content_id
 
-    return _tv_call(ip, "uploading artwork to", action, token=token, deadline=TV_UPLOAD_DEADLINE, skip_when_down=False)
+    content_id = _tv_call(ip, "uploading artwork to", action, token=token, deadline=TV_UPLOAD_DEADLINE, skip_when_down=False)
+    forget_gallery(ip)
+    return content_id
 
 def _delete_other_images(art, keep_content_id: str, *, debug: bool) -> None:
     available = []
@@ -507,6 +537,7 @@ def delete_all_images_from_tv(ip: str, token: Optional[str] = None) -> None:
             logger.info("No images found on TV %s to delete", ip)
 
     _tv_call(ip, "deleting images from", action, token=token, skip_when_down=False)
+    forget_gallery(ip)
 
 def play_uploaded_content(ip: str, content_id: str, token: Optional[str] = None) -> None:
     """
@@ -936,7 +967,14 @@ def get_tv_gallery_images(ip: str, token: Optional[str] = None) -> List[Dict]:
     Returns:
         List[Dict]: List of image dictionaries with metadata (content_id, filename, date_added).
     """
-    # Do not cache the gallery listing to ensure deletions/changes are observed live
+    # Briefly cached, and dropped the moment anything here changes the TV's contents.
+    # Without it, reloading the page while a walk of thumbnails still holds the TV
+    # queued behind it and then failed, reporting a set that was answering perfectly
+    # well. The listing is what the page needs first, so it must not wait on the
+    # slowest thing running.
+    listing = _cached_gallery(ip)
+    if listing is not None:
+        return listing
 
     def action(session: _TVSession) -> List[Dict]:
         art = session.art()
@@ -969,7 +1007,9 @@ def get_tv_gallery_images(ip: str, token: Optional[str] = None) -> List[Dict]:
 
         return images
 
-    return _tv_call(ip, "fetching gallery images from", action, token=token)
+    images = _tv_call(ip, "fetching gallery images from", action, token=token)
+    _remember_gallery(ip, images)
+    return images
 
 def delete_tv_image(ip: str, content_id: str, token: Optional[str] = None) -> bool:
     """
@@ -988,6 +1028,7 @@ def delete_tv_image(ip: str, content_id: str, token: Optional[str] = None) -> bo
         token=token,
         skip_when_down=False,
     )
+    forget_gallery(ip)
     return True
 
 def delete_tv_images(ip: str, content_ids: List[str], token: Optional[str] = None) -> int:
@@ -1012,6 +1053,7 @@ def delete_tv_images(ip: str, content_ids: List[str], token: Optional[str] = Non
     )
     for content_id in wanted:
         _CACHE.pop((ip, content_id), None)
+    forget_gallery(ip)
     return len(wanted)
 
 
