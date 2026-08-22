@@ -308,6 +308,67 @@ def set_token_observer(observer: Optional[Callable[[str, str], None]]) -> None:
     _token_observer = observer
 
 
+# --- Reaching a connection that is still being established ---
+#
+# samsungtvws only records a websocket on the channel object once the handshake has
+# fully succeeded: `open()` builds it in a local, then loops on recv() waiting for the
+# TV's connect frame, and only assigns `self.connection` afterwards. Its `close()` acts
+# on `self.connection`, so a call abandoned while still inside `open()` closes nothing.
+# The worker thread stays in that recv, holding the one art channel a Frame TV has, and
+# the next request finds the set busy with a call nobody is waiting for any more.
+#
+# The socket exists by then — it is simply out of reach. So the create_connection the
+# library calls is wrapped to note the websocket against the thread that made it, which
+# gives close() something to act on. Only samsungtvws sees the wrapper.
+
+_INFLIGHT_SOCKETS: Dict[int, Any] = {}
+_INFLIGHT_GUARD = threading.Lock()
+
+
+class _ConnectionTracker:
+    """The websocket module as samsungtvws sees it, noting each connection it opens."""
+
+    def __init__(self, real_module):
+        self._real = real_module
+
+    def __getattr__(self, name):
+        return getattr(self._real, name)
+
+    def create_connection(self, *args, **kwargs):
+        connection = self._real.create_connection(*args, **kwargs)
+        with _INFLIGHT_GUARD:
+            _INFLIGHT_SOCKETS[threading.get_ident()] = connection
+        return connection
+
+
+def _install_connection_tracker() -> None:
+    from samsungtvws import connection as _samsung_connection
+
+    if not isinstance(_samsung_connection.websocket, _ConnectionTracker):
+        _samsung_connection.websocket = _ConnectionTracker(_samsung_connection.websocket)
+
+
+def _forget_inflight(thread_id: int) -> None:
+    with _INFLIGHT_GUARD:
+        _INFLIGHT_SOCKETS.pop(thread_id, None)
+
+
+def _close_inflight(thread_id: int) -> bool:
+    """Close whatever connection that thread last opened. True if there was one."""
+    with _INFLIGHT_GUARD:
+        connection = _INFLIGHT_SOCKETS.pop(thread_id, None)
+    if connection is None:
+        return False
+    try:
+        connection.close()
+    except Exception:
+        logger.debug("Error closing an in-flight connection", exc_info=True)
+    return True
+
+
+_install_connection_tracker()
+
+
 class _TVSession:
     """A TV connection (remote channel + art channel) closable from another thread.
 
@@ -322,6 +383,15 @@ class _TVSession:
             host=ip, port=DEFAULT_PORT, token=token, name=CONNECTION_NAME, timeout=timeout
         )
         self._art = None
+        self._worker_thread_id: Optional[int] = None
+
+    def claim_worker(self) -> None:
+        """Called from the thread that will talk to the TV, so close() can reach it."""
+        self._worker_thread_id = threading.get_ident()
+
+    def release_worker(self) -> None:
+        if self._worker_thread_id is not None:
+            _forget_inflight(self._worker_thread_id)
 
     @property
     def tv(self) -> SamsungTVWS:
@@ -353,6 +423,12 @@ class _TVSession:
                 channel.close()
             except Exception:
                 logger.debug("Error closing channel for TV %s", self.ip, exc_info=True)
+
+        # Whatever the worker was still opening when it was abandoned. Closing it is
+        # what makes its recv() raise, so the thread lets go of the TV's art channel
+        # instead of sitting on it until the operating system gives up.
+        if self._worker_thread_id is not None and _close_inflight(self._worker_thread_id):
+            logger.info("Closed a half-open connection to TV %s", self.ip)
 
 
 def _tv_call(
@@ -394,9 +470,14 @@ def _tv_call(
         session = _TVSession(ip, token, DEFAULT_TIMEOUT)
 
         def run():
-            if open_remote:
-                session.tv.open()
-            return action(session)
+            session.claim_worker()
+            try:
+                if open_remote:
+                    session.tv.open()
+                return action(session)
+            finally:
+                # Whether it finished or raised, nothing here is half-open any more.
+                session.release_worker()
 
         def keep_any_new_token():
             """A token the TV issued is worth keeping even if the call then failed.

@@ -217,3 +217,69 @@ def test_tv_errors_are_not_swallowed_as_connection_errors():
     with pytest.raises(FrameTVConnectionError):
         frame_tv._tv_call("192.0.2.7", "testing", unreachable, open_remote=False)
     assert frame_tv._tv_cooldown_remaining("192.0.2.7") > 0
+
+
+# --- reaching a connection that is still being established ---
+
+def test_the_tracker_notes_each_connection_samsungtvws_opens():
+    """samsungtvws hands the socket to nobody until its handshake is over."""
+    opened = object()
+    tracker = frame_tv._ConnectionTracker(
+        type("RealModule", (), {"create_connection": staticmethod(lambda *a, **k: opened)})()
+    )
+
+    frame_tv._forget_inflight(threading.get_ident())
+    try:
+        assert tracker.create_connection("wss://example") is opened
+        assert frame_tv._INFLIGHT_SOCKETS[threading.get_ident()] is opened
+    finally:
+        frame_tv._forget_inflight(threading.get_ident())
+
+
+def test_the_tracker_passes_everything_else_through():
+    real = type("RealModule", (), {"WebSocketTimeoutException": ValueError})()
+    assert frame_tv._ConnectionTracker(real).WebSocketTimeoutException is ValueError
+
+
+def test_samsungtvws_is_wired_to_the_tracker():
+    from samsungtvws import connection as samsung_connection
+
+    assert isinstance(samsung_connection.websocket, frame_tv._ConnectionTracker), (
+        "the library still opens connections this app cannot reach"
+    )
+
+
+def test_a_connection_left_half_open_is_closed_when_the_call_is_abandoned():
+    """A worker stuck inside open() holds the one art channel a Frame TV has.
+
+    close() cannot reach it through samsungtvws, which records a websocket only once
+    the handshake has finished, so the app keeps its own handle on it.
+    """
+    closed = threading.Event()
+
+    class FakeConnection:
+        def close(self):
+            closed.set()
+
+    def stuck_in_open(_session):
+        with frame_tv._INFLIGHT_GUARD:
+            frame_tv._INFLIGHT_SOCKETS[threading.get_ident()] = FakeConnection()
+        time.sleep(STUCK)
+
+    with pytest.raises(FrameTVTimeoutError):
+        frame_tv._tv_call("192.0.2.70", "testing", stuck_in_open, deadline=1, open_remote=False)
+
+    assert closed.wait(timeout=2), "the half-open connection was left for the OS to reap"
+
+
+def test_a_call_that_finishes_leaves_nothing_behind():
+    def opens_then_finishes(_session):
+        with frame_tv._INFLIGHT_GUARD:
+            frame_tv._INFLIGHT_SOCKETS[threading.get_ident()] = object()
+        return "done"
+
+    assert frame_tv._tv_call(
+        "192.0.2.71", "testing", opens_then_finishes, open_remote=False
+    ) == "done"
+
+    assert frame_tv._INFLIGHT_SOCKETS == {}, "a completed call left a connection recorded"
