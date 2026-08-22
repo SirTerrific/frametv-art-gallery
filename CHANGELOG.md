@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.0](https://github.com/SirTerrific/frametv-art-gallery/compare/v1.5.7...v1.6.0) (2026-08-22)
+
+
+### Features
+
+* choose the matte style and color when sending art to a TV ([df31bc5](https://github.com/SirTerrific/frametv-art-gallery/commit/df31bc5c58ae7b14c9ab9e5c47dbb7eff3d3b850))
+
 ## [1.5.7](https://github.com/SirTerrific/frametv-art-gallery/compare/v1.5.6...v1.5.7) (2026-08-11)
 
 
