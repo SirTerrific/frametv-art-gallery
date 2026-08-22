@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.2](https://github.com/SirTerrific/frametv-art-gallery/compare/v1.6.1...v1.6.2) (2026-08-22)
+
+
+### Bug Fixes
+
+* say why the app will not start after going back to an older image ([78bfd3c](https://github.com/SirTerrific/frametv-art-gallery/commit/78bfd3ceffc5513b3fb9be48287339efa1aa70bc))
+
 ## [1.6.1](https://github.com/SirTerrific/frametv-art-gallery/compare/v1.6.0...v1.6.1) (2026-08-22)
 
 
