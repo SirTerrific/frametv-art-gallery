@@ -5,11 +5,13 @@ import { addImageToAlbum } from "../utils/galleryApi";
 import { ArrowUpTrayIcon, ExclamationCircleIcon, TrashIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import CropImageModal from "./CropImageModal";
 import ImageModal from "./imageModal";
+import { MATTE_COLORS, splitMatte, combineMatte } from "../utils/matte";
 
 interface TV {
   ip: string;
   name?: string;
   mac?: string;
+  default_matte?: string | null;
 }
 
 interface AlbumOption {
@@ -74,6 +76,8 @@ const ImageCard: React.FC<ImageCardProps> = ({
   const [selectedAlbum, setSelectedAlbum] = useState('');
   const [assigning, setAssigning] = useState(false);
   const [assignMessage, setAssignMessage] = useState('');
+  const [matteStyle, setMatteStyle] = useState('none');
+  const [matteColor, setMatteColor] = useState<string>(MATTE_COLORS[0]);
 
   const isLocalImage = image?.type === 'local' || !image?.type;
   const availableAlbums = (albums || []).filter(album => filename && !album.images.includes(filename));
@@ -94,6 +98,15 @@ const ImageCard: React.FC<ImageCardProps> = ({
     setImageURL(fullSrc ?? src);
   }, [src, fullSrc]);
 
+  // Pick up the TV's own default matte when it is (re)selected, so opening the
+  // picker starts from what that set is normally sent with rather than "none".
+  useEffect(() => {
+    const tv = tvs.find(t => t.ip === selectedTvIp);
+    const { style, color } = splitMatte(tv?.default_matte);
+    setMatteStyle(style);
+    setMatteColor(color);
+  }, [selectedTvIp, tvs]);
+
   const handleSendToTV = async () => {
     if (!selectedTvIp) {
       setError("Select a TV");
@@ -101,7 +114,7 @@ const ImageCard: React.FC<ImageCardProps> = ({
     }
     setTvLoading(true);
     try {
-      let payload: any = { ip: selectedTvIp, filename: image?.filename };
+      let payload: any = { ip: selectedTvIp, filename: image?.filename, matte: combineMatte(matteStyle, matteColor) };
       if (image?.type === "provider") {
         payload.provider_id = image.id;
         payload.provider = image.provider;
@@ -261,6 +274,10 @@ const ImageCard: React.FC<ImageCardProps> = ({
         tvs={tvs}
         selectedTvIp={selectedTvIp}
         setSelectedTvIp={setSelectedTvIp}
+        matteStyle={matteStyle}
+        setMatteStyle={setMatteStyle}
+        matteColor={matteColor}
+        setMatteColor={setMatteColor}
         tvLoading={tvLoading}
         handleSendToTV={handleSendToTV}
         handlePlayUploadedImage={handlePlayUploadedImage}

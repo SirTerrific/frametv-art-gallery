@@ -699,6 +699,7 @@ def api_get_tvs():
             'slideshow_enabled': bool(getattr(tv, 'slideshow_enabled', False)),
             'slideshow_album_id': getattr(tv, 'slideshow_album_id', None),
             'slideshow_interval_minutes': getattr(tv, 'slideshow_interval_minutes', None),
+            'default_matte': getattr(tv, 'default_matte', None),
         } for tv in tvs
     ]}
 
@@ -710,6 +711,8 @@ def api_update_tv(ip):
     data = request.get_json() or {}
     if 'delete_other_images_on_upload' in data:
         tv.delete_other_images_on_upload = bool(data['delete_other_images_on_upload'])
+    if 'default_matte' in data:
+        tv.default_matte = (data['default_matte'] or '').strip() or None
 
     if 'slideshow_enabled' in data:
         tv.slideshow_enabled = bool(data['slideshow_enabled'])
@@ -845,9 +848,16 @@ def api_send_to_tv():
         delete_others = False
         if tv and hasattr(tv, 'delete_other_images_on_upload'):
             delete_others = bool(tv.delete_other_images_on_upload)
+        # A matte named on the request wins; otherwise fall back to the TV's own
+        # default. Neither given, and the kwarg is left out entirely so
+        # upload_artwork's own "none" default applies, exactly as before this option
+        # existed.
+        matte = (data.get('matte') or '').strip() or (tv.default_matte if tv else None)
+        matte_kwargs = {'matte': matte} if matte else {}
         # upload_artwork should return content_id
         content_id = upload_artwork(
-            ip, art_path, brightness=brightness, display=display, token=token, delete_others=delete_others
+            ip, art_path, brightness=brightness, display=display, token=token, delete_others=delete_others,
+            **matte_kwargs
         )
         # Store UploadedImage record
         image = Image.query.filter_by(filename=filename).first()
