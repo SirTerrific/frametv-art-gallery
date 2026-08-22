@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.1](https://github.com/SirTerrific/frametv-art-gallery/compare/v1.6.0...v1.6.1) (2026-08-22)
+
+
+### Bug Fixes
+
+* only send a matte when one was actually chosen ([76a4db0](https://github.com/SirTerrific/frametv-art-gallery/commit/76a4db0a5f6d7f0a129be3889e0821308047036f))
+
 ## [1.6.0](https://github.com/SirTerrific/frametv-art-gallery/compare/v1.5.7...v1.6.0) (2026-08-22)
 
 
