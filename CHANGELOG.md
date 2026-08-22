@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.7](https://github.com/SirTerrific/frametv-art-gallery/compare/v1.6.6...v1.6.7) (2026-08-22)
+
+
+### Bug Fixes
+
+* close a connection the TV left half-open, instead of leaking the art channel ([cef5653](https://github.com/SirTerrific/frametv-art-gallery/commit/cef5653b755422051740ff21f941bd8d20921dca))
+
 ## [1.6.6](https://github.com/SirTerrific/frametv-art-gallery/compare/v1.6.5...v1.6.6) (2026-08-22)
 
 
