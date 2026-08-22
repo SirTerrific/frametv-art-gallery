@@ -8,6 +8,7 @@ import { Button } from '~/components/ui/button';
 import { getProviders, setProvider, getProvider, deleteProvider } from '~/utils/providerApi';
 
 import type { ProviderConfig } from '~/utils/providerApi';
+import { MATTE_STYLES, MATTE_COLORS, splitMatte, combineMatte } from '~/utils/matte';
 
 interface TV {
   ip: string;
@@ -17,6 +18,7 @@ interface TV {
   slideshow_enabled?: boolean;
   slideshow_album_id?: number | null;
   slideshow_interval_minutes?: number | null;
+  default_matte?: string | null;
 }
 
 export default function Settings() {
@@ -161,6 +163,17 @@ export default function Settings() {
     }
   };
 
+  const handleDefaultMatte = async (tvIp: string, matte: string) => {
+    setError('');
+    try {
+      await updateTv(tvIp, { default_matte: matte });
+    } catch (e: any) {
+      setError(e.message || 'Failed to update the default matte');
+    } finally {
+      await fetchTvs();
+    }
+  };
+
   const handleReconcile = async () => {
     setMaintenanceBusy(true);
     setError('');
@@ -255,7 +268,9 @@ export default function Settings() {
             <div className="text-muted-foreground text-center">No TVs added yet.</div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {tvs.map((tv) => (
+              {tvs.map((tv) => {
+                const { style: matteStyle, color: matteColor } = splitMatte(tv.default_matte);
+                return (
                 <div key={tv.ip} className="bg-card shadow-md rounded-xl p-5 border border-border">
                   <div className="mb-4">
                     {tv.name && <div className="font-semibold text-foreground">{tv.name}</div>}
@@ -334,6 +349,36 @@ export default function Settings() {
                     </div>
                   </fieldset>
 
+                  <fieldset className="mb-4 border border-gray-200 rounded-lg p-3">
+                    <legend className="text-sm font-medium px-1">Default matte</legend>
+                    <p className="text-xs text-gray-500 mb-2">
+                      Used for anything sent to this TV without a matte of its own.
+                    </p>
+                    <div className="grid grid-cols-2 gap-2">
+                      <select
+                        value={matteStyle}
+                        onChange={e => handleDefaultMatte(tv.ip, combineMatte(e.target.value, matteColor))}
+                        aria-label="Default matte style"
+                        className="border px-2 py-2 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-200"
+                      >
+                        {MATTE_STYLES.map(style => (
+                          <option key={style} value={style}>{style === 'none' ? 'No matte' : style}</option>
+                        ))}
+                      </select>
+                      <select
+                        value={matteColor}
+                        onChange={e => handleDefaultMatte(tv.ip, combineMatte(matteStyle, e.target.value))}
+                        disabled={matteStyle === 'none'}
+                        aria-label="Default matte color"
+                        className="border px-2 py-2 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:opacity-50"
+                      >
+                        {MATTE_COLORS.map(color => (
+                          <option key={color} value={color}>{color}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </fieldset>
+
                   <div className="flex flex-col gap-2">
                     <Link to={`/tv-gallery?ip=${encodeURIComponent(tv.ip)}`} className="bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium py-2 px-4 rounded-lg text-center">
                       View Gallery
@@ -349,7 +394,8 @@ export default function Settings() {
                     </Button>
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
