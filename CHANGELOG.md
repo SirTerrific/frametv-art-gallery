@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.5](https://github.com/SirTerrific/frametv-art-gallery/compare/v1.6.4...v1.6.5) (2026-08-22)
+
+
+### Bug Fixes
+
+* let a page reload read the gallery without waiting on the TV ([c87bacc](https://github.com/SirTerrific/frametv-art-gallery/commit/c87bacce4b442d6d3c555a2e8eea0cc2c6fe5b90))
+
 ## [1.6.4](https://github.com/SirTerrific/frametv-art-gallery/compare/v1.6.3...v1.6.4) (2026-08-22)
 
 
