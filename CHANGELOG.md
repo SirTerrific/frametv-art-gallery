@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.8](https://github.com/SirTerrific/frametv-art-gallery/compare/v1.6.7...v1.6.8) (2026-08-22)
+
+
+### Bug Fixes
+
+* clear a TV's abandoned connections before talking to it again ([e6c0151](https://github.com/SirTerrific/frametv-art-gallery/commit/e6c01512cc7b8e1d694d336a2cc6ba501d74142c))
+
 ## [1.6.7](https://github.com/SirTerrific/frametv-art-gallery/compare/v1.6.6...v1.6.7) (2026-08-22)
 
 
