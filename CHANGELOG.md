@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.6](https://github.com/SirTerrific/frametv-art-gallery/compare/v1.6.5...v1.6.6) (2026-08-22)
+
+
+### Bug Fixes
+
+* cut a silent TV loose on the clock, not only at the end of a batch ([6217087](https://github.com/SirTerrific/frametv-art-gallery/commit/62170877e65d11a707cce4dee851505e5dad00f6))
+
 ## [1.6.5](https://github.com/SirTerrific/frametv-art-gallery/compare/v1.6.4...v1.6.5) (2026-08-22)
 
 
