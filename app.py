@@ -60,6 +60,7 @@ from utils.frame_tv import (
     get_tv_device_info,
     play_uploaded_content,
     get_tv_gallery_thumbnail,
+    set_token_observer,
 )
 
 DATA_DIR = os.environ.get("FRAME_TV_DATA", "data")
@@ -173,6 +174,30 @@ STATIC_ROOT = Path(app.static_folder).resolve() if app.static_folder else None
 
 def _log_exception(context: str, exc: Exception):
     app.logger.error("%s: %s", context, exc, exc_info=True)
+
+
+def _remember_tv_token(ip: str, token: str) -> None:
+    """Store a token the TV handed back, so the next connection is not a stranger.
+
+    A Frame TV issues a fresh token when a client connects and stops honouring the
+    previous one. The token was only ever read at pairing time, so every later
+    connection presented a stale one and the set asked the user to allow the app
+    again — every single time.
+    """
+    try:
+        with app.app_context():
+            tv = TV.query.filter_by(ip=ip).first()
+            if tv is None or tv.token == token:
+                return
+            tv.token = token
+            db.session.commit()
+            app.logger.info('TV %s issued a new token; stored it', ip)
+    except Exception:
+        # Losing the new token costs one more pairing prompt, not the request.
+        app.logger.warning('Could not store the new token for TV %s', ip, exc_info=True)
+
+
+set_token_observer(_remember_tv_token)
 
 
 def _log_tv_unreachable(context: str, exc: Exception):
