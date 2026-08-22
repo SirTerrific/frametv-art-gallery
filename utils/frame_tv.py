@@ -4,7 +4,7 @@ import threading
 import time
 from concurrent.futures import ThreadPoolExecutor, TimeoutError as FutureTimeoutError
 from datetime import datetime
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional, Tuple
 import base64
 import websocket
 from samsungtvws import SamsungTVWS
@@ -48,6 +48,10 @@ TV_THUMBNAIL_BATCH = _env_int("FRAME_TV_THUMBNAIL_BATCH", 8)
 # Fetching a page of thumbnails is several of those transfers, so it gets its own
 # budget rather than a single call's.
 TV_THUMBNAIL_DEADLINE = _env_int("FRAME_TV_THUMBNAIL_DEADLINE", 120)
+# How many images in a row may die at the connection level before the rest of the
+# gallery is left for next time. Each one costs a socket timeout, and the TV is locked
+# for the whole walk, so this bounds how long one page load can hold it.
+TV_THUMBNAIL_GIVE_UP = _env_int("FRAME_TV_THUMBNAIL_GIVE_UP", 3)
 # Simple in-memory cache to reduce repeated TV requests
 # Structure: { (ip, 'gallery'): (timestamp, value), (ip, content_id): (timestamp, bytes) }
 _CACHE: dict = {}
@@ -757,21 +761,24 @@ def _content_id_of(name: str, wanted: List[str]) -> Optional[str]:
     return stem if stem in wanted else None
 
 
-def _single_thumbnail(art, ip: str, content_id: str) -> Optional[bytes]:
-    """One thumbnail through the single-image endpoint, or None if it did not come.
+def _single_thumbnail(art, ip: str, content_id: str) -> Tuple[Optional[bytes], bool]:
+    """One thumbnail through the single-image endpoint.
 
-    Whether that means the image has no preview or the TV has stopped talking is not
-    decided here — the caller can tell, because it knows what the same TV answered for
-    the images around it.
+    Returns (payload, still_talking). `still_talking` is False only when the call died
+    at the connection level: the difference between "this image has no preview" and
+    "the TV has stopped answering" is what tells the caller whether to keep walking the
+    gallery or to stop. Getting that wrong costs a socket timeout per remaining image.
     """
     try:
         thumbnail = art.get_thumbnail(content_id)
     except Exception as err:
-        logger.debug("TV %s did not return %s: %s", ip, content_id, err)
-        return None
+        if _is_connection_error(err):
+            return None, False
+        logger.debug("TV %s declined %s: %s", ip, content_id, err)
+        return None, True
     if isinstance(thumbnail, (bytes, bytearray)) and thumbnail:
-        return bytes(thumbnail)
-    return None
+        return bytes(thumbnail), True
+    return None, True
 
 
 def _collect_thumbnails(
@@ -819,6 +826,7 @@ def _collect_thumbnails(
     # a slow one. So refusals are noted and judged at the end.
     refusals: List[tuple] = []
     answered = 0
+    dead_in_a_row = 0
 
     for start in range(0, len(missing), TV_THUMBNAIL_BATCH):
         batch = missing[start:start + TV_THUMBNAIL_BATCH]
@@ -843,10 +851,24 @@ def _collect_thumbnails(
         for cid in batch:
             if cid in found or _known_to_have_no_thumbnail(ip, cid):
                 continue
-            payload = _single_thumbnail(art, ip, cid)
+            payload, still_talking = _single_thumbnail(art, ip, cid)
             if payload is None:
                 refusals.append((cid, answered))
+                # A set that will not serve an image closes the socket on it, exactly
+                # as a set that has gone away does, so the two cannot be told apart
+                # from one call. What separates them is how many in a row: a handful
+                # of unservable images is normal, a wall of them is a TV that stopped
+                # talking. Walking the rest at a socket timeout apiece is what had a
+                # page load holding the TV for two minutes.
+                dead_in_a_row += 1 if not still_talking else 0
+                if dead_in_a_row >= TV_THUMBNAIL_GIVE_UP:
+                    logger.warning(
+                        "TV %s went quiet after %d thumbnails; leaving the rest for next time",
+                        ip, answered,
+                    )
+                    return found
                 continue
+            dead_in_a_row = 0
             if keep(cid, payload):
                 answered += 1
 

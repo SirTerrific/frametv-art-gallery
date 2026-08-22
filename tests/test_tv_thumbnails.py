@@ -175,3 +175,30 @@ def test_the_listing_serves_the_cache_without_calling_the_tv():
 
     assert set(found) == {"CACHED"}
     assert art.requests == [], "the listing should not wait on the TV for thumbnails"
+
+
+def test_a_wall_of_dead_images_stops_the_walk():
+    """Each dead image costs a socket timeout, and the TV is locked for the whole walk.
+
+    A page load was holding the set for two minutes working through a gallery that had
+    stopped answering, which blocked every other request behind it.
+    """
+    wanted = [f"C{n}" for n in range(40)]
+    art = FakeArt(unservable=set(wanted))
+
+    frame_tv._collect_thumbnails(art, "192.0.2.40", wanted)
+
+    assert len(art.singles) <= frame_tv.TV_THUMBNAIL_GIVE_UP + 1, (
+        f"asked {len(art.singles)} dead images one by one instead of giving up"
+    )
+
+
+def test_scattered_unservable_images_do_not_stop_it():
+    """Store art sits among ordinary art; a few refusals must not abandon the rest."""
+    wanted = [f"C{n}" for n in range(12)]
+    art = FakeArt(unservable={"C1", "C5", "C9"})
+
+    found = frame_tv._collect_thumbnails(art, "192.0.2.41", wanted)
+
+    assert set(found) == set(wanted) - {"C1", "C5", "C9"}
+    assert len(found) == 9, "everything the TV would serve should still be here"
