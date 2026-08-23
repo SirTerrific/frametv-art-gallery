@@ -252,6 +252,17 @@ def _tv_exclusive(ip: str, wait: float):
         local.release()
 
 
+# Notified as observer(ip, token) whenever a TV hands back a token that differs from
+# the one it was given. Registered once by the app, which is what owns the database;
+# this module stays unaware of where tokens are kept.
+_token_observer: Optional[Callable[[str, str], None]] = None
+
+
+def set_token_observer(observer: Optional[Callable[[str, str], None]]) -> None:
+    global _token_observer
+    _token_observer = observer
+
+
 class _TVSession:
     """A TV connection (remote channel + art channel) closable from another thread.
 
@@ -275,6 +286,19 @@ class _TVSession:
         if self._art is None:
             self._art = self._tv.art()
         return self._art
+
+    def current_token(self) -> Optional[str]:
+        """The freshest token these channels hold.
+
+        A Frame TV issues a new token on connect, and samsungtvws keeps it on whichever
+        channel received it. `tv.art()` is handed a copy of the token as it stood then,
+        so the art channel — opened last — carries the newest one.
+        """
+        for channel in (self._art, self._tv):
+            token = getattr(channel, "token", None)
+            if token:
+                return str(token)
+        return None
 
     def close(self) -> None:
         for channel in (self._art, self._tv):
@@ -329,6 +353,21 @@ def _tv_call(
                 session.tv.open()
             return action(session)
 
+        def keep_any_new_token():
+            """A token the TV issued is worth keeping even if the call then failed.
+
+            It is handed over during the connect handshake, so a request that dies
+            later still learned the one the set expects next time.
+            """
+            if _token_observer is None:
+                return
+            fresh = session.current_token()
+            if fresh and fresh != token:
+                try:
+                    _token_observer(ip, fresh)
+                except Exception:
+                    logger.warning("Could not hand on the new token for TV %s", ip, exc_info=True)
+
         future = _TV_EXECUTOR.submit(run)
         try:
             result = future.result(timeout=deadline)
@@ -337,18 +376,21 @@ def _tv_call(
             # sockets so the recv() blocking the worker thread raises and lets it go.
             if not future.cancel():
                 session.close()
+            keep_any_new_token()
             _mark_tv_down(ip)
             raise FrameTVTimeoutError(
                 f"Timeout after {deadline}s while {action_description} TV {ip}"
             ) from err
         except Exception as err:
             session.close()
+            keep_any_new_token()
             if _is_connection_error(err):
                 _mark_tv_down(ip)
                 _raise_tv_connection_error(ip, action_description, err)
             raise
 
         _mark_tv_up(ip)
+        keep_any_new_token()
         session.close()
         return result
 
