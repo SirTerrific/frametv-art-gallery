@@ -332,6 +332,31 @@ _INFLIGHT_SOCKETS: Dict[int, Any] = {}
 _INFLIGHT_TV: Dict[int, str] = {}
 _INFLIGHT_GUARD = threading.Lock()
 
+# What each worker thread has heard from its TV: [frames, bytes]. Watching traffic at
+# the socket is what separates a set that has gone quiet from one still streaming a
+# long answer — a check between calls cannot tell the two apart.
+_TRAFFIC: Dict[int, List[int]] = {}
+_INFLIGHT_PROGRESS: Dict[int, Callable[[], None]] = {}
+
+
+def _note_traffic(thread_id: int, data) -> None:
+    with _INFLIGHT_GUARD:
+        traffic = _TRAFFIC.get(thread_id)
+        if traffic is not None:
+            traffic[0] += 1
+            traffic[1] += len(data) if data else 0
+        hook = _INFLIGHT_PROGRESS.get(thread_id)
+    if hook is not None:
+        hook()
+
+
+def _traffic_snapshot(thread_id: int) -> str:
+    with _INFLIGHT_GUARD:
+        traffic = _TRAFFIC.get(thread_id)
+    if traffic is None:
+        return "no traffic recorded"
+    return f"{traffic[0]} frame(s), {traffic[1]} byte(s) received"
+
 
 class _ConnectionTracker:
     """The websocket module as samsungtvws sees it, noting each connection it opens."""
@@ -344,8 +369,19 @@ class _ConnectionTracker:
 
     def create_connection(self, *args, **kwargs):
         connection = self._real.create_connection(*args, **kwargs)
+        thread_id = threading.get_ident()
+        real_recv = connection.recv
+
+        def recv(*recv_args, **recv_kwargs):
+            data = real_recv(*recv_args, **recv_kwargs)
+            _note_traffic(thread_id, data)
+            return data
+
+        # Instance attribute, not a subclass: callers and tests keep the very object
+        # the real module handed back, only its reads are observed.
+        connection.recv = recv
         with _INFLIGHT_GUARD:
-            _INFLIGHT_SOCKETS[threading.get_ident()] = connection
+            _INFLIGHT_SOCKETS[thread_id] = connection
         return connection
 
 
@@ -360,11 +396,16 @@ def _forget_inflight(thread_id: int) -> None:
     with _INFLIGHT_GUARD:
         _INFLIGHT_SOCKETS.pop(thread_id, None)
         _INFLIGHT_TV.pop(thread_id, None)
+        _INFLIGHT_PROGRESS.pop(thread_id, None)
+        _TRAFFIC.pop(thread_id, None)
 
 
-def _claim_inflight(thread_id: int, ip: str) -> None:
+def _claim_inflight(thread_id: int, ip: str, on_progress: Optional[Callable[[], None]] = None) -> None:
     with _INFLIGHT_GUARD:
         _INFLIGHT_TV[thread_id] = ip
+        _TRAFFIC[thread_id] = [0, 0]
+        if on_progress is not None:
+            _INFLIGHT_PROGRESS[thread_id] = on_progress
 
 
 def reset_connections(ip: str) -> int:
@@ -422,6 +463,7 @@ class _TVSession:
         self._art = None
         self._worker_thread_id: Optional[int] = None
         self._last_progress = time.monotonic()
+        self._context = ""
 
     def note_progress(self) -> None:
         """Called each time the library comes back from the TV, however it came back.
@@ -430,13 +472,23 @@ class _TVSession:
         """
         self._last_progress = time.monotonic()
 
+    def note_context(self, description: str) -> None:
+        """What the worker is currently asking the TV for, for the stall log."""
+        self._context = description
+
+    def describe_traffic(self) -> str:
+        """Frames and bytes heard on this worker's connection, if it claimed one."""
+        if self._worker_thread_id is None:
+            return "no traffic recorded"
+        return _traffic_snapshot(self._worker_thread_id)
+
     def idle_for(self) -> float:
         return time.monotonic() - self._last_progress
 
     def claim_worker(self) -> None:
         """Called from the thread that will talk to the TV, so close() can reach it."""
         self._worker_thread_id = threading.get_ident()
-        _claim_inflight(self._worker_thread_id, self.ip)
+        _claim_inflight(self._worker_thread_id, self.ip, on_progress=self.note_progress)
 
     def release_worker(self) -> None:
         if self._worker_thread_id is not None:
@@ -561,7 +613,9 @@ def _tv_call(
 
         # A stall is a call that never comes back, so no check placed between calls can
         # see it. This watches from outside and closes the connection, which is what
-        # makes the blocked read raise and hands the TV back.
+        # makes the blocked read raise and hands the TV back. Progress is noted on
+        # every frame the socket delivers, so a set still streaming a long answer is
+        # left alone — only real silence trips this.
         finished = threading.Event()
         if stall_timeout:
             def watch_for_a_stall():
@@ -569,8 +623,10 @@ def _tv_call(
                     idle = session.idle_for()
                     if idle >= stall_timeout:
                         logger.warning(
-                            "TV %s sent nothing for %.0fs while %s; closing the connection",
+                            "TV %s sent nothing for %.0fs while %s%s; closing the connection (%s)",
                             ip, idle, action_description,
+                            f" ({session._context})" if session._context else "",
+                            session.describe_traffic(),
                         )
                         session.close()
                         return
@@ -998,6 +1054,7 @@ def _single_thumbnail(art, ip: str, content_id: str) -> Tuple[Optional[bytes], b
 def _collect_thumbnails(
     art, ip: str, content_ids: List[str], fetch_missing: bool = True,
     on_progress: Optional[Callable[[], None]] = None,
+    on_batch: Optional[Callable[[List[str]], None]] = None,
 ) -> Dict[str, bytes]:
     """Thumbnails for `content_ids`: cache first, then whatever is left, in batches.
 
@@ -1057,6 +1114,9 @@ def _collect_thumbnails(
             return found
 
         batch = missing[start:start + TV_THUMBNAIL_BATCH]
+        if on_batch:
+            # Which images the blocked call was asking for, if it never comes back.
+            on_batch(batch)
         try:
             thumb_map = art.get_thumbnail_list(batch) or {}
             if on_progress:
@@ -1088,6 +1148,8 @@ def _collect_thumbnails(
                     ip, TV_THUMBNAIL_FIRST_ANSWER,
                 )
                 return found
+            if on_batch:
+                on_batch([cid])
             payload, still_talking = _single_thumbnail(art, ip, cid)
             if on_progress:
                 on_progress()
@@ -1153,7 +1215,8 @@ def get_tv_gallery_thumbnails(
             ip,
             "fetching thumbnails from",
             lambda session: _collect_thumbnails(
-                session.art(), ip, missing, on_progress=session.note_progress
+                session.art(), ip, missing, on_progress=session.note_progress,
+                on_batch=lambda batch: session.note_context(f"batch {batch}"),
             ),
             token=token,
             deadline=TV_THUMBNAIL_DEADLINE,
@@ -1310,7 +1373,9 @@ def get_tv_gallery_thumbnail(ip: str, content_id: str, token: Optional[str] = No
     def action(session: _TVSession) -> Optional[bytes]:
         # The batch endpoint is the reliable path on recent firmware and already falls
         # back to the single call for content it skips.
-        return _collect_thumbnails(session.art(), ip, [content_id]).get(content_id)
+        return _collect_thumbnails(session.art(), ip, [content_id],
+                                   on_batch=lambda batch: session.note_context(f"batch {batch}")
+                                   ).get(content_id)
 
     thumbnail_bytes = _tv_call(ip, f"fetching thumbnail {content_id} from", action, token=token)
     if thumbnail_bytes is not None:

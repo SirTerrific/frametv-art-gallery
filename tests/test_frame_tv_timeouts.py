@@ -221,9 +221,19 @@ def test_tv_errors_are_not_swallowed_as_connection_errors():
 
 # --- reaching a connection that is still being established ---
 
+class _FakeSocket:
+    """Stands in for a websocket: reads come from `incoming`, one frame at a time."""
+
+    def __init__(self):
+        self.incoming = []
+
+    def recv(self, *args, **kwargs):
+        return self.incoming.pop(0) if self.incoming else b""
+
+
 def test_the_tracker_notes_each_connection_samsungtvws_opens():
     """samsungtvws hands the socket to nobody until its handshake is over."""
-    opened = object()
+    opened = _FakeSocket()
     tracker = frame_tv._ConnectionTracker(
         type("RealModule", (), {"create_connection": staticmethod(lambda *a, **k: opened)})()
     )
@@ -234,6 +244,28 @@ def test_the_tracker_notes_each_connection_samsungtvws_opens():
         assert frame_tv._INFLIGHT_SOCKETS[threading.get_ident()] is opened
     finally:
         frame_tv._forget_inflight(threading.get_ident())
+
+
+def test_the_tracker_observes_reads_and_counts_them_as_progress():
+    """A frame arriving mid-call is proof of life the stall watchdog can see."""
+    opened = _FakeSocket()
+    opened.incoming.append(b"frame-bytes")
+    tracker = frame_tv._ConnectionTracker(
+        type("RealModule", (), {"create_connection": staticmethod(lambda *a, **k: opened)})()
+    )
+
+    thread_id = threading.get_ident()
+    pings = []
+    frame_tv._forget_inflight(thread_id)
+    frame_tv._claim_inflight(thread_id, "192.0.2.70", on_progress=lambda: pings.append(1))
+    try:
+        connection = tracker.create_connection("wss://example")
+        assert connection.recv() == b"frame-bytes"
+        assert pings, "a frame from the TV did not count as progress"
+        assert frame_tv._TRAFFIC[thread_id] == [1, len(b"frame-bytes")]
+        assert "1 frame(s)" in frame_tv._traffic_snapshot(thread_id)
+    finally:
+        frame_tv._forget_inflight(thread_id)
 
 
 def test_the_tracker_passes_everything_else_through():
