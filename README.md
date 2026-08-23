@@ -95,6 +95,8 @@ All optional, with sensible defaults. Set them as environment variables on the c
 
 | Variable | Default | What it does |
 | --- | --- | --- |
+| `FRAME_TV_DATA` | `data` | Where uploads, the database and the caches live. Mount this to keep them. |
+| `MAX_UPLOAD_SIZE_BYTES` | `20971520` | Largest image accepted by the upload form (20 MB). |
 | `GUNICORN_WORKERS` | `4` | Worker processes. More than one keeps a slow TV from blocking the whole app. |
 | `GUNICORN_TIMEOUT` | `180` | Seconds before gunicorn kills a worker. Keep it above `FRAME_TV_UPLOAD_DEADLINE`. |
 | `FRAME_TV_SOCKET_TIMEOUT` | `8` | Socket timeout for a single read from the TV. |
@@ -103,9 +105,13 @@ All optional, with sensible defaults. Set them as environment variables on the c
 | `FRAME_TV_PAIRING_TIMEOUT` | `45` | How long adding a TV waits for the pairing prompt to be accepted. |
 | `FRAME_TV_DOWN_COOLDOWN` | `30` | Seconds a TV is skipped after it failed to answer. |
 | `FRAME_TV_BUSY_WAIT` | `90` | How long a deliberate action queues behind another operation on the same TV. |
+| `FRAME_TV_STALL_TIMEOUT` | `25` | Seconds of silence on a connection before it is closed from the outside. |
 | `FRAME_TV_THUMBNAIL_BATCH` | `8` | Thumbnails asked for per request. Lower it if a TV drops long transfers. |
 | `FRAME_TV_THUMBNAIL_DEADLINE` | `120` | Seconds a page of thumbnails may take in total. |
+| `FRAME_TV_THUMBNAIL_FIRST_ANSWER` | `25` | Seconds a page may run without a single thumbnail before it stops. |
+| `FRAME_TV_THUMBNAIL_GIVE_UP` | `3` | Images that may die in a row before the rest are left for next time. |
 | `FRAME_TV_NO_THUMBNAIL_TTL` | `3600` | How long content the TV has no preview for is left alone before asking again. |
+| `FRAME_TV_GALLERY_TTL` | `15` | How long the TV's image list is reused, so a reload need not wait on the set. |
 | `FRAME_TV_MAX_PARALLEL_CALLS` | `8` | Concurrent TV requests per worker. |
 | `FRAME_TV_SLIDESHOW` | `1` | Set to `0` to stop the slideshow loop from running at all. |
 
@@ -131,16 +137,36 @@ Thumbnails are fetched `FRAME_TV_THUMBNAIL_BATCH` at a time. The TV streams a wh
 request down one socket before answering, so asking for a large gallery at once is a
 single long transfer that is lost entirely if it does not finish — which is what leaves
 every row blank on a set holding dozens of 4K images. Each batch is cached as it lands,
-so a gallery fills in over a few visits even on a set that keeps giving up. If yours
-still stops early, lower the batch size and look for
-`TV … stopped answering after N of M thumbnails` in the logs.
+so a gallery fills in over a few visits even on a set that keeps giving up.
 
 Some of the art a Frame TV ships with has no preview to give, and asking for one takes
 the whole batch down with it — the set closes the socket instead of leaving that entry
 out. A refused batch is therefore asked for again one image at a time, so a single
 unservable entry costs only itself. Those keep a placeholder, and the logs say
-`TV … has no preview for SAM-…` once rather than on every page load. Anything uploaded
-from here always has a thumbnail.
+`TV … has no preview for …` once rather than on every page load.
+
+## One image never loads, and the whole page crawls
+
+An image can be worse than unservable: the TV starts sending it, delivers a frame or
+two, then stops mid-transfer **without closing the socket**. Nothing times out, because
+a read that never returns is not a read that failed, and the request sits there until
+its whole budget is gone. One such entry is enough to make every page load slow.
+
+The traffic on the connection is watched for exactly this. Once nothing at all has
+arrived for `FRAME_TV_STALL_TIMEOUT` seconds the connection is closed from the outside,
+which is what makes the stuck read give up:
+
+```
+TV 10.0.0.13 sent nothing for 25s while fetching thumbnails from (batch ['MY_F0510']); closing the connection (4 frame(s), 1825 byte(s) received)
+```
+
+The batch named there is the culprit. An entry that stalls after the set had been
+talking is written off as previewless for `FRAME_TV_NO_THUMBNAIL_TTL`, so the next visit
+skips it rather than paying the stall again — `TV … stalled serving … mid-transfer`.
+Total silence is treated as a TV that has gone away instead, and nothing is written off.
+
+If a particular image does this every time, it is likely damaged on the set. Delete it
+from the TV page and upload it again.
 
 Deliberate actions (playing an image, deleting one, uploading) ignore that cooldown and
 still try, so the TV waking up is noticed immediately. If it persists, check that the TV is
