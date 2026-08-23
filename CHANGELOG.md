@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.10](https://github.com/SirTerrific/frametv-art-gallery/compare/v1.6.9...v1.6.10) (2026-08-23)
+
+
+### Bug Fixes
+
+* judge a stall by what the socket delivers, not by calls coming back ([95ae598](https://github.com/SirTerrific/frametv-art-gallery/commit/95ae598808df3df6e7644cb54c8f4016174271a2))
+
 ## [1.6.9](https://github.com/SirTerrific/frametv-art-gallery/compare/v1.6.8...v1.6.9) (2026-08-22)
 
 
