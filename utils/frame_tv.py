@@ -933,14 +933,6 @@ def enable_art_mode(ip: str, token: Optional[str] = None) -> None:
         skip_when_down=False,
     )
 
-def remove_token(ip: str) -> None:
-    """
-    Delete the authentication token file for the specified TV IP.
-    Args:
-        ip (str): IP address of the TV.
-    """
-    pass
-
 def get_available_mattes(ip: str, token: Optional[str] = None) -> Optional[Dict]:
     """
     Get the list of available matte styles and colors on the Frame TV.
