@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.12](https://github.com/SirTerrific/frametv-art-gallery/compare/v1.6.11...v1.6.12) (2026-08-23)
+
+
+### Bug Fixes
+
+* skip entries remembered as previewless, and tell a stall from a fast refusal ([d72095b](https://github.com/SirTerrific/frametv-art-gallery/commit/d72095b695c2665eab81b849e7663c0acd727139))
+
 ## [1.6.11](https://github.com/SirTerrific/frametv-art-gallery/compare/v1.6.10...v1.6.11) (2026-08-23)
 
 
