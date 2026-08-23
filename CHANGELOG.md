@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.11](https://github.com/SirTerrific/frametv-art-gallery/compare/v1.6.10...v1.6.11) (2026-08-23)
+
+
+### Bug Fixes
+
+* write off an image the TV stalls on mid-transfer, instead of paying the stall again ([0e14bea](https://github.com/SirTerrific/frametv-art-gallery/commit/0e14bea95c1fe3fd403db0c120c782217c39d489))
+
 ## [1.6.10](https://github.com/SirTerrific/frametv-art-gallery/compare/v1.6.9...v1.6.10) (2026-08-23)
 
 
