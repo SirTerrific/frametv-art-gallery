@@ -130,19 +130,23 @@ def test_a_tv_that_stops_talking_is_not_mistaken_for_missing_previews():
         )
 
 
-def test_a_batch_the_tv_stalls_on_mid_transfer_is_written_off():
+def test_a_batch_the_tv_stalls_on_mid_transfer_is_written_off(monkeypatch):
     """The set answered during this very call, then went silent: the batch is poison.
 
     Observed on a real set (MY_F0510): 4 frames of a D2D transfer arrive, then nothing
-    ever again, and the socket stays open — so only the stall watchdog ends the call.
-    Asking again on the next page load would pay the same 25s for the same nothing.
+    ever again, and the socket stays open — so only the stall watchdog ends the call,
+    25s in. Asking again on the next page load would pay the same stall for the same
+    nothing.
     """
     art = FakeArt()
     frames = [0]
+    clock = [1000.0]
+    monkeypatch.setattr(frame_tv.time, "monotonic", lambda: clock[0])
 
     def stalling_batch(content_ids):
         art.requests.append(list(content_ids))
         frames[0] += 4  # the TV spoke, then stopped; the watchdog cut the call
+        clock[0] += frame_tv.TV_STALL_TIMEOUT + 5
         raise ConnectionError({"reason": "socket closed"})
 
     art.get_thumbnail_list = stalling_batch
@@ -154,6 +158,31 @@ def test_a_batch_the_tv_stalls_on_mid_transfer_is_written_off():
     assert found == {}
     assert frame_tv._known_to_have_no_thumbnail("192.0.2.42", "MY_F0510")
     assert art.singles == [], "a poisoned entry must not be retried one image at a time"
+
+    frame_tv._collect_thumbnails(art, "192.0.2.42", ["MY_F0510"], frames_received=lambda: frames[0])
+    assert art.requests == [["MY_F0510"]], "a quarantined entry must not be asked for again"
+
+
+def test_a_fast_refusal_with_frames_is_still_retried_singly():
+    """An error frame then a quick close is a refusal, not a stall: one bad image
+    must not write off its whole batch without the one-at-a-time pass."""
+    art = FakeArt()
+    frames = [0]
+
+    def refusing_batch(content_ids):
+        art.requests.append(list(content_ids))
+        frames[0] += 1  # the TV answered at once — with an error
+        raise ConnectionError({"reason": "socket closed"})
+
+    art.get_thumbnail_list = refusing_batch
+    art.get_thumbnail = lambda cid: bytearray(b"single-" + cid.encode())
+
+    found = frame_tv._collect_thumbnails(
+        art, "192.0.2.44", ["MY_F0510", "MY_F0511"], frames_received=lambda: frames[0]
+    )
+
+    assert set(found) == {"MY_F0510", "MY_F0511"}, "the singles pass must still run"
+    assert not frame_tv._known_to_have_no_thumbnail("192.0.2.44", "MY_F0510")
 
 
 def test_a_batch_refused_in_total_silence_is_not_written_off():

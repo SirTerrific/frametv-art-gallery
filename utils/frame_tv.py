@@ -1090,6 +1090,10 @@ def _collect_thumbnails(
         cached = _cached_thumbnail(ip, cid)
         if cached is not None:
             found[cid] = cached
+        elif _known_to_have_no_thumbnail(ip, cid):
+            # Remembered as previewless: asking again is a round trip for the same
+            # nothing — and for a poisoned entry, another stall.
+            continue
         else:
             missing.append(cid)
 
@@ -1132,22 +1136,27 @@ def _collect_thumbnails(
             on_batch(batch)
         try:
             frames_before = frames_received() if frames_received else None
+            call_started = time.monotonic()
             thumb_map = art.get_thumbnail_list(batch) or {}
             if on_progress:
                 on_progress()
         except Exception as err:
             if on_progress:
                 on_progress()
-            if (
+            stalled = (
                 frames_received is not None
                 and frames_before is not None
                 and frames_received() > frames_before
-            ):
-                # The set answered during this very call, then stopped: it was alive,
-                # so the batch itself is the problem — an entry whose transfer starts
-                # and never finishes. A dead TV looks identical from one call, except
-                # it says nothing at all. Remembering these as previewless is what
-                # stops every page load paying another stall for the same image.
+                and time.monotonic() - call_started >= TV_STALL_TIMEOUT - 2
+            )
+            if stalled:
+                # The set answered during this very call, then stopped and held the
+                # socket open until the watchdog cut it: it was alive, so the batch
+                # itself is the problem — an entry whose transfer starts and never
+                # finishes. A refusal arrives fast, a dead TV says nothing at all;
+                # only a long call that still delivered frames is a stall.
+                # Remembering these as previewless is what stops every page load
+                # paying another stall for the same image.
                 for cid in batch:
                     logger.warning(
                         "TV %s stalled serving %s mid-transfer; treating it as previewless",
