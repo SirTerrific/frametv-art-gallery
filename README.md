@@ -45,6 +45,13 @@ This project uses local websocket APIs provided by the TVs.
   then move the selection to an album or delete it in one go.
 - **Send a whole album to a TV.** One button uploads every image in the album, in order,
   showing progress and stopping early if the TV goes quiet.
+- **Choose the matte.** Pick the style and colour of the frame the TV draws around the
+  art when you send it, or set a default per TV that everything else inherits — album
+  uploads included.
+- **Crop to the panel.** Presets up to 3840x2160, the size a Frame TV shows without
+  rescaling anything.
+- **Manage what is already on the TV.** Browse the set's own gallery with thumbnails,
+  play any image, and select several to delete in one go.
 - **Light and dark mode.** Follows the system preference, with a toggle in the header.
 - **Slideshow.** Rotate through an album on a TV at a chosen interval. It only moves art
   that is already on screen, so it never pulls the TV into art mode while you are watching
@@ -52,6 +59,8 @@ This project uses local websocket APIs provided by the TVs.
 - **Wake the TV.** Wake-on-LAN, using the MAC address stored with the TV.
 - **Search and sort** the gallery, newest first by default.
 - **Duplicate warning.** The same artwork uploaded under another name is flagged.
+- **Check the library.** Picks up images added or removed outside the app, and reports
+  anything stored twice under different names.
 - **Backup.** Download a zip of your uploads and the database in one click.
 - **Immich import.** Browse your Immich albums and push any photo to the TV.
 
