@@ -358,6 +358,12 @@ def _traffic_snapshot(thread_id: int) -> str:
     return f"{traffic[0]} frame(s), {traffic[1]} byte(s) received"
 
 
+def _traffic_frames(thread_id: int) -> int:
+    with _INFLIGHT_GUARD:
+        traffic = _TRAFFIC.get(thread_id)
+    return traffic[0] if traffic is not None else 0
+
+
 class _ConnectionTracker:
     """The websocket module as samsungtvws sees it, noting each connection it opens."""
 
@@ -481,6 +487,12 @@ class _TVSession:
         if self._worker_thread_id is None:
             return "no traffic recorded"
         return _traffic_snapshot(self._worker_thread_id)
+
+    def frames_received(self) -> int:
+        """How many frames this worker's connection has delivered so far."""
+        if self._worker_thread_id is None:
+            return 0
+        return _traffic_frames(self._worker_thread_id)
 
     def idle_for(self) -> float:
         return time.monotonic() - self._last_progress
@@ -1055,6 +1067,7 @@ def _collect_thumbnails(
     art, ip: str, content_ids: List[str], fetch_missing: bool = True,
     on_progress: Optional[Callable[[], None]] = None,
     on_batch: Optional[Callable[[List[str]], None]] = None,
+    frames_received: Optional[Callable[[], int]] = None,
 ) -> Dict[str, bytes]:
     """Thumbnails for `content_ids`: cache first, then whatever is left, in batches.
 
@@ -1118,16 +1131,34 @@ def _collect_thumbnails(
             # Which images the blocked call was asking for, if it never comes back.
             on_batch(batch)
         try:
+            frames_before = frames_received() if frames_received else None
             thumb_map = art.get_thumbnail_list(batch) or {}
             if on_progress:
                 on_progress()
         except Exception as err:
             if on_progress:
                 on_progress()
-            logger.info(
-                "TV %s refused a batch of %d thumbnails (%s); asking one at a time",
-                ip, len(batch), err,
-            )
+            if (
+                frames_received is not None
+                and frames_before is not None
+                and frames_received() > frames_before
+            ):
+                # The set answered during this very call, then stopped: it was alive,
+                # so the batch itself is the problem — an entry whose transfer starts
+                # and never finishes. A dead TV looks identical from one call, except
+                # it says nothing at all. Remembering these as previewless is what
+                # stops every page load paying another stall for the same image.
+                for cid in batch:
+                    logger.warning(
+                        "TV %s stalled serving %s mid-transfer; treating it as previewless",
+                        ip, cid,
+                    )
+                    _remember_no_thumbnail(ip, cid)
+            else:
+                logger.info(
+                    "TV %s refused a batch of %d thumbnails (%s); asking one at a time",
+                    ip, len(batch), err,
+                )
             thumb_map = {}
 
         if isinstance(thumb_map, dict):
@@ -1217,6 +1248,7 @@ def get_tv_gallery_thumbnails(
             lambda session: _collect_thumbnails(
                 session.art(), ip, missing, on_progress=session.note_progress,
                 on_batch=lambda batch: session.note_context(f"batch {batch}"),
+                frames_received=session.frames_received,
             ),
             token=token,
             deadline=TV_THUMBNAIL_DEADLINE,
@@ -1374,7 +1406,8 @@ def get_tv_gallery_thumbnail(ip: str, content_id: str, token: Optional[str] = No
         # The batch endpoint is the reliable path on recent firmware and already falls
         # back to the single call for content it skips.
         return _collect_thumbnails(session.art(), ip, [content_id],
-                                   on_batch=lambda batch: session.note_context(f"batch {batch}")
+                                   on_batch=lambda batch: session.note_context(f"batch {batch}"),
+                                   frames_received=session.frames_received,
                                    ).get(content_id)
 
     thumbnail_bytes = _tv_call(ip, f"fetching thumbnail {content_id} from", action, token=token)

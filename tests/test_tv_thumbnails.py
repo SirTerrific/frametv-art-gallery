@@ -130,6 +130,43 @@ def test_a_tv_that_stops_talking_is_not_mistaken_for_missing_previews():
         )
 
 
+def test_a_batch_the_tv_stalls_on_mid_transfer_is_written_off():
+    """The set answered during this very call, then went silent: the batch is poison.
+
+    Observed on a real set (MY_F0510): 4 frames of a D2D transfer arrive, then nothing
+    ever again, and the socket stays open — so only the stall watchdog ends the call.
+    Asking again on the next page load would pay the same 25s for the same nothing.
+    """
+    art = FakeArt()
+    frames = [0]
+
+    def stalling_batch(content_ids):
+        art.requests.append(list(content_ids))
+        frames[0] += 4  # the TV spoke, then stopped; the watchdog cut the call
+        raise ConnectionError({"reason": "socket closed"})
+
+    art.get_thumbnail_list = stalling_batch
+
+    found = frame_tv._collect_thumbnails(
+        art, "192.0.2.42", ["MY_F0510"], frames_received=lambda: frames[0]
+    )
+
+    assert found == {}
+    assert frame_tv._known_to_have_no_thumbnail("192.0.2.42", "MY_F0510")
+    assert art.singles == [], "a poisoned entry must not be retried one image at a time"
+
+
+def test_a_batch_refused_in_total_silence_is_not_written_off():
+    """No frame at all during the call means the TV itself went away, not the image."""
+    art = FakeArt(unservable={"MY_F0510"})
+
+    frame_tv._collect_thumbnails(
+        art, "192.0.2.43", ["MY_F0510"], frames_received=lambda: 0
+    )
+
+    assert not frame_tv._known_to_have_no_thumbnail("192.0.2.43", "MY_F0510")
+
+
 def test_the_tv_is_asked_again_once_the_answer_has_aged():
     """A firmware that starts answering should be picked up without a restart."""
     art = FakeArt(unservable={"SAM-S5714"})
