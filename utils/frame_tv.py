@@ -41,6 +41,11 @@ TV_DOWN_COOLDOWN = _env_int("FRAME_TV_DOWN_COOLDOWN", 30)
 # of thumbnails holds the TV for far longer than one call's deadline, and someone who
 # pressed a button would rather wait for their turn than be told the TV is busy.
 TV_BUSY_WAIT = _env_int("FRAME_TV_BUSY_WAIT", 90)
+# How long one request to the TV may go without the library returning from it before
+# its connection is closed from the outside. Guards that sit between calls cannot help
+# here: samsungtvws reads frames until it sees the one it asked for, so a single call
+# can outlast any budget while nothing around it gets a chance to run.
+TV_STALL_TIMEOUT = _env_int("FRAME_TV_STALL_TIMEOUT", 25)
 # Simple in-memory cache to reduce repeated TV requests
 # Structure: { (ip, 'gallery'): (timestamp, value), (ip, content_id): (timestamp, bytes) }
 _CACHE: dict = {}
@@ -268,6 +273,37 @@ _INFLIGHT_SOCKETS: Dict[int, Any] = {}
 _INFLIGHT_TV: Dict[int, str] = {}
 _INFLIGHT_GUARD = threading.Lock()
 
+# What each worker thread has heard from its TV: [frames, bytes]. Watching traffic at
+# the socket is what separates a set that has gone quiet from one still streaming a
+# long answer — a check between calls cannot tell the two apart.
+_TRAFFIC: Dict[int, List[int]] = {}
+_INFLIGHT_PROGRESS: Dict[int, Callable[[], None]] = {}
+
+
+def _note_traffic(thread_id: int, data) -> None:
+    with _INFLIGHT_GUARD:
+        traffic = _TRAFFIC.get(thread_id)
+        if traffic is not None:
+            traffic[0] += 1
+            traffic[1] += len(data) if data else 0
+        hook = _INFLIGHT_PROGRESS.get(thread_id)
+    if hook is not None:
+        hook()
+
+
+def _traffic_snapshot(thread_id: int) -> str:
+    with _INFLIGHT_GUARD:
+        traffic = _TRAFFIC.get(thread_id)
+    if traffic is None:
+        return "no traffic recorded"
+    return f"{traffic[0]} frame(s), {traffic[1]} byte(s) received"
+
+
+def _traffic_frames(thread_id: int) -> int:
+    with _INFLIGHT_GUARD:
+        traffic = _TRAFFIC.get(thread_id)
+    return traffic[0] if traffic is not None else 0
+
 
 class _ConnectionTracker:
     """The websocket module as samsungtvws sees it, noting each connection it opens."""
@@ -280,8 +316,19 @@ class _ConnectionTracker:
 
     def create_connection(self, *args, **kwargs):
         connection = self._real.create_connection(*args, **kwargs)
+        thread_id = threading.get_ident()
+        real_recv = connection.recv
+
+        def recv(*recv_args, **recv_kwargs):
+            data = real_recv(*recv_args, **recv_kwargs)
+            _note_traffic(thread_id, data)
+            return data
+
+        # Instance attribute, not a subclass: callers and tests keep the very object
+        # the real module handed back, only its reads are observed.
+        connection.recv = recv
         with _INFLIGHT_GUARD:
-            _INFLIGHT_SOCKETS[threading.get_ident()] = connection
+            _INFLIGHT_SOCKETS[thread_id] = connection
         return connection
 
 
@@ -296,11 +343,16 @@ def _forget_inflight(thread_id: int) -> None:
     with _INFLIGHT_GUARD:
         _INFLIGHT_SOCKETS.pop(thread_id, None)
         _INFLIGHT_TV.pop(thread_id, None)
+        _INFLIGHT_PROGRESS.pop(thread_id, None)
+        _TRAFFIC.pop(thread_id, None)
 
 
-def _claim_inflight(thread_id: int, ip: str) -> None:
+def _claim_inflight(thread_id: int, ip: str, on_progress: Optional[Callable[[], None]] = None) -> None:
     with _INFLIGHT_GUARD:
         _INFLIGHT_TV[thread_id] = ip
+        _TRAFFIC[thread_id] = [0, 0]
+        if on_progress is not None:
+            _INFLIGHT_PROGRESS[thread_id] = on_progress
 
 
 def reset_connections(ip: str) -> int:
@@ -357,11 +409,39 @@ class _TVSession:
         )
         self._art = None
         self._worker_thread_id: Optional[int] = None
+        self._last_progress = time.monotonic()
+        self._context = ""
+
+    def note_progress(self) -> None:
+        """Called on every frame the connection delivers — the proof of life the
+        stall watchdog watches. A call that neither delivers nor returns is the one
+        thing nothing else can see.
+        """
+        self._last_progress = time.monotonic()
+
+    def note_context(self, description: str) -> None:
+        """What the worker is currently asking the TV for, for the stall log."""
+        self._context = description
+
+    def describe_traffic(self) -> str:
+        """Frames and bytes heard on this worker's connection, if it claimed one."""
+        if self._worker_thread_id is None:
+            return "no traffic recorded"
+        return _traffic_snapshot(self._worker_thread_id)
+
+    def frames_received(self) -> int:
+        """How many frames this worker's connection has delivered so far."""
+        if self._worker_thread_id is None:
+            return 0
+        return _traffic_frames(self._worker_thread_id)
+
+    def idle_for(self) -> float:
+        return time.monotonic() - self._last_progress
 
     def claim_worker(self) -> None:
         """Called from the thread that will talk to the TV, so close() can reach it."""
         self._worker_thread_id = threading.get_ident()
-        _claim_inflight(self._worker_thread_id, self.ip)
+        _claim_inflight(self._worker_thread_id, self.ip, on_progress=self.note_progress)
 
     def release_worker(self) -> None:
         if self._worker_thread_id is not None:
@@ -414,6 +494,7 @@ def _tv_call(
     deadline: Optional[int] = None,
     open_remote: bool = True,
     skip_when_down: bool = True,
+    stall_timeout: Optional[int] = None,
 ) -> Any:
     """Run `action(session)` against the TV, never blocking longer than `deadline`.
 
@@ -483,9 +564,36 @@ def _tv_call(
                 except Exception:
                     logger.warning("Could not hand on the new token for TV %s", ip, exc_info=True)
 
+        # A stall is a call that never comes back, so no check placed between calls can
+        # see it. This watches from outside and closes the connection, which is what
+        # makes the blocked read raise and hands the TV back. Progress is noted on
+        # every frame the socket delivers, so a set still streaming a long answer is
+        # left alone — only real silence trips this.
+        finished = threading.Event()
+        if stall_timeout:
+            def watch_for_a_stall():
+                while not finished.wait(1):
+                    idle = session.idle_for()
+                    if idle >= stall_timeout:
+                        logger.warning(
+                            "TV %s sent nothing for %.0fs while %s%s; closing the connection (%s)",
+                            ip, idle, action_description,
+                            f" ({session._context})" if session._context else "",
+                            session.describe_traffic(),
+                        )
+                        session.close()
+                        return
+
+            threading.Thread(
+                target=watch_for_a_stall, name="frametv-stall", daemon=True
+            ).start()
+
         future = _TV_EXECUTOR.submit(run)
         try:
-            result = future.result(timeout=deadline)
+            try:
+                result = future.result(timeout=deadline)
+            finally:
+                finished.set()
         except FutureTimeoutError as err:
             # cancel() succeeds only while the call is still queued; otherwise close the
             # sockets so the recv() blocking the worker thread raises and lets it go.
@@ -883,6 +991,7 @@ def get_tv_gallery_thumbnails(
             "fetching thumbnails from",
             lambda session: _collect_thumbnails(session.art(), ip, missing),
             token=token,
+            stall_timeout=TV_STALL_TIMEOUT,
         )
     except FrameTVError as err:
         # Hand back whatever was cached rather than blanking a whole page because one
@@ -933,7 +1042,8 @@ def get_tv_gallery_images(ip: str, token: Optional[str] = None) -> List[Dict]:
 
         return images
 
-    return _tv_call(ip, "fetching gallery images from", action, token=token)
+    return _tv_call(ip, "fetching gallery images from", action, token=token,
+                    stall_timeout=TV_STALL_TIMEOUT)
 
 def delete_tv_image(ip: str, content_id: str, token: Optional[str] = None) -> bool:
     """
