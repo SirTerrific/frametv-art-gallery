@@ -472,9 +472,9 @@ class _TVSession:
         self._context = ""
 
     def note_progress(self) -> None:
-        """Called each time the library comes back from the TV, however it came back.
-
-        A call that neither returns nor raises is the one thing nothing else can see.
+        """Called on every frame the connection delivers — the proof of life the
+        stall watchdog watches. A call that neither delivers nor returns is the one
+        thing nothing else can see.
         """
         self._last_progress = time.monotonic()
 
@@ -1065,7 +1065,6 @@ def _single_thumbnail(art, ip: str, content_id: str) -> Tuple[Optional[bytes], b
 
 def _collect_thumbnails(
     art, ip: str, content_ids: List[str], fetch_missing: bool = True,
-    on_progress: Optional[Callable[[], None]] = None,
     on_batch: Optional[Callable[[List[str]], None]] = None,
     frames_received: Optional[Callable[[], int]] = None,
 ) -> Dict[str, bytes]:
@@ -1138,11 +1137,7 @@ def _collect_thumbnails(
             frames_before = frames_received() if frames_received else None
             call_started = time.monotonic()
             thumb_map = art.get_thumbnail_list(batch) or {}
-            if on_progress:
-                on_progress()
         except Exception as err:
-            if on_progress:
-                on_progress()
             stalled = (
                 frames_received is not None
                 and frames_before is not None
@@ -1191,8 +1186,6 @@ def _collect_thumbnails(
             if on_batch:
                 on_batch([cid])
             payload, still_talking = _single_thumbnail(art, ip, cid)
-            if on_progress:
-                on_progress()
             if payload is None:
                 refusals.append((cid, answered))
                 # A set that will not serve an image closes the socket on it, exactly
@@ -1255,7 +1248,7 @@ def get_tv_gallery_thumbnails(
             ip,
             "fetching thumbnails from",
             lambda session: _collect_thumbnails(
-                session.art(), ip, missing, on_progress=session.note_progress,
+                session.art(), ip, missing,
                 on_batch=lambda batch: session.note_context(f"batch {batch}"),
                 frames_received=session.frames_received,
             ),
