@@ -4,7 +4,7 @@ import threading
 import time
 from concurrent.futures import ThreadPoolExecutor, TimeoutError as FutureTimeoutError
 from datetime import datetime
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional, Tuple
 import base64
 import websocket
 from samsungtvws import SamsungTVWS
@@ -41,6 +41,25 @@ TV_DOWN_COOLDOWN = _env_int("FRAME_TV_DOWN_COOLDOWN", 30)
 # of thumbnails holds the TV for far longer than one call's deadline, and someone who
 # pressed a button would rather wait for their turn than be told the TV is busy.
 TV_BUSY_WAIT = _env_int("FRAME_TV_BUSY_WAIT", 90)
+
+# How many thumbnails are asked for in one request. The TV streams the whole answer
+# down one socket before the call returns, so a large batch is a single long transfer
+# that is lost in full if it does not finish.
+TV_THUMBNAIL_BATCH = _env_int("FRAME_TV_THUMBNAIL_BATCH", 8)
+# Fetching a page of thumbnails is several of those transfers, so it gets its own
+# budget rather than a single call's.
+TV_THUMBNAIL_DEADLINE = _env_int("FRAME_TV_THUMBNAIL_DEADLINE", 120)
+# How many images in a row may die at the connection level before the rest of the
+# gallery is left for next time. Each one costs a socket timeout, and the TV is locked
+# for the whole walk, so this bounds how long one page load can hold it.
+TV_THUMBNAIL_GIVE_UP = _env_int("FRAME_TV_THUMBNAIL_GIVE_UP", 3)
+# How long the walk may go without a single thumbnail before it stops. Counting failures
+# is not enough on its own: one request to the art channel can run far longer than the
+# socket timeout, because samsungtvws reads frames until it sees the one it asked for
+# and each read restarts the clock. A set that has gone quiet would otherwise spend the
+# whole budget to return nothing, with its art channel busy the entire time.
+TV_THUMBNAIL_FIRST_ANSWER = _env_int("FRAME_TV_THUMBNAIL_FIRST_ANSWER", 25)
+
 # How long one request to the TV may go without the library returning from it before
 # its connection is closed from the outside. Guards that sit between calls cannot help
 # here: samsungtvws reads frames until it sees the one it asked for, so a single call
@@ -76,6 +95,33 @@ if not _DATA_DIR.is_absolute():
     _DATA_DIR = PROJECT_ROOT.joinpath(_DATA_DIR)
 TV_THUMB_DIR = _DATA_DIR.joinpath('instance', 'tv_thumbnails')
 TV_THUMB_DIR.mkdir(parents=True, exist_ok=True)
+
+# The gallery listing, held just long enough that reloading a page does not have to
+# queue behind whatever else is talking to the TV. Anything here that changes the set's
+# contents drops it, so a delete or an upload is still seen immediately; only a change
+# made elsewhere — the TV's own remote — can be up to this stale.
+TV_GALLERY_TTL = _env_int("FRAME_TV_GALLERY_TTL", 15)
+_GALLERY_CACHE: Dict[str, tuple] = {}
+
+
+def _cached_gallery(ip: str) -> Optional[List[Dict]]:
+    entry = _GALLERY_CACHE.get(ip)
+    if entry is None:
+        return None
+    cached_at, images = entry
+    if time.time() - cached_at > TV_GALLERY_TTL:
+        _GALLERY_CACHE.pop(ip, None)
+        return None
+    return images
+
+
+def _remember_gallery(ip: str, images: List[Dict]) -> None:
+    _GALLERY_CACHE[ip] = (time.time(), images)
+
+
+def forget_gallery(ip: str) -> None:
+    """Drop the cached listing for a TV whose contents just changed."""
+    _GALLERY_CACHE.pop(ip, None)
 
 def _thumb_disk_path(ip: str, content_id: str) -> Path:
     safe_ip = ip.replace(':', '_')
@@ -684,7 +730,9 @@ def upload_artwork(
             _delete_other_images(art, content_id, debug=True)
         return content_id
 
-    return _tv_call(ip, "uploading artwork to", action, token=token, deadline=TV_UPLOAD_DEADLINE, skip_when_down=False)
+    content_id = _tv_call(ip, "uploading artwork to", action, token=token, deadline=TV_UPLOAD_DEADLINE, skip_when_down=False)
+    forget_gallery(ip)
+    return content_id
 
 def _delete_other_images(art, keep_content_id: str, *, debug: bool) -> None:
     available = []
@@ -739,6 +787,7 @@ def delete_all_images_from_tv(ip: str, token: Optional[str] = None) -> None:
             logger.info("No images found on TV %s to delete", ip)
 
     _tv_call(ip, "deleting images from", action, token=token, skip_when_down=False)
+    forget_gallery(ip)
 
 def play_uploaded_content(ip: str, content_id: str, token: Optional[str] = None) -> None:
     """
@@ -913,11 +962,81 @@ def _cached_thumbnail(ip: str, content_id: str) -> Optional[bytes]:
     return disk
 
 
-def _collect_thumbnails(art, ip: str, content_ids: List[str]) -> Dict[str, bytes]:
-    """Thumbnails for `content_ids`: cache first, then whatever is left in one TV call.
+# Content the TV has no preview for at all — some of the art it ships with. Asking
+# again on every page load costs a round trip each time and always gets the same
+# nothing, so the answer is remembered; the window is short enough that a firmware
+# that starts answering is picked up on its own.
+_NO_THUMBNAIL_TTL = _env_int("FRAME_TV_NO_THUMBNAIL_TTL", 3600)
+_NO_THUMBNAIL: Dict[tuple, float] = {}
+
+
+def _remember_no_thumbnail(ip: str, content_id: str) -> None:
+    _NO_THUMBNAIL[(ip, content_id)] = time.time()
+
+
+def _known_to_have_no_thumbnail(ip: str, content_id: str) -> bool:
+    seen_at = _NO_THUMBNAIL.get((ip, content_id))
+    if seen_at is None:
+        return False
+    if time.time() - seen_at > _NO_THUMBNAIL_TTL:
+        del _NO_THUMBNAIL[(ip, content_id)]
+        return False
+    return True
+
+
+def _content_id_of(name: str, wanted: List[str]) -> Optional[str]:
+    """The content id a batch thumbnail belongs to.
+
+    samsungtvws keys the batch answer by `fileID.fileType` — "MY_F0440.jpg", not
+    "MY_F0440" — because that is how the TV labels each file on the D2D socket. Keeping
+    the key verbatim meant every thumbnail was filed under a name nothing ever looked
+    up, so a gallery stayed blank while the bytes were arriving perfectly well.
+    """
+    if name in wanted:
+        return name
+    stem = name.rsplit('.', 1)[0]
+    return stem if stem in wanted else None
+
+
+def _single_thumbnail(art, ip: str, content_id: str) -> Tuple[Optional[bytes], bool]:
+    """One thumbnail through the single-image endpoint.
+
+    Returns (payload, still_talking). `still_talking` is False only when the call died
+    at the connection level: the difference between "this image has no preview" and
+    "the TV has stopped answering" is what tells the caller whether to keep walking the
+    gallery or to stop. Getting that wrong costs a socket timeout per remaining image.
+    """
+    try:
+        thumbnail = art.get_thumbnail(content_id)
+    except Exception as err:
+        if _is_connection_error(err):
+            return None, False
+        logger.debug("TV %s declined %s: %s", ip, content_id, err)
+        return None, True
+    if isinstance(thumbnail, (bytes, bytearray)) and thumbnail:
+        return bytes(thumbnail), True
+    return None, True
+
+
+def _collect_thumbnails(
+    art, ip: str, content_ids: List[str], fetch_missing: bool = True,
+    on_batch: Optional[Callable[[List[str]], None]] = None,
+    frames_received: Optional[Callable[[], int]] = None,
+) -> Dict[str, bytes]:
+    """Thumbnails for `content_ids`: cache first, then whatever is left, in batches.
 
     Serving the cache keeps a TV that has gone quiet from blanking a gallery it has
     already answered for once.
+
+    The TV streams every thumbnail of a request down one D2D socket before the call
+    returns, so asking for a whole gallery at once is a single transfer that either
+    finishes or is lost entirely — a set with forty 4K images never finished. Asking
+    in batches means each one is saved as it lands, so a gallery fills in over a few
+    visits instead of staying blank forever.
+
+    One unservable image takes its whole batch down with it: the TV closes the socket
+    rather than skipping the entry. So a refused batch is asked for again one at a
+    time, which isolates the offender and saves the rest of it.
     """
     found: Dict[str, bytes] = {}
     missing: List[str] = []
@@ -925,43 +1044,137 @@ def _collect_thumbnails(art, ip: str, content_ids: List[str]) -> Dict[str, bytes
         cached = _cached_thumbnail(ip, cid)
         if cached is not None:
             found[cid] = cached
+        elif _known_to_have_no_thumbnail(ip, cid):
+            # Remembered as previewless: asking again is a round trip for the same
+            # nothing — and for a poisoned entry, another stall.
+            continue
         else:
             missing.append(cid)
 
-    if not missing:
+    if not missing or not fetch_missing:
         return found
 
-    try:
-        thumb_map = art.get_thumbnail_list(missing)
-    except Exception:
-        logger.debug("Batch thumbnail retrieval failed for TV %s", ip, exc_info=True)
-        thumb_map = {}
+    def keep(cid: str, data) -> bool:
+        if not isinstance(data, (bytes, bytearray)) or not data:
+            return False
+        payload = bytes(data)
+        found[cid] = payload
+        _thumb_disk_set(ip, cid, payload)
+        _cache_set((ip, cid), payload)
+        return True
 
-    if isinstance(thumb_map, dict):
-        for cid, data in thumb_map.items():
-            if not isinstance(data, (bytes, bytearray)):
-                continue
-            payload = bytes(data)
-            if cid in missing:
-                found[cid] = payload
-                _thumb_disk_set(ip, cid, payload)
-                _cache_set((ip, cid), payload)
+    # A refusal only says something about the image if the TV goes on to answer for
+    # another one. A set that stops mid-gallery would otherwise have every image left
+    # in the list written off as previewless, and a page of placeholders is worse than
+    # a slow one. So refusals are noted and judged at the end.
+    refusals: List[tuple] = []
+    answered = 0
+    dead_in_a_row = 0
+    started = time.monotonic()
 
-    # The batch D2D response is keyed by the TV's file name, which is not always the
-    # content id requested above. Fall back per missing id and key the bytes ourselves.
-    for cid in missing:
-        if cid in found:
-            continue
+    def nothing_is_coming() -> bool:
+        """True once the walk has run a while with nothing at all to show for it."""
+        return answered == 0 and time.monotonic() - started > TV_THUMBNAIL_FIRST_ANSWER
+
+    for start in range(0, len(missing), TV_THUMBNAIL_BATCH):
+        if nothing_is_coming():
+            logger.warning(
+                "TV %s gave nothing in %ds; leaving its thumbnails for next time",
+                ip, TV_THUMBNAIL_FIRST_ANSWER,
+            )
+            return found
+
+        batch = missing[start:start + TV_THUMBNAIL_BATCH]
+        if on_batch:
+            # Which images the blocked call was asking for, if it never comes back.
+            on_batch(batch)
         try:
-            thumbnail = art.get_thumbnail(cid)
-        except Exception:
-            logger.debug("Single thumbnail retrieval failed for TV %s (%s)", ip, cid, exc_info=True)
-            continue
-        if isinstance(thumbnail, (bytes, bytearray)):
-            payload = bytes(thumbnail)
-            found[cid] = payload
-            _thumb_disk_set(ip, cid, payload)
-            _cache_set((ip, cid), payload)
+            frames_before = frames_received() if frames_received else None
+            call_started = time.monotonic()
+            thumb_map = art.get_thumbnail_list(batch) or {}
+        except Exception as err:
+            stalled = (
+                frames_received is not None
+                and frames_before is not None
+                and frames_received() > frames_before
+                and time.monotonic() - call_started >= TV_STALL_TIMEOUT - 2
+            )
+            if stalled:
+                # The set answered during this very call, then stopped and held the
+                # socket open until the watchdog cut it: it was alive, so the batch
+                # itself is the problem — an entry whose transfer starts and never
+                # finishes. A refusal arrives fast, a dead TV says nothing at all;
+                # only a long call that still delivered frames is a stall.
+                # Remembering these as previewless is what stops every page load
+                # paying another stall for the same image.
+                for cid in batch:
+                    logger.warning(
+                        "TV %s stalled serving %s mid-transfer; treating it as previewless",
+                        ip, cid,
+                    )
+                    _remember_no_thumbnail(ip, cid)
+            else:
+                logger.info(
+                    "TV %s refused a batch of %d thumbnails (%s); asking one at a time",
+                    ip, len(batch), err,
+                )
+            thumb_map = {}
+
+        if isinstance(thumb_map, dict):
+            for name, data in thumb_map.items():
+                cid = _content_id_of(name, batch)
+                if cid is None:
+                    logger.debug("TV %s answered with an unexpected thumbnail %r", ip, name)
+                    continue
+                if keep(cid, data):
+                    answered += 1
+
+        for cid in batch:
+            if cid in found or _known_to_have_no_thumbnail(ip, cid):
+                continue
+            if nothing_is_coming():
+                logger.warning(
+                    "TV %s gave nothing in %ds; leaving its thumbnails for next time",
+                    ip, TV_THUMBNAIL_FIRST_ANSWER,
+                )
+                return found
+            if on_batch:
+                on_batch([cid])
+            payload, still_talking = _single_thumbnail(art, ip, cid)
+            if payload is None:
+                refusals.append((cid, answered))
+                # A set that will not serve an image closes the socket on it, exactly
+                # as a set that has gone away does, so the two cannot be told apart
+                # from one call. What separates them is how many in a row: a handful
+                # of unservable images is normal, a wall of them is a TV that stopped
+                # talking. Walking the rest at a socket timeout apiece is what had a
+                # page load holding the TV for two minutes.
+                dead_in_a_row += 1 if not still_talking else 0
+                if dead_in_a_row >= TV_THUMBNAIL_GIVE_UP:
+                    logger.warning(
+                        "TV %s went quiet after %d thumbnails; leaving the rest for next time",
+                        ip, answered,
+                    )
+                    return found
+                continue
+            dead_in_a_row = 0
+            if keep(cid, payload):
+                answered += 1
+
+        if answered == 0:
+            # A whole batch, then every one of its images on its own, and not a single
+            # answer: the set is away rather than out of previews. Walking the rest of
+            # the gallery one dead call at a time would only make the page slower.
+            logger.warning("TV %s is not answering for thumbnails; giving up", ip)
+            return found
+
+    for cid, answered_before in refusals:
+        if answered > answered_before:
+            # The TV kept working after refusing this one, so it is the image that has
+            # no preview, not the connection. Asking again every visit would cost a
+            # round trip to be told the same nothing.
+            logger.info("TV %s has no preview for %s", ip, cid)
+            _remember_no_thumbnail(ip, cid)
     return found
 
 
@@ -989,8 +1202,13 @@ def get_tv_gallery_thumbnails(
         fetched = _tv_call(
             ip,
             "fetching thumbnails from",
-            lambda session: _collect_thumbnails(session.art(), ip, missing),
+            lambda session: _collect_thumbnails(
+                session.art(), ip, missing,
+                on_batch=lambda batch: session.note_context(f"batch {batch}"),
+                frames_received=session.frames_received,
+            ),
             token=token,
+            deadline=TV_THUMBNAIL_DEADLINE,
             stall_timeout=TV_STALL_TIMEOUT,
         )
     except FrameTVError as err:
@@ -1012,7 +1230,14 @@ def get_tv_gallery_images(ip: str, token: Optional[str] = None) -> List[Dict]:
     Returns:
         List[Dict]: List of image dictionaries with metadata (content_id, filename, date_added).
     """
-    # Do not cache the gallery listing to ensure deletions/changes are observed live
+    # Briefly cached, and dropped the moment anything here changes the TV's contents.
+    # Without it, reloading the page while a walk of thumbnails still holds the TV
+    # queued behind it and then failed, reporting a set that was answering perfectly
+    # well. The listing is what the page needs first, so it must not wait on the
+    # slowest thing running.
+    listing = _cached_gallery(ip)
+    if listing is not None:
+        return listing
 
     def action(session: _TVSession) -> List[Dict]:
         art = session.art()
@@ -1034,16 +1259,23 @@ def get_tv_gallery_images(ip: str, token: Optional[str] = None) -> List[Dict]:
                 })
                 seen_content_ids.append(content_id)
 
+        # Cached thumbnails only: the listing has to come back quickly, and the page
+        # asks for whatever is still missing in its own request afterwards.
         by_content_id = {img["content_id"]: img for img in images}
-        for cid, data in _collect_thumbnails(art, ip, list(by_content_id)).items():
+        thumbnails = _collect_thumbnails(art, ip, list(by_content_id), fetch_missing=False)
+        for cid, data in thumbnails.items():
             img = by_content_id.get(cid)
             if img is not None:
                 img["thumbnail"] = base64.b64encode(data).decode("ascii")
 
         return images
 
-    return _tv_call(ip, "fetching gallery images from", action, token=token,
-                    stall_timeout=TV_STALL_TIMEOUT)
+    images = _tv_call(
+        ip, "fetching gallery images from", action, token=token,
+        stall_timeout=TV_STALL_TIMEOUT,
+    )
+    _remember_gallery(ip, images)
+    return images
 
 def delete_tv_image(ip: str, content_id: str, token: Optional[str] = None) -> bool:
     """
@@ -1062,6 +1294,7 @@ def delete_tv_image(ip: str, content_id: str, token: Optional[str] = None) -> bo
         token=token,
         skip_when_down=False,
     )
+    forget_gallery(ip)
     return True
 
 def delete_tv_images(ip: str, content_ids: List[str], token: Optional[str] = None) -> int:
@@ -1109,6 +1342,7 @@ def delete_tv_images(ip: str, content_ids: List[str], token: Optional[str] = Non
     )
     for content_id in wanted:
         _CACHE.pop((ip, content_id), None)
+    forget_gallery(ip)
     return deleted
 
 
@@ -1141,15 +1375,12 @@ def get_tv_gallery_thumbnail(ip: str, content_id: str, token: Optional[str] = No
         return cached
 
     def action(session: _TVSession) -> Optional[bytes]:
-        art = session.art()
-        # The D2D list endpoint is the reliable path on recent firmware; the single
-        # get_thumbnail call is only a fallback for sets that do not answer it.
-        thumbnail_bytes = _collect_thumbnails(art, ip, [content_id]).get(content_id)
-        if thumbnail_bytes is None:
-            thumbnail = art.get_thumbnail(content_id)
-            if isinstance(thumbnail, (bytes, bytearray)):
-                thumbnail_bytes = bytes(thumbnail)
-        return thumbnail_bytes
+        # The batch endpoint is the reliable path on recent firmware and already falls
+        # back to the single call for content it skips.
+        return _collect_thumbnails(session.art(), ip, [content_id],
+                                   on_batch=lambda batch: session.note_context(f"batch {batch}"),
+                                   frames_received=session.frames_received,
+                                   ).get(content_id)
 
     thumbnail_bytes = _tv_call(ip, f"fetching thumbnail {content_id} from", action, token=token)
     if thumbnail_bytes is not None:
