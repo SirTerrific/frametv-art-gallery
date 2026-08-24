@@ -22,6 +22,14 @@ export interface TVInfo {
   default_matte?: string | null;
 }
 
+export interface DiscoveredTV {
+  ip: string;
+  name?: string;
+  mac?: string;
+  model?: string;
+  is_frame?: boolean;
+}
+
 export interface TVUpdate {
   delete_other_images_on_upload?: boolean;
   mac?: string;
@@ -57,6 +65,12 @@ export async function getTvs() {
   const res = await fetch(`${API_BASE}/api/tvs`);
   if (!res.ok) throw new Error((await res.json()).error || 'Failed to get TVs');
   return (await res.json()).tvs;
+}
+
+export async function discoverTvs(): Promise<DiscoveredTV[]> {
+  const res = await fetch(`${API_BASE}/api/tvs/discover`);
+  if (!res.ok) throw new Error((await res.json()).error || 'Failed to discover TVs');
+  return (await res.json()).discovered || [];
 }
 
 export async function updateTv(ip: string, updates: TVUpdate) {
