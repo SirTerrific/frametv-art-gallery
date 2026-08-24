@@ -217,3 +217,149 @@ def test_tv_errors_are_not_swallowed_as_connection_errors():
     with pytest.raises(FrameTVConnectionError):
         frame_tv._tv_call("192.0.2.7", "testing", unreachable, open_remote=False)
     assert frame_tv._tv_cooldown_remaining("192.0.2.7") > 0
+
+
+# --- reaching a connection that is still being established ---
+#
+# samsungtvws records the websocket on the channel object only once the handshake has
+# succeeded, so close() cannot reach an open() still in progress. utils.frame_tv keeps
+# its own handle on every connection the library opens; these tests pin that down.
+
+class _FakeSocket:
+    """Stands in for a websocket: reads come from `incoming`, one frame at a time."""
+
+    def __init__(self):
+        self.incoming = []
+
+    def recv(self, *args, **kwargs):
+        return self.incoming.pop(0) if self.incoming else b""
+
+
+def test_the_tracker_notes_each_connection_samsungtvws_opens():
+    """samsungtvws hands the socket to nobody until its handshake is over."""
+    opened = _FakeSocket()
+    tracker = frame_tv._ConnectionTracker(
+        type("RealModule", (), {"create_connection": staticmethod(lambda *a, **k: opened)})()
+    )
+
+    frame_tv._forget_inflight(threading.get_ident())
+    try:
+        assert tracker.create_connection("wss://example") is opened
+        assert frame_tv._INFLIGHT_SOCKETS[threading.get_ident()] is opened
+    finally:
+        frame_tv._forget_inflight(threading.get_ident())
+
+
+def test_the_tracker_passes_everything_else_through():
+    real = type("RealModule", (), {"WebSocketTimeoutException": ValueError})()
+    assert frame_tv._ConnectionTracker(real).WebSocketTimeoutException is ValueError
+
+
+def test_samsungtvws_is_wired_to_the_tracker():
+    from samsungtvws import connection as samsung_connection
+
+    assert isinstance(samsung_connection.websocket, frame_tv._ConnectionTracker), (
+        "the library still opens connections this app cannot reach"
+    )
+
+
+def test_a_connection_left_half_open_is_closed_when_the_call_is_abandoned():
+    """A worker stuck inside open() holds the one art channel a Frame TV has.
+
+    close() cannot reach it through samsungtvws, which records a websocket only once
+    the handshake has finished, so the app keeps its own handle on it.
+    """
+    closed = threading.Event()
+
+    class FakeConnection:
+        def close(self):
+            closed.set()
+
+    def stuck_in_open(_session):
+        with frame_tv._INFLIGHT_GUARD:
+            frame_tv._INFLIGHT_SOCKETS[threading.get_ident()] = FakeConnection()
+        time.sleep(STUCK)
+
+    with pytest.raises(FrameTVTimeoutError):
+        frame_tv._tv_call("192.0.2.70", "testing", stuck_in_open, deadline=1, open_remote=False)
+
+    assert closed.wait(timeout=2), "the half-open connection was left for the OS to reap"
+
+
+def test_a_call_that_finishes_leaves_nothing_behind():
+    def opens_then_finishes(_session):
+        with frame_tv._INFLIGHT_GUARD:
+            frame_tv._INFLIGHT_SOCKETS[threading.get_ident()] = object()
+        return "done"
+
+    assert frame_tv._tv_call(
+        "192.0.2.71", "testing", opens_then_finishes, open_remote=False
+    ) == "done"
+
+    assert frame_tv._INFLIGHT_SOCKETS == {}, "a completed call left a connection recorded"
+
+
+def test_a_connection_left_behind_is_closed_before_the_next_call_starts():
+    """Taking the lock means nothing else may talk to that TV, so ghosts can go.
+
+    An abandoned call keeps the set's one art channel busy. Opening a second one while
+    it lingers is what a Frame TV answers by refusing both, so the next request clears
+    the field before it tries.
+    """
+    closed = threading.Event()
+
+    class GhostConnection:
+        def close(self):
+            closed.set()
+
+    def abandoned(_session):
+        with frame_tv._INFLIGHT_GUARD:
+            frame_tv._INFLIGHT_SOCKETS[threading.get_ident()] = GhostConnection()
+            frame_tv._INFLIGHT_TV[threading.get_ident()] = "192.0.2.72"
+        time.sleep(STUCK)
+
+    def hold_until_abandoned():
+        with pytest.raises(FrameTVTimeoutError):
+            frame_tv._tv_call(
+                "192.0.2.72", "holding", abandoned, deadline=1, open_remote=False,
+            )
+
+    holder = threading.Thread(target=hold_until_abandoned)
+    holder.start()
+    holder.join(timeout=10)
+
+    # The abandoned worker is still asleep; its connection must not survive into the
+    # next call for that TV.
+    closed.clear()
+    with frame_tv._INFLIGHT_GUARD:
+        frame_tv._INFLIGHT_SOCKETS[9_999_999] = GhostConnection()
+        frame_tv._INFLIGHT_TV[9_999_999] = "192.0.2.72"
+
+    frame_tv._tv_call(
+        "192.0.2.72", "testing", lambda s: "ok", open_remote=False, skip_when_down=False,
+    )
+
+    assert closed.is_set(), "a stale connection survived into the next call"
+
+
+def test_clearing_one_tv_leaves_another_alone():
+    class Connection:
+        def __init__(self):
+            self.closed = False
+
+        def close(self):
+            self.closed = True
+
+    mine, neighbour = Connection(), Connection()
+    with frame_tv._INFLIGHT_GUARD:
+        frame_tv._INFLIGHT_SOCKETS[1_000_001] = mine
+        frame_tv._INFLIGHT_TV[1_000_001] = "192.0.2.73"
+        frame_tv._INFLIGHT_SOCKETS[1_000_002] = neighbour
+        frame_tv._INFLIGHT_TV[1_000_002] = "192.0.2.74"
+
+    try:
+        assert frame_tv.reset_connections("192.0.2.73") == 1
+        assert mine.closed and not neighbour.closed
+    finally:
+        frame_tv._forget_inflight(1_000_001)
+        frame_tv._forget_inflight(1_000_002)
