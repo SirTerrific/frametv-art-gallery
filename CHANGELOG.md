@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.1](https://github.com/SirTerrific/frametv-art-gallery/compare/v1.7.0...v1.7.1) (2026-08-24)
+
+
+### Bug Fixes
+
+* declare the dependencies the Immich provider imports ([bb73d2e](https://github.com/SirTerrific/frametv-art-gallery/commit/bb73d2e5ac58907f37ef3078f8741d9b7d2b3596))
+
 ## [1.7.0](https://github.com/SirTerrific/frametv-art-gallery/compare/v1.6.12...v1.7.0) (2026-08-24)
 
 
