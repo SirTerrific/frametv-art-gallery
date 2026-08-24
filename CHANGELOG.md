@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.7.0](https://github.com/SirTerrific/frametv-art-gallery/compare/v1.6.12...v1.7.0) (2026-08-24)
+
+
+### Features
+
+* find TVs on the network instead of typing their address ([5ac71ef](https://github.com/SirTerrific/frametv-art-gallery/commit/5ac71efeadfdb7045e187a15cd2405683579843f))
+* keep only the last image this app sent to a TV ([c058171](https://github.com/SirTerrific/frametv-art-gallery/commit/c058171ee366a459b28dc059eb6abee85ecb35ca))
+* let PORT move the app when it runs on the host network ([0fd2fc7](https://github.com/SirTerrific/frametv-art-gallery/commit/0fd2fc7934c51ef47b3bf2dc0a3f38babc4913e0))
+
 ## [1.6.12](https://github.com/SirTerrific/frametv-art-gallery/compare/v1.6.11...v1.6.12) (2026-08-23)
 
 
