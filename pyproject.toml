@@ -21,6 +21,12 @@ dependencies = [
     "Flask-Migrate",
     "flask-cors",
     "Pillow",
+    # utils/immich_provider.py imports all three at module level. Without them the
+    # provider fails to load, and app.py swallows that, so the Immich pages simply
+    # come back empty with nothing to say why.
+    "aiohttp",
+    "aiofiles",
+    "aioimmich",
 ]
 
 [project.optional-dependencies]
