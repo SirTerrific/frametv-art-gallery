@@ -195,7 +195,7 @@ def _mark_tv_up(ip: str) -> None:
 
 # A Frame TV serves a single art channel. Opening a second one while another is still
 # connecting makes the set announce `ms.channel.clientConnect`, which samsungtvws raises
-# as a connection failure — so parallel requests to one TV do not queue, they break each
+# as a  failure — so parallel requests to one TV do not queue, they break each
 # other. gunicorn runs several workers, hence a file lock on top of the in-process one.
 try:
     import fcntl  # POSIX only; the published image runs Linux
@@ -252,6 +252,87 @@ def _tv_exclusive(ip: str, wait: float):
         local.release()
 
 
+
+_INFLIGHT_SOCKETS: Dict[int, Any] = {}
+# Which TV each worker thread is talking to, so a connection left behind can be traced
+# back to the set it is still holding.
+_INFLIGHT_TV: Dict[int, str] = {}
+_INFLIGHT_GUARD = threading.Lock()
+
+
+class _ConnectionTracker:
+    """The websocket module as samsungtvws sees it, noting each connection it opens."""
+
+    def __init__(self, real_module):
+        self._real = real_module
+
+    def __getattr__(self, name):
+        return getattr(self._real, name)
+
+    def create_connection(self, *args, **kwargs):
+        connection = self._real.create_connection(*args, **kwargs)
+        with _INFLIGHT_GUARD:
+            _INFLIGHT_SOCKETS[threading.get_ident()] = connection
+        return connection
+
+
+def _install_connection_tracker() -> None:
+    from samsungtvws import connection as _samsung_connection
+
+    if not isinstance(_samsung_connection.websocket, _ConnectionTracker):
+        _samsung_connection.websocket = _ConnectionTracker(_samsung_connection.websocket)
+
+
+def _forget_inflight(thread_id: int) -> None:
+    with _INFLIGHT_GUARD:
+        _INFLIGHT_SOCKETS.pop(thread_id, None)
+        _INFLIGHT_TV.pop(thread_id, None)
+
+
+def _claim_inflight(thread_id: int, ip: str) -> None:
+    with _INFLIGHT_GUARD:
+        _INFLIGHT_TV[thread_id] = ip
+
+
+def reset_connections(ip: str) -> int:
+    """Close every connection still recorded against a TV. Returns how many.
+
+    Only safe to call while holding that TV's lock: nothing else may be talking to it,
+    so anything still open belongs to a call that was abandoned and is doing nothing
+    but occupying the one art channel the set has.
+    """
+    with _INFLIGHT_GUARD:
+        stale = [tid for tid, owner in _INFLIGHT_TV.items() if owner == ip]
+        connections = [(tid, _INFLIGHT_SOCKETS.pop(tid, None)) for tid in stale]
+
+    closed = 0
+    for thread_id, connection in connections:
+        if connection is None:
+            continue
+        try:
+            connection.close()
+            closed += 1
+        except Exception:
+            logger.debug("Error closing a stale connection to TV %s", ip, exc_info=True)
+    return closed
+
+
+def _close_inflight(thread_id: int) -> bool:
+    """Close whatever connection that thread last opened. True if there was one."""
+    with _INFLIGHT_GUARD:
+        connection = _INFLIGHT_SOCKETS.pop(thread_id, None)
+    if connection is None:
+        return False
+    try:
+        connection.close()
+    except Exception:
+        logger.debug("Error closing an in-flight connection", exc_info=True)
+    return True
+
+
+_install_connection_tracker()
+
+
 class _TVSession:
     """A TV connection (remote channel + art channel) closable from another thread.
 
@@ -266,6 +347,16 @@ class _TVSession:
             host=ip, port=DEFAULT_PORT, token=token, name=CONNECTION_NAME, timeout=timeout
         )
         self._art = None
+        self._worker_thread_id: Optional[int] = None
+
+    def claim_worker(self) -> None:
+        """Called from the thread that will talk to the TV, so close() can reach it."""
+        self._worker_thread_id = threading.get_ident()
+        _claim_inflight(self._worker_thread_id, self.ip)
+
+    def release_worker(self) -> None:
+        if self._worker_thread_id is not None:
+            _forget_inflight(self._worker_thread_id)
 
     @property
     def tv(self) -> SamsungTVWS:
@@ -284,6 +375,12 @@ class _TVSession:
                 channel.close()
             except Exception:
                 logger.debug("Error closing channel for TV %s", self.ip, exc_info=True)
+
+        # Whatever the worker was still opening when it was abandoned. Closing it is
+        # what makes its recv() raise, so the thread lets go of the TV's art channel
+        # instead of sitting on it until the operating system gives up.
+        if self._worker_thread_id is not None and _close_inflight(self._worker_thread_id):
+            logger.info("Closed a half-open connection to TV %s", self.ip)
 
 
 def _tv_call(
@@ -322,12 +419,32 @@ def _tv_call(
     # soon as its own deadline is gone, a deliberate action waits for its turn.
     busy_wait = deadline if skip_when_down else max(deadline, TV_BUSY_WAIT)
     with _tv_exclusive(ip, wait=busy_wait):
+        # Holding the lock means nothing else may be talking to this TV, so anything
+        # still recorded against it is a call that was abandoned and never let go. It
+        # would otherwise keep the set's one art channel busy while this request tried
+        # to open a second — which the TV answers by refusing both.
+        stale = reset_connections(ip)
+        if stale:
+            logger.info("Closed %d stale connection(s) to TV %s before starting", stale, ip)
+
         session = _TVSession(ip, token, DEFAULT_TIMEOUT)
+        phases: Dict[str, float] = {}
 
         def run():
-            if open_remote:
-                session.tv.open()
-            return action(session)
+            session.claim_worker()
+            started = time.monotonic()
+            try:
+                if open_remote:
+                    session.tv.open()
+                phases['open'] = time.monotonic() - started
+                acting = time.monotonic()
+                try:
+                    return action(session)
+                finally:
+                    phases['action'] = time.monotonic() - acting
+            finally:
+                # Whether it finished or raised, nothing here is half-open any more.
+                session.release_worker()
 
         future = _TV_EXECUTOR.submit(run)
         try:
@@ -338,6 +455,14 @@ def _tv_call(
             if not future.cancel():
                 session.close()
             _mark_tv_down(ip)
+            # Which step ran out of road. An absent phase never finished, which is the
+            # useful half: "open: unfinished" says the set never let us in at all.
+            logger.warning(
+                "TV %s timed out %s — open: %s, action: %s",
+                ip, action_description,
+                f"{phases['open']:.1f}s" if 'open' in phases else 'unfinished',
+                f"{phases['action']:.1f}s" if 'action' in phases else 'unfinished',
+            )
             raise FrameTVTimeoutError(
                 f"Timeout after {deadline}s while {action_description} TV {ip}"
             ) from err
