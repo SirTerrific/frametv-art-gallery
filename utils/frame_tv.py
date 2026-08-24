@@ -195,7 +195,7 @@ def _mark_tv_up(ip: str) -> None:
 
 # A Frame TV serves a single art channel. Opening a second one while another is still
 # connecting makes the set announce `ms.channel.clientConnect`, which samsungtvws raises
-# as a connection failure — so parallel requests to one TV do not queue, they break each
+# as a  failure — so parallel requests to one TV do not queue, they break each
 # other. gunicorn runs several workers, hence a file lock on top of the in-process one.
 try:
     import fcntl  # POSIX only; the published image runs Linux
@@ -252,18 +252,6 @@ def _tv_exclusive(ip: str, wait: float):
         local.release()
 
 
-# --- Reaching a connection that is still being established ---
-#
-# samsungtvws only records a websocket on the channel object once the handshake has
-# fully succeeded: `open()` builds it in a local, then loops on recv() waiting for the
-# TV's connect frame, and only assigns `self.connection` afterwards. Its `close()` acts
-# on `self.connection`, so a call abandoned while still inside `open()` closes nothing.
-# The worker thread stays in that recv, holding the one art channel a Frame TV has, and
-# the next request finds the set busy with a call nobody is waiting for any more.
-#
-# The socket exists by then — it is simply out of reach. So the create_connection the
-# library calls is wrapped to note the websocket against the thread that made it, which
-# gives close() something to act on. Only samsungtvws sees the wrapper.
 
 _INFLIGHT_SOCKETS: Dict[int, Any] = {}
 # Which TV each worker thread is talking to, so a connection left behind can be traced
