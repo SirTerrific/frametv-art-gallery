@@ -41,6 +41,7 @@ TV_DOWN_COOLDOWN = _env_int("FRAME_TV_DOWN_COOLDOWN", 30)
 # of thumbnails holds the TV for far longer than one call's deadline, and someone who
 # pressed a button would rather wait for their turn than be told the TV is busy.
 TV_BUSY_WAIT = _env_int("FRAME_TV_BUSY_WAIT", 90)
+
 # How many thumbnails are asked for in one request. The TV streams the whole answer
 # down one socket before the call returns, so a large batch is a single long transfer
 # that is lost in full if it does not finish.
@@ -58,6 +59,7 @@ TV_THUMBNAIL_GIVE_UP = _env_int("FRAME_TV_THUMBNAIL_GIVE_UP", 3)
 # and each read restarts the clock. A set that has gone quiet would otherwise spend the
 # whole budget to return nothing, with its art channel busy the entire time.
 TV_THUMBNAIL_FIRST_ANSWER = _env_int("FRAME_TV_THUMBNAIL_FIRST_ANSWER", 25)
+
 # How long one request to the TV may go without the library returning from it before
 # its connection is closed from the outside. Guards that sit between calls cannot help
 # here: samsungtvws reads frames until it sees the one it asked for, so a single call
