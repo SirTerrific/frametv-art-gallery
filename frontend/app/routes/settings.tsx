@@ -16,6 +16,7 @@ interface TV {
   name?: string;
   mac?: string;
   delete_other_images_on_upload?: boolean;
+  one_slot_mode?: boolean;
   slideshow_enabled?: boolean;
   slideshow_album_id?: number | null;
   slideshow_interval_minutes?: number | null;
@@ -169,6 +170,15 @@ export default function Settings() {
   const handleToggleDeleteOthers = async (tvIp: string, value: boolean) => {
     try {
       await updateTv(tvIp, { delete_other_images_on_upload: value });
+      await fetchTvs();
+    } catch (e: any) {
+      setError(e.message || 'Failed to update TV setting');
+    }
+  };
+
+  const handleToggleOneSlotMode = async (tvIp: string, value: boolean) => {
+    try {
+      await updateTv(tvIp, { one_slot_mode: value });
       await fetchTvs();
     } catch (e: any) {
       setError(e.message || 'Failed to update TV setting');
@@ -391,6 +401,22 @@ export default function Settings() {
                       </div>
                     </div>
                   )}
+
+                  <label className="flex items-start gap-2 text-sm mb-4">
+                    <input
+                      type="checkbox"
+                      checked={!!tv.one_slot_mode}
+                      onChange={e => handleToggleOneSlotMode(tv.ip, e.target.checked)}
+                      className="mt-0.5 accent-blue-600"
+                    />
+                    <span>
+                      One image at a time
+                      <span className="block text-xs text-muted-foreground">
+                        Keeps only the last image this app sent. Anything else on the TV is
+                        left alone.
+                      </span>
+                    </span>
+                  </label>
 
                   <fieldset className="mb-4 border border-border rounded-lg p-3">
                     <legend className="text-sm font-medium px-1">Slideshow</legend>
