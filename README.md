@@ -43,8 +43,12 @@ This project uses local websocket APIs provided by the TVs.
   images should land, and can create the album on the spot.
 - **Work on several images at once.** Tick the boxes in the gallery, or shift-click a range,
   then move the selection to an album or delete it in one go.
+- **Find the TVs for you.** Scan the network instead of typing an address — name and MAC
+  come back filled in. Needs the host network; see below.
 - **Send a whole album to a TV.** One button uploads every image in the album, in order,
   showing progress and stopping early if the TV goes quiet.
+- **One image at a time.** A switch per TV: each upload clears what this app sent before,
+  leaving only the newest. Art that came from anywhere else is left alone.
 - **Choose the matte.** Pick the style and colour of the frame the TV draws around the
   art when you send it, or set a default per TV that everything else inherits — album
   uploads included.
@@ -104,6 +108,7 @@ All optional, with sensible defaults. Set them as environment variables on the c
 
 | Variable | Default | What it does |
 | --- | --- | --- |
+| `PORT` | `8000` | Port the app listens on. Only useful on the host network, which has no mapping. |
 | `FRAME_TV_DATA` | `data` | Where uploads, the database and the caches live. Mount this to keep them. |
 | `MAX_UPLOAD_SIZE_BYTES` | `20971520` | Largest image accepted by the upload form (20 MB). |
 | `GUNICORN_WORKERS` | `4` | Worker processes. More than one keeps a slow TV from blocking the whole app. |
