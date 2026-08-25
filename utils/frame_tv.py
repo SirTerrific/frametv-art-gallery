@@ -515,6 +515,10 @@ def _collect_thumbnails(
     # another one. A set that stops mid-gallery would otherwise have every image left
     # in the list written off as previewless, and a page of placeholders is worse than
     # a slow one. So refusals are noted and judged at the end.
+        # A refusal only says something about the image if the TV goes on to answer for
+    # another one. A set that stops mid-gallery would otherwise have every image left
+    # in the list written off as previewless, and a page of placeholders is worse than
+    # a slow one. So refusals are noted and judged at the end.
     refusals: List[tuple] = []
     answered = 0
     dead_in_a_row = 0
@@ -536,6 +540,9 @@ def _collect_thumbnails(
         if on_batch:
             # Which images the blocked call was asking for, if it never comes back.
             on_batch(batch)
+            
+        answered_this_batch = 0
+        
         try:
             frames_before = frames_received() if frames_received else None
             call_started = time.monotonic()
@@ -576,6 +583,7 @@ def _collect_thumbnails(
                     continue
                 if keep(cid, data):
                     answered += 1
+                    answered_this_batch += 1
 
         for cid in batch:
             if cid in found or _known_to_have_no_thumbnail(ip, cid):
@@ -608,8 +616,9 @@ def _collect_thumbnails(
             dead_in_a_row = 0
             if keep(cid, payload):
                 answered += 1
+                answered_this_batch += 1
 
-        if answered == 0:
+        if answered == 0 and answered_this_batch == 0:
             # A whole batch, then every one of its images on its own, and not a single
             # answer: the set is away rather than out of previews. Walking the rest of
             # the gallery one dead call at a time would only make the page slower.
