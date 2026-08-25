@@ -1,0 +1,9 @@
+{
+  "packages": {
+    ".": {
+      "release-type": "simple",
+      "changelog-notes-type": "github",
+      "footer": "\n\n---\n⭐ **Enjoying the project?** Drop us a [star on GitHub](https://github.com/mrtncode/frametv-art-gallery) and share it with others!"
+    }
+  }
+}
