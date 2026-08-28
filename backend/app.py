@@ -85,7 +85,7 @@ THUMBNAIL_DIR = Path(INSTANCE_FOLDER).joinpath('thumbnails')
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 
-app = Flask(__name__, static_folder="frontend/build/client")
+app = Flask(__name__, static_folder="../frontend/build/client")
 app.secret_key = os.environ.get('SECRET_KEY', 'frameartsecretkey')
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = int(os.environ.get('MAX_UPLOAD_SIZE_BYTES', str(20 * 1024 * 1024)))

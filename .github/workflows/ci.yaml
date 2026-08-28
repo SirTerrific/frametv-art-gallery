@@ -17,9 +17,11 @@ jobs:
           python-version: '3.13'
 
       - name: Install backend
+        working-directory: backend
         run: pip install -e ".[test]"
 
       - name: Run tests
+        working-directory: backend
         run: pytest -q
 
   frontend:

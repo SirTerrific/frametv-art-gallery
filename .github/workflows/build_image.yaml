@@ -82,7 +82,8 @@ jobs:
         id: push
         uses: docker/build-push-action@v6.19.2
         with:
-          context: .
+          context: ./backend
+          file: ./backend/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}

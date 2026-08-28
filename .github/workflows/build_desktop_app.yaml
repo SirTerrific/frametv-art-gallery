@@ -64,6 +64,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install Python dependencies
+        working-directory: backend
         run: |
             python -m pip install --upgrade pip
             pip install .
@@ -77,7 +78,8 @@ jobs:
         run: pnpm run build
 
       - name: Build Flask backend
-        run: python -m PyInstaller --clean --distpath ./build-backend ./flask_backend.spec
+        working-directory: backend
+        run: python -m PyInstaller --clean --distpath ../build-backend ./flask_backend.spec
 
       - name: Build Electron application
         working-directory: frontend
