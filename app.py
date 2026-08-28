@@ -72,6 +72,7 @@ else:
 
 UPLOAD_FOLDER = os.path.join(DATA_DIR, "uploads")
 INSTANCE_FOLDER = os.path.join(DATA_DIR, "instance")
+BACKEND_PORT = int(os.environ.get('BACKEND_PORT', '5000'))
 
 # Ensure directories exist
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -1303,4 +1304,4 @@ if __name__ == '__main__':
     # Use DEBUG env variable ("1", "true", "True" = True)
     debug_env = os.environ.get('DEBUG', '').lower()
     debug = debug_env in ('1', 'true', 'yes')
-    app.run(debug=debug, host="0.0.0.0")
+    app.run(debug=debug, host="0.0.0.0", port=BACKEND_PORT)

@@ -13,6 +13,8 @@ const isDev = !app.isPackaged;
 const FRONTEND_PORT = 5174;
 const FRONTEND_HOST = "127.0.0.1";
 
+const BACKEND_PORT = 5543;
+
 let mainWindow = null;
 let pythonProcess = null;
 let frontendServer = null;
@@ -73,6 +75,7 @@ function startPythonBackend() {
   console.log("Starting backend:", backendPath);
   console.log("Backend exists:", fs.existsSync(backendPath));
   console.log("Data path:", dataPath);
+  console.log("Backend port:", BACKEND_PORT);
 
   pythonProcess = execFile(
     backendPath,
@@ -82,6 +85,7 @@ function startPythonBackend() {
       env: {
         ...process.env,
         FRAME_TV_DATA: dataPath,
+        FRAME_TV_PORT: String(BACKEND_PORT),
       },
     }
   );
@@ -103,7 +107,9 @@ function startPythonBackend() {
   pythonProcess.on("error", (error) => {
     console.error("Backend process error:", error);
 
-    showBackendError(error.message);
+    if (!isQuitting) {
+      showBackendError(error.message);
+    }
   });
 
   pythonProcess.on("exit", (code, signal) => {
@@ -181,7 +187,10 @@ function createFrontendServer() {
         return;
       }
 
-      if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+      if (
+        fs.existsSync(filePath) &&
+        fs.statSync(filePath).isFile()
+      ) {
         const extension = path.extname(filePath).toLowerCase();
         const contentType =
           MIME_TYPES[extension] ?? "application/octet-stream";
@@ -244,6 +253,7 @@ function stopPythonBackend() {
 
 async function createWindow() {
   Menu.setApplicationMenu(null);
+
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
@@ -252,6 +262,7 @@ async function createWindow() {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
+      devTools: isDev,
     },
   });
 
@@ -265,10 +276,6 @@ async function createWindow() {
       `http://${FRONTEND_HOST}:${FRONTEND_PORT}`
     );
   }
-
-  //#mainWindow.webContents.openDevTools({
-  //  mode: "detach",
-  //});
 
   mainWindow.on("closed", () => {
     mainWindow = null;
@@ -287,14 +294,12 @@ app.whenReady().then(async () => {
 
 app.on("before-quit", () => {
   isQuitting = true;
+
   stopFrontendServer();
   stopPythonBackend();
 });
 
 app.on("window-all-closed", () => {
-  stopFrontendServer();
-  stopPythonBackend();
-
   if (process.platform !== "darwin") {
     app.quit();
   }
