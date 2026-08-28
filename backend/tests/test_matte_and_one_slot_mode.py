@@ -10,7 +10,7 @@ import pytest
 from PIL import Image as PILImage
 from samsungtvws.exceptions import ResponseError
 
-import app as backend
+import backend.app as backend
 
 
 @pytest.fixture

@@ -11,7 +11,7 @@ import shutil
 
 import pytest
 
-import app as backend
+import backend.app as backend
 from utils import tv_connection as frame_tv
 
 

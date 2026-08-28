@@ -14,7 +14,7 @@ os.environ.setdefault("FRAME_TV_DATA", os.path.join(os.path.dirname(os.path.absp
 # The loop is a background thread; the pieces below are exercised directly.
 os.environ.setdefault("FRAME_TV_SLIDESHOW", "0")
 
-import app as backend
+import backend.app as backend
 from utils import slideshow
 
 

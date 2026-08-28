@@ -8,7 +8,7 @@ import io
 import pytest
 from PIL import Image as PILImage
 
-import app as backend
+import backend.app as backend
 
 
 @pytest.fixture
