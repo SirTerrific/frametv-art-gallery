@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 import pytest
 from PIL import Image as PILImage
 
-import backend.app as backend
+import app as backend
 
 
 @pytest.fixture
