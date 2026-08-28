@@ -1,5 +1,29 @@
 # Changelog
 
+## [2.0.0](https://github.com/mrtncode/frametv-art-gallery/compare/v1.5.0...v2.0.0) (2026-08-28)
+
+
+### ⚠ BREAKING CHANGES
+
+* Design UI refactor ([#98](https://github.com/mrtncode/frametv-art-gallery/issues/98))
+
+### Features
+
+* Add Desktop Client 🥳 ([#105](https://github.com/mrtncode/frametv-art-gallery/issues/105)) ([4638b21](https://github.com/mrtncode/frametv-art-gallery/commit/4638b21be43ecd376dde343b197bfbdf7d8dc460))
+* Design refactoring/ rebranding ([2c5b778](https://github.com/mrtncode/frametv-art-gallery/commit/2c5b778f94d608f5beaaef51024dc28f1b96a2fe))
+* Design UI refactor ([#98](https://github.com/mrtncode/frametv-art-gallery/issues/98)) ([ea96d37](https://github.com/mrtncode/frametv-art-gallery/commit/ea96d373bdfd9a17330555f36e98ba558932d1bb))
+
+
+### Bug Fixes
+
+* Cut a call that never comes back, without waiting out the deadline ([#92](https://github.com/mrtncode/frametv-art-gallery/issues/92)) ([ed77fb9](https://github.com/mrtncode/frametv-art-gallery/commit/ed77fb97dde497d4023f1b377315be224c995093))
+* keep the token a Frame TV hands back, so it stops asking to pair again ([#94](https://github.com/mrtncode/frametv-art-gallery/issues/94)) ([7f2f88f](https://github.com/mrtncode/frametv-art-gallery/commit/7f2f88fc6c12a75d1cc8b63984d72492ef583420))
+* Loading TV thumbnails ([#103](https://github.com/mrtncode/frametv-art-gallery/issues/103)) ([512736e](https://github.com/mrtncode/frametv-art-gallery/commit/512736ee14aa16eb720d9eefc4dd6371d3ea4a9a))
+* reach a connection that is still being established, so an abandoned call lets the TV go ([#91](https://github.com/mrtncode/frametv-art-gallery/issues/91)) ([f1a753c](https://github.com/mrtncode/frametv-art-gallery/commit/f1a753c1a43081c57c37641666b3b99cec2e9737))
+* release changelog formatting ([9270af5](https://github.com/mrtncode/frametv-art-gallery/commit/9270af5086653430018278a148a9ffaa04fb4a5d))
+* release changelog messages ([0fd6509](https://github.com/mrtncode/frametv-art-gallery/commit/0fd6509fb95be5cf71fa49a6eed8773ce21a85d0))
+* walk a gallery of thumbnails in batches, and learn from one visit to the next ([#93](https://github.com/mrtncode/frametv-art-gallery/issues/93)) ([217483e](https://github.com/mrtncode/frametv-art-gallery/commit/217483e16d51ea50b298c972f7cacec6f8c0de83))
+
 ## [1.5.0](https://github.com/mrtncode/frametv-art-gallery/compare/v1.4.1...v1.5.0) (2026-08-22)
 
 If you find frametv-art-gallery helpful, I would be happy about stars ⭐️ and contributions :)
