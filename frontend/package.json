@@ -1,5 +1,5 @@
 {
-  "name": "frametv-art-gallery-frontend",
+  "name": "Frame TV Art Gallery Manager",
   "version": "1.0.0",
   "private": true,
   "packageManager": "pnpm@11.1.0",
