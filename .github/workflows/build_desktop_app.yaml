@@ -1,0 +1,169 @@
+name: Build Desktop Apps
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: "Version or tag to use for the build"
+        required: false
+        type: string
+
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to use for the release (e.g. 1.2.3)"
+        required: true
+        type: string
+
+# Auto build on release
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Windows
+            os: windows-latest
+            electron_args: "--win"
+            backend_python: ".venv\\Scripts\\python.exe"
+
+          - name: Linux
+            os: ubuntu-latest
+            electron_args: "--linux"
+            backend_python: ".venv/bin/python"
+
+          - name: macOS
+            os: macos-latest
+            electron_args: "--mac"
+            backend_python: ".venv/bin/python"
+
+    env:
+      APP_VERSION: ${{ inputs.version || github.event.release.tag_name || github.ref_name }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      # ---------------------------------------------------------
+      # Node / pnpm
+      # ---------------------------------------------------------
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 11
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: pnpm install --frozen-lockfile
+
+      # ---------------------------------------------------------
+      # Python
+      # ---------------------------------------------------------
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      # ---------------------------------------------------------
+      # Build frontend
+      # ---------------------------------------------------------
+
+      - name: Build frontend
+        working-directory: frontend
+        env:
+            VITE_API_URL: http://127.0.0.1:5543
+            VITE_APP_VERSION: ${{ env.APP_VERSION }}
+        run: pnpm run build
+
+      # ---------------------------------------------------------
+      # Build Flask backend
+      # ---------------------------------------------------------
+
+      - name: Build Flask backend
+        shell: bash
+        run: |
+          python -m PyInstaller \
+            --clean \
+            --distpath ./build-backend \
+            ./flask_backend.spec
+
+      # ---------------------------------------------------------
+      # Build Electron application
+      # ---------------------------------------------------------
+
+      - name: Build Electron application
+        working-directory: frontend
+        run: pnpm exec electron-builder ${{ matrix.electron_args }} --publish never
+
+      # ---------------------------------------------------------
+      # Upload build output
+      # ---------------------------------------------------------
+
+      - name: Upload desktop build
+        uses: actions/upload-artifact@v4
+        with:
+          name: desktop-${{ matrix.name }}
+          path: |
+            frontend/dist/*.exe
+            frontend/dist/*.dmg
+            frontend/dist/*.AppImage
+            frontend/dist/*.deb
+            frontend/dist/*.zip
+            frontend/dist/*.blockmap
+            frontend/dist/latest*.yml
+          if-no-files-found: error
+
+
+  release:
+    name: Create GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download desktop builds
+        uses: actions/download-artifact@v5
+        with:
+          path: release-assets
+          merge-multiple: true
+
+      - name: List release assets
+        run: find release-assets -type f -maxdepth 2 -print
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.version || github.event.release.tag_name || github.ref_name }}
+          name: FrameTV Art Gallery ${{ inputs.version || github.event.release.tag_name || github.ref_name }}
+          files: |
+            release-assets/**/*.exe
+            release-assets/**/*.dmg
+            release-assets/**/*.AppImage
+            release-assets/**/*.deb
+            release-assets/**/*.zip
+            release-assets/**/*.blockmap
+            release-assets/**/latest*.yml
+          fail_on_unmatched_files: false
