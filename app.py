@@ -63,6 +63,12 @@ from utils.frame_tv import (
 )
 
 DATA_DIR = os.environ.get("FRAME_TV_DATA", "data")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+if getattr(sys, 'frozen', False):
+    migrations_dir = os.path.join(sys._MEIPASS, 'migrations')
+else:
+    migrations_dir = os.path.join(BASE_DIR, 'migrations')
 
 UPLOAD_FOLDER = os.path.join(DATA_DIR, "uploads")
 INSTANCE_FOLDER = os.path.join(DATA_DIR, "instance")
@@ -115,7 +121,7 @@ app.register_blueprint(provider_config_routes)
 
 # ...models are now imported from models.py...
 
-migrate = Migrate(app, db)
+migrate = Migrate(app, db, directory=migrations_dir)
 
 
 # Create database
@@ -1286,6 +1292,14 @@ def serve(path):
 
 
 if __name__ == '__main__':
+    if "--upgrade-db" in sys.argv:
+        from flask_migrate import upgrade
+
+        with app.app_context():
+            upgrade(directory=migrations_dir)
+            
+        print("Database upgrade completed.")
+
     # Use DEBUG env variable ("1", "true", "True" = True)
     debug_env = os.environ.get('DEBUG', '').lower()
     debug = debug_env in ('1', 'true', 'yes')
