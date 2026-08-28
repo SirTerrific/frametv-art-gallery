@@ -85,7 +85,7 @@ function startPythonBackend() {
       env: {
         ...process.env,
         FRAME_TV_DATA: dataPath,
-        FRAME_TV_PORT: String(BACKEND_PORT),
+        BACKEND_PORT: String(BACKEND_PORT),
       },
     }
   );
