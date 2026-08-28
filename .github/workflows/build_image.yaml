@@ -1,14 +1,8 @@
 name: Build and publish Docker image
 
 on:
-#  release:
-#    types: [published]
-  workflow_call:
-    inputs:
-      version:
-        description: 'Version or tag to use for build'
-        required: false
-        type: string
+  release:
+    types: [published]
   # Lets a maintainer publish an image without waiting for a release.
   workflow_dispatch:
     inputs:
@@ -25,7 +19,7 @@ jobs:
   build-and-push-image:
     runs-on: ubuntu-latest
     env:
-      VITE_APP_VERSION: ${{ inputs.version || github.ref_name }}
+      VITE_APP_VERSION: ${{ inputs.version || github.event.release.tag_name || github.ref_name }}
     permissions:
       contents: read
       packages: write
@@ -80,7 +74,8 @@ jobs:
           # github.ref_name is not usable as a fallback: a branch like feat/foo would
           # produce an invalid tag. type=sha covers the manual runs instead.
           tags: |
-            type=raw,value=latest
+            type=raw,value=latest,enable=${{ github.event_name == 'release' }}
+            type=ref,event=release
             type=raw,value=${{ inputs.version }},enable=${{ inputs.version != '' }}
             type=sha,format=short
       - name: Build and push Docker image
