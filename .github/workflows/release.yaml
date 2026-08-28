@@ -7,7 +7,7 @@
 
 
 
-name: Release
+name: Release (DEPRECATED)
 on:
   push:
     branches:
