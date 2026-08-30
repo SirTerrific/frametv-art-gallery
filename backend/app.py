@@ -325,7 +325,6 @@ def backend_status():
                 use_cached = True
         except Exception:
             app.logger.warning("Error parsing cached GitHub version data; will fetch fresh", exc_info=True)
-
     if use_cached:
         latest_version = cache_data.get('latest_version')
         changelog = cache_data.get('changelog')
@@ -378,6 +377,7 @@ def backend_status():
         'status': 'ok', 
         'timestamp': now.isoformat(), 
         'update_available': update_available, 
+        'current_version': current_version,
         'latest_version': latest_version, 
         'changelog': changelog
     }), 200
