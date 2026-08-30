@@ -3,6 +3,28 @@ import React, { useEffect, useState } from "react";
 import { Button } from "~/components/ui/button";
 import { fetchAppStatus, type AppStatusResponse } from "~/utils/appApi";
 
+const DISMISSED_UPDATE_VERSION_KEY = "frametv-dismissed-update-version";
+
+function readDismissedUpdateVersion(): string | null {
+  if (typeof window === "undefined") return null;
+
+  try {
+    return window.localStorage.getItem(DISMISSED_UPDATE_VERSION_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function writeDismissedUpdateVersion(version: string) {
+  if (typeof window === "undefined") return;
+
+  try {
+    window.localStorage.setItem(DISMISSED_UPDATE_VERSION_KEY, version);
+  } catch {
+    // Ignore cache write failures.
+  }
+}
+
 function renderInlineMarkdown(text: string): React.ReactNode[] {
   const nodes: React.ReactNode[] = [];
   let index = 0;
@@ -237,16 +259,25 @@ export default function UpdateStatus() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
+  const [dismissedUpdateVersion, setDismissedUpdateVersion] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
+    const dismissedVersion = readDismissedUpdateVersion();
+
+    setDismissedUpdateVersion(dismissedVersion);
 
     setLoading(true);
     fetchAppStatus()
       .then((status) => {
         if (!active) return;
         setAppStatus(status);
-        setShowPopup(Boolean(status.update_available));
+        const latestVersion = status.latest_version ?? null;
+        const isDismissedForLatestVersion = Boolean(
+          latestVersion && dismissedVersion === latestVersion,
+        );
+
+        setShowPopup(Boolean(status.update_available) && !isDismissedForLatestVersion);
       })
       .catch(() => {
         if (!active) return;
@@ -262,7 +293,24 @@ export default function UpdateStatus() {
     };
   }, []);
 
-  const hasUpdate = Boolean(appStatus?.update_available);
+  const latestVersion = appStatus?.latest_version ?? null;
+  const isDismissedForLatestVersion = Boolean(
+    latestVersion && dismissedUpdateVersion === latestVersion,
+  );
+  const hasUpdate = Boolean(appStatus?.update_available) && !isDismissedForLatestVersion;
+
+  const dismissUpdateNotice = () => {
+    const version = appStatus?.latest_version;
+
+    setShowModal(false);
+    setShowPopup(false);
+
+    if (!version) return;
+
+    setDismissedUpdateVersion(version);
+    writeDismissedUpdateVersion(version);
+  };
+
   const openModal = () => {
     if (!hasUpdate) return;
     setShowModal(true);
@@ -303,7 +351,7 @@ export default function UpdateStatus() {
               type="button"
               onClick={(event) => {
                 event.stopPropagation();
-                setShowPopup(false);
+                dismissUpdateNotice();
               }}
               aria-label="Dismiss update popup"
               className="absolute right-3 top-3 rounded-md p-1 text-muted-foreground transition hover:bg-muted hover:text-foreground"
@@ -354,7 +402,7 @@ export default function UpdateStatus() {
               </div>
               <button
                 type="button"
-                onClick={() => setShowModal(false)}
+                onClick={dismissUpdateNotice}
                 aria-label="Close update modal"
                 className="rounded-md p-2 text-muted-foreground transition hover:bg-muted hover:text-foreground"
               >
