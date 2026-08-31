@@ -60,6 +60,11 @@ def test_the_backup_is_readable_and_leaves_nothing_behind(client):
     with zipfile.ZipFile(io.BytesIO(res.data)) as archive:
         assert archive.testzip() is None, "the archive should not be corrupt"
 
+    # The archive cannot be deleted while it is still open, so the cleanup rides on
+    # the response being closed. A real server always closes it; the test client only
+    # does so when asked.
+    res.close()
+
     leftovers = {
         name for name in set(os.listdir(tempfile.gettempdir())) - before
         if name.startswith("frametv-backup-")

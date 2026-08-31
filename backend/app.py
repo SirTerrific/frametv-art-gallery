@@ -1,10 +1,11 @@
 import base64
 import hashlib
+import io
 import shutil
 import sqlite3
 import tempfile
 import zipfile
-from flask import Flask, after_this_request, render_template, request, redirect, url_for, flash, send_file, send_from_directory, jsonify, Response
+from flask import Flask, render_template, request, redirect, url_for, flash, send_file, send_from_directory, jsonify, Response
 import os
 from werkzeug.utils import secure_filename
 from pathlib import Path
@@ -422,6 +423,25 @@ def api_list_images():
     return {'images': files}
 
 
+class _SelfDeletingFile(io.FileIO):
+    """A file that takes its temporary directory with it when it is closed.
+
+    Whoever streams the response closes the file, and that is the only moment the
+    archive is safe to remove: Windows refuses to delete a file that is still open,
+    and rmtree hides the refusal, so anything earlier silently leaves it behind.
+    """
+
+    def __init__(self, path, tmp_dir):
+        super().__init__(path, 'rb')
+        self._tmp_dir = tmp_dir
+
+    def close(self):
+        try:
+            super().close()
+        finally:
+            shutil.rmtree(self._tmp_dir, ignore_errors=True)
+
+
 @app.route('/api/backup', methods=['GET'])
 def api_backup():
     """Download a zip of the uploads and the database."""
@@ -449,12 +469,17 @@ def api_backup():
                 if os.path.isfile(full):
                     archive.write(full, f'uploads/{filename}')
 
-        @after_this_request
-        def cleanup(response):
-            shutil.rmtree(tmp_dir, ignore_errors=True)
-            return response
-
-        return send_file(archive_path, as_attachment=True, download_name=os.path.basename(archive_path))
+        # The archive is handed over as a file that cleans up after itself. Neither
+        # after_this_request nor call_on_close can do it: the first runs while the file
+        # is still open, and send_file streams in passthrough mode, where Werkzeug hands
+        # the WSGI server the file wrapper directly and never closes the response the
+        # callbacks are attached to.
+        return send_file(
+            _SelfDeletingFile(archive_path, tmp_dir),
+            mimetype='application/zip',
+            as_attachment=True,
+            download_name=os.path.basename(archive_path),
+        )
     except Exception as e:
         shutil.rmtree(tmp_dir, ignore_errors=True)
         _log_exception('Failed to build the backup archive', e)
