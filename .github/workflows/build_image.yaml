@@ -3,6 +3,14 @@ name: Build and publish Docker image
 on:
   release:
     types: [published]
+  # release.yaml calls this: a release created with GITHUB_TOKEN does not trigger
+  # the event above, so the tag it just cut is passed in instead.
+  workflow_call:
+    inputs:
+      version:
+        description: 'Version or tag to build'
+        required: false
+        type: string
   # Lets a maintainer publish an image without waiting for a release.
   workflow_dispatch:
     inputs:
@@ -76,7 +84,7 @@ jobs:
           # github.ref_name is not usable as a fallback: a branch like feat/foo would
           # produce an invalid tag. type=sha covers the manual runs instead.
           tags: |
-            type=raw,value=latest,enable=${{ github.event_name == 'release' }}
+            type=raw,value=latest,enable=${{ github.event_name == 'release' || inputs.version != '' }}
             type=ref,event=release
             type=raw,value=${{ inputs.version }},enable=${{ inputs.version != '' }}
             type=sha,format=short

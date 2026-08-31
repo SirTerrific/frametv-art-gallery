@@ -1,18 +1,9 @@
-
-# DEPRECATED
-# Deactivated in Github Actions
-# NOT USING RELEASE PLEASE ANYMORE
-# USING GITHUB RELEASE TOOL NOW INSTEAD
-
-
-
-
-name: Release (DEPRECATED)
+name: Release
 on:
   push:
     branches:
       - main
-  workflow_dispatch: 
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -35,10 +26,12 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           release-type: simple
+
+  # A release created with GITHUB_TOKEN does not trigger other workflows, so the
+  # build is called from here rather than left to build_image's own release trigger.
   trigger-build:
     needs: release-please
     if: ${{ needs.release-please.outputs.release_created == 'true' }}
     uses: ./.github/workflows/build_image.yaml
     with:
       version: ${{ needs.release-please.outputs.tag_name }}
-
