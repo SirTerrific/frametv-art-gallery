@@ -77,6 +77,9 @@ All optional, with sensible defaults. Set them as environment variables on the c
 
 | Variable | Default | What it does |
 | --- | --- | --- |
+| `PORT` | `8000` | Port the app listens on. Only useful on the host network, which has no mapping. |
+| `FRAME_TV_DATA` | `data` | Where uploads, the database and the caches live. Mount this to keep them. |
+| `MAX_UPLOAD_SIZE_BYTES` | `20971520` | Largest image accepted by the upload form (20 MB). |
 | `GUNICORN_WORKERS` | `4` | Worker processes. More than one keeps a slow TV from blocking the whole app. |
 | `GUNICORN_TIMEOUT` | `180` | Seconds before gunicorn kills a worker. Keep it above `FRAME_TV_UPLOAD_DEADLINE`. |
 | `FRAME_TV_SOCKET_TIMEOUT` | `8` | Socket timeout for a single read from the TV. |
@@ -85,7 +88,15 @@ All optional, with sensible defaults. Set them as environment variables on the c
 | `FRAME_TV_PAIRING_TIMEOUT` | `45` | How long adding a TV waits for the pairing prompt to be accepted. |
 | `FRAME_TV_DOWN_COOLDOWN` | `30` | Seconds a TV is skipped after it failed to answer. |
 | `FRAME_TV_BUSY_WAIT` | `90` | How long a deliberate action queues behind another operation on the same TV. |
+| `FRAME_TV_STALL_TIMEOUT` | `45` | Seconds of silence on a connection before it is closed from the outside. |
+| `FRAME_TV_THUMBNAIL_BATCH` | `2` | Thumbnails asked for per request. Lower it if a TV drops long transfers. |
+| `FRAME_TV_THUMBNAIL_DEADLINE` | `120` | Seconds a page of thumbnails may take in total. |
+| `FRAME_TV_THUMBNAIL_FIRST_ANSWER` | `25` | Seconds a page may run without a single thumbnail before it stops. |
+| `FRAME_TV_THUMBNAIL_GIVE_UP` | `3` | Images that may die in a row before the rest are left for next time. |
+| `FRAME_TV_NO_THUMBNAIL_TTL` | `3600` | How long content the TV has no preview for is left alone before asking again. |
+| `FRAME_TV_GALLERY_TTL` | `15` | How long the TV's image list is reused, so a reload need not wait on the set. |
 | `FRAME_TV_MAX_PARALLEL_CALLS` | `8` | Concurrent TV requests per worker. |
+| `FRAME_TV_SLIDESHOW` | `1` | Set to `0` to stop the slideshow loop from running at all. |
 
 # Tests
 
@@ -123,6 +134,45 @@ Something else was talking to that TV — most often a page of thumbnails still 
 which holds the set for far longer than a single request. A deliberate action queues for
 `FRAME_TV_BUSY_WAIT` seconds before giving up; nothing was changed on the TV, so retrying
 once the other operation has finished is all it needs.
+
+## "Wake the TV" does nothing
+
+Wake-on-LAN is a broadcast, not a request. The TV has no network stack running while it
+is off, so the packet cannot be acknowledged and the app can only report that it was
+sent — never that it worked. Three things have to be true, in this order:
+
+**The packet has to reach your LAN.** In Docker's default bridge network it does not: a
+broadcast sent from the container stays on the docker bridge, and Linux does not forward
+a subnet-directed broadcast onto the physical network either. Wake-on-LAN therefore
+needs the container on the host network:
+
+```yaml
+services:
+  frametv:
+    network_mode: host
+```
+
+Nothing else in the app depends on this, so if you would rather not, everything but
+waking the TV keeps working on the default bridge.
+
+**The TV has to be listening.** On a Frame TV: *Settings → General → Network → Expert
+Settings → Power On with Mobile* (called *Wake on LAN* / *Wake on Wireless* on some
+firmware). Off by default on several models.
+
+**The MAC has to be the interface the TV is actually using.** Ethernet and Wi-Fi have
+different MAC addresses, and a TV on Wi-Fi will ignore a packet aimed at its unused
+Ethernet port. Both are listed under *Settings → Support → About This TV*. A TV added by
+hand starts without a MAC; the settings page has a field to fill one in.
+
+To tell the app apart from the network, send a packet from the host itself and watch for
+it on the wire:
+
+```bash
+sudo tcpdump -i any -n 'udp port 9'
+```
+
+If the packet shows up when the app sends it and the TV still does not wake, the problem
+is on the TV, not here.
 
 ## Errors when uploading images to the TV:
 

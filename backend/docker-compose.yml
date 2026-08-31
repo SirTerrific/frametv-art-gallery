@@ -1,19 +1,26 @@
 services:
   frametv:
-    image: ghcr.io/mrtncode/frametv-art-gallery:latest
+    image: ghcr.io/sirterrific/frametv-art-gallery:latest
     container_name: frametv_artgallery
     restart: always
     volumes:
       - frametv_data:/data
-    network_mode: host # Network mode is used to allow the container to auto discover the frame TV. You can also use the default bridge mode and add the TV's IP manually in the UI.
-    # Use this if you want to use the default bridge network mode
-   #ports:
-    #  - "8000:8005"
+
+    # The host network is what lets the app find TVs by itself, and what lets it wake
+    # one: both use UDP broadcast, which never leaves the bridge. On the bridge you can
+    # still add a TV by typing its address — everything else works the same.
+    network_mode: host
+
+    # Swap the two blocks above and below to go back to the bridge.
+    # ports:
+    #   - "8000:8000"
+
     environment:
       - SECRET_KEY=supersecretkey
       - FRAME_TV_DATA=/data
-      # This is the port that the web server will listen on when using the host network mode. You can change it to any available port on your host machine.
-      - "PORT=8005"
+      # On the host network there is no mapping to move the app with, so change the
+      # port here if 8000 is taken.
+      - PORT=8000
 
 volumes:
   frametv_data:
