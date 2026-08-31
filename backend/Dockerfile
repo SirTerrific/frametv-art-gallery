@@ -31,14 +31,15 @@ ENV PYTHONUNBUFFERED=1
 
 ENV PORT=8000
 
+# Get the build arg for APP_VEERSION
+ARG APP_VERSION=unknown
+ENV FRAME_TV_VERSION=${APP_VERSION}
+
 EXPOSE 8000
 
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
-# Run entrypoint.sh for db migrations, ..
+
 ENTRYPOINT ["/entrypoint.sh"]
 
-# Several workers so one TV that stops answering cannot freeze the whole app, and a
-# timeout above FRAME_TV_UPLOAD_DEADLINE so a legitimately slow upload is not killed.
-# PORT matters on the host network, where there is no mapping to move the app with.
-CMD ["sh", "-c", "exec gunicorn app:app --bind 0.0.0.0:${PORT:-8000} --workers ${GUNICORN_WORKERS:-4} --timeout ${GUNICORN_TIMEOUT:-180}"]
+CMD ["sh", "-c", "exec gunicorn app:app --bind 0.0.0.0:${PORT} --workers ${GUNICORN_WORKERS:-4} --timeout ${GUNICORN_TIMEOUT:-180}"]

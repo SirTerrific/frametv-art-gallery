@@ -32,6 +32,10 @@ export async function fetchImages(options: { q?: string; sort?: ImageSort } = {}
   return (await res.json()).images;
 }
 
+export function getBackupUrl() {
+  return `${API_BASE}/api/backup`;
+}
+
 /** Realign the database with the uploads folder and report what moved. */
 export async function reconcileImages(): Promise<{
   added: number; removed: number; hashed: number; duplicate_groups: string[][];
@@ -39,10 +43,6 @@ export async function reconcileImages(): Promise<{
   const res = await fetch(`${API_BASE}/api/images/reconcile`, { method: 'POST' });
   if (!res.ok) throw new Error((await res.json()).error || 'Failed to reconcile images');
   return await res.json();
-}
-
-export function getBackupUrl() {
-  return `${API_BASE}/api/backup`;
 }
 
 export async function deleteImage(filename: string) {

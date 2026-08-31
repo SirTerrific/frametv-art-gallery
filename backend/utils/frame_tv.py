@@ -1,18 +1,13 @@
-import contextlib
-import socket
-import threading
-import time
-from concurrent.futures import ThreadPoolExecutor, TimeoutError as FutureTimeoutError
-from datetime import datetime
-from typing import Any, Callable, Dict, List, Optional, Tuple
 import base64
-import websocket
-from samsungtvws import SamsungTVWS
-from samsungtvws.exceptions import ConnectionFailure, ResponseError
-from const import CONNECTION_NAME
 import logging
 import os
+import time
+from datetime import datetime
 from pathlib import Path
+from typing import Callable, Dict, List, Optional, Tuple
+
+from utils import tv_connection as _tv_connection
+from samsungtvws.exceptions import ResponseError
 
 logger = logging.getLogger(__name__)
 
@@ -25,81 +20,53 @@ def _env_int(name: str, default: int) -> int:
         return default
 
 
-DEFAULT_PORT = 8002
-# Socket-level timeout handed to samsungtvws (covers connect and single reads).
-DEFAULT_TIMEOUT = _env_int("FRAME_TV_SOCKET_TIMEOUT", 8)
-# Wall-clock cap for a whole TV operation, see _tv_call().
-TV_CALL_DEADLINE = _env_int("FRAME_TV_CALL_DEADLINE", 20)
-# Uploads push the whole image over the websocket, so they get a longer budget.
 TV_UPLOAD_DEADLINE = _env_int("FRAME_TV_UPLOAD_DEADLINE", 120)
-# Pairing waits for someone to accept the prompt on the TV, so it needs room too.
-TV_PAIRING_TIMEOUT = _env_int("FRAME_TV_PAIRING_TIMEOUT", 45)
-# How long a TV is skipped after it failed to answer, so one dead set cannot
-# turn a page full of thumbnails into a page full of stuck requests.
-TV_DOWN_COOLDOWN = _env_int("FRAME_TV_DOWN_COOLDOWN", 30)
-# How long a deliberate action queues behind another operation on the same TV. A page
-# of thumbnails holds the TV for far longer than one call's deadline, and someone who
-# pressed a button would rather wait for their turn than be told the TV is busy.
+TV_CALL_DEADLINE = _env_int("FRAME_TV_CALL_DEADLINE", 40)
 TV_BUSY_WAIT = _env_int("FRAME_TV_BUSY_WAIT", 90)
-# How many thumbnails are asked for in one request. The TV streams the whole answer
-# down one socket before the call returns, so a large batch is a single long transfer
-# that is lost in full if it does not finish.
-TV_THUMBNAIL_BATCH = _env_int("FRAME_TV_THUMBNAIL_BATCH", 8)
-# Fetching a page of thumbnails is several of those transfers, so it gets its own
-# budget rather than a single call's.
+TV_THUMBNAIL_BATCH = _env_int("FRAME_TV_THUMBNAIL_BATCH", 2)
 TV_THUMBNAIL_DEADLINE = _env_int("FRAME_TV_THUMBNAIL_DEADLINE", 120)
-# How many images in a row may die at the connection level before the rest of the
-# gallery is left for next time. Each one costs a socket timeout, and the TV is locked
-# for the whole walk, so this bounds how long one page load can hold it.
 TV_THUMBNAIL_GIVE_UP = _env_int("FRAME_TV_THUMBNAIL_GIVE_UP", 3)
-# How long the walk may go without a single thumbnail before it stops. Counting failures
-# is not enough on its own: one request to the art channel can run far longer than the
-# socket timeout, because samsungtvws reads frames until it sees the one it asked for
-# and each read restarts the clock. A set that has gone quiet would otherwise spend the
-# whole budget to return nothing, with its art channel busy the entire time.
 TV_THUMBNAIL_FIRST_ANSWER = _env_int("FRAME_TV_THUMBNAIL_FIRST_ANSWER", 25)
-# How long one request to the TV may go without the library returning from it before
-# its connection is closed from the outside. Guards that sit between calls cannot help
-# here: samsungtvws reads frames until it sees the one it asked for, so a single call
-# can outlast any budget while nothing around it gets a chance to run.
-TV_STALL_TIMEOUT = _env_int("FRAME_TV_STALL_TIMEOUT", 25)
-# Simple in-memory cache to reduce repeated TV requests
-# Structure: { (ip, 'gallery'): (timestamp, value), (ip, content_id): (timestamp, bytes) }
+TV_STALL_TIMEOUT = _env_int("FRAME_TV_STALL_TIMEOUT", 45)
+
 _CACHE: dict = {}
-_CACHE_TTL = 60  # seconds
+_CACHE_TTL = 60
+
 
 def _cache_get(key):
     entry = _CACHE.get(key)
     if not entry:
         return None
-    ts, value = entry
-    if time.time() - ts > _CACHE_TTL:
-        try:
-            del _CACHE[key]
-        except KeyError:
-            pass
+    timestamp, value = entry
+    if time.time() - timestamp > _CACHE_TTL:
+        _CACHE.pop(key, None)
         return None
     return value
+
 
 def _cache_set(key, value):
     _CACHE[key] = (time.time(), value)
 
 
-# Disk-backed thumbnail cache — store under the project's data directory
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
-# Match app.py's DATA_DIR behavior: use FRAME_TV_DATA env or default to 'data'
-_DATA_DIR = Path(os.environ.get('FRAME_TV_DATA', 'data'))
+_DATA_DIR = Path(os.environ.get("FRAME_TV_DATA", "data"))
 if not _DATA_DIR.is_absolute():
-    _DATA_DIR = PROJECT_ROOT.joinpath(_DATA_DIR)
-TV_THUMB_DIR = _DATA_DIR.joinpath('instance', 'tv_thumbnails')
+    _DATA_DIR = Path(__file__).resolve().parents[1].joinpath(_DATA_DIR)
+TV_THUMB_DIR = _DATA_DIR.joinpath("instance", "tv_thumbnails")
 TV_THUMB_DIR.mkdir(parents=True, exist_ok=True)
+_tv_connection.configure_data_dirs(_DATA_DIR)
 
-# The gallery listing, held just long enough that reloading a page does not have to
-# queue behind whatever else is talking to the TV. Anything here that changes the set's
-# contents drops it, so a delete or an upload is still seen immediately; only a change
-# made elsewhere — the TV's own remote — can be up to this stale.
-TV_GALLERY_TTL = _env_int("FRAME_TV_GALLERY_TTL", 15)
+FrameTVError = _tv_connection.FrameTVError
+FrameTVConnectionError = _tv_connection.FrameTVConnectionError
+FrameTVTimeoutError = _tv_connection.FrameTVTimeoutError
+FrameTVUnavailableError = _tv_connection.FrameTVUnavailableError
+
+
+class FrameTVUploadError(FrameTVError):
+    """Exception for upload errors to the Frame TV."""
+
+
 _GALLERY_CACHE: Dict[str, tuple] = {}
+TV_GALLERY_TTL = _env_int("FRAME_TV_GALLERY_TTL", 15)
 
 
 def _cached_gallery(ip: str) -> Optional[List[Dict]]:
@@ -118,571 +85,34 @@ def _remember_gallery(ip: str, images: List[Dict]) -> None:
 
 
 def forget_gallery(ip: str) -> None:
-    """Drop the cached listing for a TV whose contents just changed."""
     _GALLERY_CACHE.pop(ip, None)
 
 
 def _thumb_disk_path(ip: str, content_id: str) -> Path:
-    safe_ip = ip.replace(':', '_')
-    return TV_THUMB_DIR.joinpath(safe_ip, content_id)
+    return TV_THUMB_DIR.joinpath(ip.replace(":", "_"), content_id)
+
 
 def _thumb_disk_get(ip: str, content_id: str) -> Optional[bytes]:
-    p = _thumb_disk_path(ip, content_id)
-    if p.is_file():
-        try:
-            return p.read_bytes()
-        except Exception:
-            return None
-    return None
-
-def _thumb_disk_set(ip: str, content_id: str, data: bytes) -> None:
-    p = _thumb_disk_path(ip, content_id)
+    path = _thumb_disk_path(ip, content_id)
+    if not path.is_file():
+        return None
     try:
-        p.parent.mkdir(parents=True, exist_ok=True)
-        p.write_bytes(data)
-    except Exception:
-        logger.exception("Failed to write thumbnail to disk for %s %s", ip, content_id)
-
-class FrameTVError(Exception):
-    """Base exception for Frame TV operations."""
-    pass
-
-class FrameTVConnectionError(FrameTVError):
-    """Exception for connection errors to the Frame TV."""
-    pass
-
-
-class FrameTVTimeoutError(FrameTVConnectionError):
-    """Exception for timeouts while talking to the Frame TV."""
-    pass
-
-
-class FrameTVUnavailableError(FrameTVConnectionError):
-    """Raised instead of contacting a TV that just failed, while its cooldown lasts.
-
-    This is the circuit breaker doing its job, not an incident: callers should report
-    it without a stack trace, since one page of thumbnails raises it many times over.
-    """
-    pass
-
-class FrameTVUploadError(FrameTVError):
-    """Exception for upload errors to the Frame TV."""
-    pass
-
-
-def _is_timeout_error(err: Exception) -> bool:
-    return (
-        isinstance(err, (TimeoutError, socket.timeout))
-        or getattr(err, "winerror", None) == 10060
-        or "10060" in str(err)
-        or "timed out" in str(err).lower()
-    )
-
-
-def _is_connection_error(err: Exception) -> bool:
-    """True when the error means "the TV is not talking to us" rather than "the TV said no"."""
-    return isinstance(
-        err, (OSError, ConnectionFailure, FrameTVConnectionError, websocket.WebSocketException)
-    ) or _is_timeout_error(err)
-
-
-def _raise_tv_connection_error(ip: str, action_description: str, err: Exception) -> None:
-    if _is_timeout_error(err):
-        raise FrameTVTimeoutError(f"Timeout while {action_description} TV {ip}") from err
-    raise FrameTVConnectionError(f"Error while {action_description} TV {ip}") from err
-
-
-# --- Bounded TV calls ---
-#
-# samsungtvws has no overall timeout: art requests wait in a `while True` loop on
-# recv() until the TV answers the right frame. A set that accepts the socket but
-# stops answering therefore blocks the request forever — long enough for gunicorn
-# to kill the worker, respawn it, and hit the same wall on the next thumbnail.
-# Every TV call runs in a worker thread with a hard deadline, and the sockets are
-# closed from the outside on expiry, which is what makes the pending recv() fail.
-
-_TV_EXECUTOR = ThreadPoolExecutor(
-    max_workers=_env_int("FRAME_TV_MAX_PARALLEL_CALLS", 8),
-    thread_name_prefix="frametv",
-)
-
-# The cooldown is shared between gunicorn workers through a marker file whose mtime is
-# when the TV last failed. Keeping it in memory would only teach one worker out of four,
-# so a page full of thumbnails would still stall once per worker.
-TV_DOWN_DIR = _DATA_DIR.joinpath('instance', 'tv_down')
-
-
-def _safe_ip(ip: str) -> str:
-    return "".join(ch if ch.isalnum() or ch in "-._" else "_" for ch in ip)
-
-
-def _tv_down_marker(ip: str) -> Path:
-    return TV_DOWN_DIR.joinpath(f"tv-{_safe_ip(ip)}")
-
-
-def _tv_cooldown_remaining(ip: str) -> float:
-    try:
-        failed_at = _tv_down_marker(ip).stat().st_mtime
+        return path.read_bytes()
     except OSError:
-        return 0.0
-    return max(0.0, TV_DOWN_COOLDOWN - (time.time() - failed_at))
-
-
-def _mark_tv_down(ip: str) -> None:
-    try:
-        TV_DOWN_DIR.mkdir(parents=True, exist_ok=True)
-        _tv_down_marker(ip).touch()
-    except OSError:
-        logger.debug("Could not record TV %s as unreachable", ip, exc_info=True)
-
-
-def _mark_tv_up(ip: str) -> None:
-    try:
-        _tv_down_marker(ip).unlink()
-    except OSError:
-        pass
-
-
-# A Frame TV serves a single art channel. Opening a second one while another is still
-# connecting makes the set announce `ms.channel.clientConnect`, which samsungtvws raises
-# as a connection failure — so parallel requests to one TV do not queue, they break each
-# other. gunicorn runs several workers, hence a file lock on top of the in-process one.
-try:
-    import fcntl  # POSIX only; the published image runs Linux
-except ImportError:  # pragma: no cover - Windows development
-    fcntl = None
-
-TV_LOCK_DIR = _DATA_DIR.joinpath('instance', 'tv_locks')
-_LOCAL_TV_LOCKS: Dict[str, threading.Lock] = {}
-_LOCAL_TV_LOCKS_GUARD = threading.Lock()
-
-
-def _local_tv_lock(ip: str) -> threading.Lock:
-    with _LOCAL_TV_LOCKS_GUARD:
-        lock = _LOCAL_TV_LOCKS.get(ip)
-        if lock is None:
-            lock = threading.Lock()
-            _LOCAL_TV_LOCKS[ip] = lock
-        return lock
-
-
-@contextlib.contextmanager
-def _tv_exclusive(ip: str, wait: float):
-    """Hold a TV for one operation at a time, across threads and gunicorn workers."""
-    give_up_at = time.monotonic() + wait
-    busy = FrameTVUnavailableError(
-        f"TV {ip} stayed busy with another request for more than {wait:.0f}s"
-    )
-
-    local = _local_tv_lock(ip)
-    if not local.acquire(timeout=max(0.0, wait)):
-        raise busy
-
-    handle = None
-    try:
-        if fcntl is not None:
-            TV_LOCK_DIR.mkdir(parents=True, exist_ok=True)
-            handle = open(TV_LOCK_DIR.joinpath(f"tv-{_safe_ip(ip)}"), "w")
-            while True:
-                try:
-                    fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
-                    break
-                except OSError:
-                    if time.monotonic() >= give_up_at:
-                        raise busy
-                    time.sleep(0.1)
-        yield
-    finally:
-        if handle is not None:
-            try:
-                fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
-            except OSError:
-                pass
-            handle.close()
-        local.release()
-
-
-# Notified as observer(ip, token) whenever a TV hands back a token that differs from
-# the one it was given. Registered once by the app, which is what owns the database;
-# this module stays unaware of where tokens are kept.
-_token_observer: Optional[Callable[[str, str], None]] = None
-
-
-def set_token_observer(observer: Optional[Callable[[str, str], None]]) -> None:
-    global _token_observer
-    _token_observer = observer
-
-
-# --- Reaching a connection that is still being established ---
-#
-# samsungtvws only records a websocket on the channel object once the handshake has
-# fully succeeded: `open()` builds it in a local, then loops on recv() waiting for the
-# TV's connect frame, and only assigns `self.connection` afterwards. Its `close()` acts
-# on `self.connection`, so a call abandoned while still inside `open()` closes nothing.
-# The worker thread stays in that recv, holding the one art channel a Frame TV has, and
-# the next request finds the set busy with a call nobody is waiting for any more.
-#
-# The socket exists by then — it is simply out of reach. So the create_connection the
-# library calls is wrapped to note the websocket against the thread that made it, which
-# gives close() something to act on. Only samsungtvws sees the wrapper.
-
-_INFLIGHT_SOCKETS: Dict[int, Any] = {}
-# Which TV each worker thread is talking to, so a connection left behind can be traced
-# back to the set it is still holding.
-_INFLIGHT_TV: Dict[int, str] = {}
-_INFLIGHT_GUARD = threading.Lock()
-
-# What each worker thread has heard from its TV: [frames, bytes]. Watching traffic at
-# the socket is what separates a set that has gone quiet from one still streaming a
-# long answer — a check between calls cannot tell the two apart.
-_TRAFFIC: Dict[int, List[int]] = {}
-_INFLIGHT_PROGRESS: Dict[int, Callable[[], None]] = {}
-
-
-def _note_traffic(thread_id: int, data) -> None:
-    with _INFLIGHT_GUARD:
-        traffic = _TRAFFIC.get(thread_id)
-        if traffic is not None:
-            traffic[0] += 1
-            traffic[1] += len(data) if data else 0
-        hook = _INFLIGHT_PROGRESS.get(thread_id)
-    if hook is not None:
-        hook()
-
-
-def _traffic_snapshot(thread_id: int) -> str:
-    with _INFLIGHT_GUARD:
-        traffic = _TRAFFIC.get(thread_id)
-    if traffic is None:
-        return "no traffic recorded"
-    return f"{traffic[0]} frame(s), {traffic[1]} byte(s) received"
-
-
-def _traffic_frames(thread_id: int) -> int:
-    with _INFLIGHT_GUARD:
-        traffic = _TRAFFIC.get(thread_id)
-    return traffic[0] if traffic is not None else 0
-
-
-class _ConnectionTracker:
-    """The websocket module as samsungtvws sees it, noting each connection it opens."""
-
-    def __init__(self, real_module):
-        self._real = real_module
-
-    def __getattr__(self, name):
-        return getattr(self._real, name)
-
-    def create_connection(self, *args, **kwargs):
-        connection = self._real.create_connection(*args, **kwargs)
-        thread_id = threading.get_ident()
-        real_recv = connection.recv
-
-        def recv(*recv_args, **recv_kwargs):
-            data = real_recv(*recv_args, **recv_kwargs)
-            _note_traffic(thread_id, data)
-            return data
-
-        # Instance attribute, not a subclass: callers and tests keep the very object
-        # the real module handed back, only its reads are observed.
-        connection.recv = recv
-        with _INFLIGHT_GUARD:
-            _INFLIGHT_SOCKETS[thread_id] = connection
-        return connection
-
-
-def _install_connection_tracker() -> None:
-    from samsungtvws import connection as _samsung_connection
-
-    if not isinstance(_samsung_connection.websocket, _ConnectionTracker):
-        _samsung_connection.websocket = _ConnectionTracker(_samsung_connection.websocket)
-
-
-def _forget_inflight(thread_id: int) -> None:
-    with _INFLIGHT_GUARD:
-        _INFLIGHT_SOCKETS.pop(thread_id, None)
-        _INFLIGHT_TV.pop(thread_id, None)
-        _INFLIGHT_PROGRESS.pop(thread_id, None)
-        _TRAFFIC.pop(thread_id, None)
-
-
-def _claim_inflight(thread_id: int, ip: str, on_progress: Optional[Callable[[], None]] = None) -> None:
-    with _INFLIGHT_GUARD:
-        _INFLIGHT_TV[thread_id] = ip
-        _TRAFFIC[thread_id] = [0, 0]
-        if on_progress is not None:
-            _INFLIGHT_PROGRESS[thread_id] = on_progress
-
-
-def reset_connections(ip: str) -> int:
-    """Close every connection still recorded against a TV. Returns how many.
-
-    Only safe to call while holding that TV's lock: nothing else may be talking to it,
-    so anything still open belongs to a call that was abandoned and is doing nothing
-    but occupying the one art channel the set has.
-    """
-    with _INFLIGHT_GUARD:
-        stale = [tid for tid, owner in _INFLIGHT_TV.items() if owner == ip]
-        connections = [(tid, _INFLIGHT_SOCKETS.pop(tid, None)) for tid in stale]
-
-    closed = 0
-    for thread_id, connection in connections:
-        if connection is None:
-            continue
-        try:
-            connection.close()
-            closed += 1
-        except Exception:
-            logger.debug("Error closing a stale connection to TV %s", ip, exc_info=True)
-    return closed
-
-
-def _close_inflight(thread_id: int) -> bool:
-    """Close whatever connection that thread last opened. True if there was one."""
-    with _INFLIGHT_GUARD:
-        connection = _INFLIGHT_SOCKETS.pop(thread_id, None)
-    if connection is None:
-        return False
-    try:
-        connection.close()
-    except Exception:
-        logger.debug("Error closing an in-flight connection", exc_info=True)
-    return True
-
-
-_install_connection_tracker()
-
-
-class _TVSession:
-    """A TV connection (remote channel + art channel) closable from another thread.
-
-    samsungtvws opens a fresh art channel on every `tv.art()` call, so the object is
-    kept here: one channel per operation instead of one per call, and a handle the
-    caller can close to unblock a read that is stuck in the worker thread.
-    """
-
-    def __init__(self, ip: str, token: Optional[str], timeout: int):
-        self.ip = ip
-        self._tv = SamsungTVWS(
-            host=ip, port=DEFAULT_PORT, token=token, name=CONNECTION_NAME, timeout=timeout
-        )
-        self._art = None
-        self._worker_thread_id: Optional[int] = None
-        self._last_progress = time.monotonic()
-        self._context = ""
-
-    def note_progress(self) -> None:
-        """Called on every frame the connection delivers — the proof of life the
-        stall watchdog watches. A call that neither delivers nor returns is the one
-        thing nothing else can see.
-        """
-        self._last_progress = time.monotonic()
-
-    def note_context(self, description: str) -> None:
-        """What the worker is currently asking the TV for, for the stall log."""
-        self._context = description
-
-    def describe_traffic(self) -> str:
-        """Frames and bytes heard on this worker's connection, if it claimed one."""
-        if self._worker_thread_id is None:
-            return "no traffic recorded"
-        return _traffic_snapshot(self._worker_thread_id)
-
-    def frames_received(self) -> int:
-        """How many frames this worker's connection has delivered so far."""
-        if self._worker_thread_id is None:
-            return 0
-        return _traffic_frames(self._worker_thread_id)
-
-    def idle_for(self) -> float:
-        return time.monotonic() - self._last_progress
-
-    def claim_worker(self) -> None:
-        """Called from the thread that will talk to the TV, so close() can reach it."""
-        self._worker_thread_id = threading.get_ident()
-        _claim_inflight(self._worker_thread_id, self.ip, on_progress=self.note_progress)
-
-    def release_worker(self) -> None:
-        if self._worker_thread_id is not None:
-            _forget_inflight(self._worker_thread_id)
-
-    @property
-    def tv(self) -> SamsungTVWS:
-        return self._tv
-
-    def art(self):
-        if self._art is None:
-            self._art = self._tv.art()
-        return self._art
-
-    def current_token(self) -> Optional[str]:
-        """The freshest token these channels hold.
-
-        A Frame TV issues a new token on connect, and samsungtvws keeps it on whichever
-        channel received it. `tv.art()` is handed a copy of the token as it stood then,
-        so the art channel — opened last — carries the newest one.
-        """
-        for channel in (self._art, self._tv):
-            token = getattr(channel, "token", None)
-            if token:
-                return str(token)
         return None
 
-    def close(self) -> None:
-        for channel in (self._art, self._tv):
-            if channel is None:
-                continue
-            try:
-                channel.close()
-            except Exception:
-                logger.debug("Error closing channel for TV %s", self.ip, exc_info=True)
 
-        # Whatever the worker was still opening when it was abandoned. Closing it is
-        # what makes its recv() raise, so the thread lets go of the TV's art channel
-        # instead of sitting on it until the operating system gives up.
-        if self._worker_thread_id is not None and _close_inflight(self._worker_thread_id):
-            logger.info("Closed a half-open connection to TV %s", self.ip)
+def _thumb_disk_set(ip: str, content_id: str, data: bytes) -> None:
+    path = _thumb_disk_path(ip, content_id)
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(data)
+    except OSError:
+        logger.exception("Failed to write thumbnail to disk for %s %s", ip, content_id)
 
 
-def _tv_call(
-    ip: str,
-    action_description: str,
-    action: Callable[["_TVSession"], Any],
-    *,
-    token: Optional[str] = None,
-    deadline: Optional[int] = None,
-    open_remote: bool = True,
-    skip_when_down: bool = True,
-    stall_timeout: Optional[int] = None,
-) -> Any:
-    """Run `action(session)` against the TV, never blocking longer than `deadline`.
-
-    Raises FrameTVTimeoutError when the deadline expires and FrameTVConnectionError
-    when the TV is unreachable; errors coming from the TV itself (a rejected
-    request, a bad content id) are re-raised untouched so callers can tell the two
-    apart. A TV that fails is skipped for TV_DOWN_COOLDOWN seconds.
-
-    `skip_when_down` is what the cooldown protects against: bursts of background
-    reads, above all the one request per thumbnail a gallery page fires. Deliberate
-    actions pass False — someone pressing play is waiting for that TV specifically,
-    and would rather wait for a real answer than be told to come back later.
-    """
-    if deadline is None:
-        deadline = TV_CALL_DEADLINE
-
-    cooldown = _tv_cooldown_remaining(ip) if skip_when_down else 0
-    if cooldown > 0:
-        raise FrameTVUnavailableError(
-            f"TV {ip} did not answer recently; skipping {action_description} it for another {cooldown:.0f}s"
-        )
-
-    # One operation at a time per TV: concurrent art channels corrupt each other. The
-    # same split as the cooldown applies to the queue: a background read gives up as
-    # soon as its own deadline is gone, a deliberate action waits for its turn.
-    busy_wait = deadline if skip_when_down else max(deadline, TV_BUSY_WAIT)
-    with _tv_exclusive(ip, wait=busy_wait):
-        # Holding the lock means nothing else may be talking to this TV, so anything
-        # still recorded against it is a call that was abandoned and never let go. It
-        # would otherwise keep the set's one art channel busy while this request tried
-        # to open a second — which the TV answers by refusing both.
-        stale = reset_connections(ip)
-        if stale:
-            logger.info("Closed %d stale connection(s) to TV %s before starting", stale, ip)
-
-        session = _TVSession(ip, token, DEFAULT_TIMEOUT)
-        phases: Dict[str, float] = {}
-
-        def run():
-            session.claim_worker()
-            started = time.monotonic()
-            try:
-                if open_remote:
-                    session.tv.open()
-                phases['open'] = time.monotonic() - started
-                acting = time.monotonic()
-                try:
-                    return action(session)
-                finally:
-                    phases['action'] = time.monotonic() - acting
-            finally:
-                # Whether it finished or raised, nothing here is half-open any more.
-                session.release_worker()
-
-        def keep_any_new_token():
-            """A token the TV issued is worth keeping even if the call then failed.
-
-            It is handed over during the connect handshake, so a request that dies
-            later still learned the one the set expects next time.
-            """
-            if _token_observer is None:
-                return
-            fresh = session.current_token()
-            if fresh and fresh != token:
-                try:
-                    _token_observer(ip, fresh)
-                except Exception:
-                    logger.warning("Could not hand on the new token for TV %s", ip, exc_info=True)
-
-        # A stall is a call that never comes back, so no check placed between calls can
-        # see it. This watches from outside and closes the connection, which is what
-        # makes the blocked read raise and hands the TV back. Progress is noted on
-        # every frame the socket delivers, so a set still streaming a long answer is
-        # left alone — only real silence trips this.
-        finished = threading.Event()
-        if stall_timeout:
-            def watch_for_a_stall():
-                while not finished.wait(1):
-                    idle = session.idle_for()
-                    if idle >= stall_timeout:
-                        logger.warning(
-                            "TV %s sent nothing for %.0fs while %s%s; closing the connection (%s)",
-                            ip, idle, action_description,
-                            f" ({session._context})" if session._context else "",
-                            session.describe_traffic(),
-                        )
-                        session.close()
-                        return
-
-            threading.Thread(
-                target=watch_for_a_stall, name="frametv-stall", daemon=True
-            ).start()
-
-        future = _TV_EXECUTOR.submit(run)
-        try:
-            try:
-                result = future.result(timeout=deadline)
-            finally:
-                finished.set()
-        except FutureTimeoutError as err:
-            # cancel() succeeds only while the call is still queued; otherwise close the
-            # sockets so the recv() blocking the worker thread raises and lets it go.
-            if not future.cancel():
-                session.close()
-            keep_any_new_token()
-            _mark_tv_down(ip)
-            # Which step ran out of road. An absent phase never finished, which is the
-            # useful half: "open: unfinished" says the set never let us in at all.
-            logger.warning(
-                "TV %s timed out %s — open: %s, action: %s",
-                ip, action_description,
-                f"{phases['open']:.1f}s" if 'open' in phases else 'unfinished',
-                f"{phases['action']:.1f}s" if 'action' in phases else 'unfinished',
-            )
-            raise FrameTVTimeoutError(
-                f"Timeout after {deadline}s while {action_description} TV {ip}"
-            ) from err
-        except Exception as err:
-            session.close()
-            keep_any_new_token()
-            if _is_connection_error(err):
-                _mark_tv_down(ip)
-                _raise_tv_connection_error(ip, action_description, err)
-            raise
-
-        _mark_tv_up(ip)
-        keep_any_new_token()
-        session.close()
-        return result
+TV_GALLERY_TTL = _env_int("FRAME_TV_GALLERY_TTL", 15)
+_GALLERY_CACHE: Dict[str, tuple] = {}
 
 
 def _fetch_matte_list(art) -> Optional[Dict]:
@@ -866,60 +296,16 @@ def is_tv_reachable(ip: str, token: Optional[str] = None) -> bool:
     except Exception:
         return False
 
-def _magic_packet(mac: str) -> bytes:
-    """Six 0xFF bytes followed by the MAC repeated sixteen times."""
-    cleaned = "".join(ch for ch in mac if ch.isalnum())
-    if len(cleaned) != 12:
-        raise ValueError(f"Invalid MAC address: {mac!r}")
-    try:
-        address = bytes.fromhex(cleaned)
-    except ValueError as err:
-        raise ValueError(f"Invalid MAC address: {mac!r}") from err
-    return b"\xff" * 6 + address * 16
-
-
-def power_on(ip: str, mac: Optional[str], token: Optional[str] = None) -> None:
+def power_on(ip: str, mac: str, token: Optional[str] = None) -> None:
     """
     Power on the Frame TV using Wake-on-LAN.
-
-    The TV has no network stack to talk to while it is off, so this is a broadcast
-    magic packet rather than a request: it cannot be acknowledged, and a TV that
-    ignores it stays off. Wake-on-LAN also has to be enabled on the set itself.
-
     Args:
-        ip (str): IP address of the TV, used to aim the directed broadcast.
-        mac (Optional[str]): MAC address of the TV. Required.
-        token (Optional[str]): Unused, kept for interface consistency.
+        ip (str): IP address of the TV (unused, for interface consistency).
+        mac (str): MAC address of the TV.
+        token (Optional[str]): Token string to use for authentication.
     """
-    if not mac:
-        raise FrameTVError(
-            f"No MAC address stored for TV {ip}; Wake-on-LAN needs one to reach a TV that is off"
-        )
-
-    packet = _magic_packet(mac)
-
-    # The global broadcast is what usually works; the subnet-directed one helps when a
-    # router forwards it and the host has several interfaces.
-    targets = ["255.255.255.255"]
-    octets = ip.split(".")
-    if len(octets) == 4 and all(o.isdigit() for o in octets):
-        targets.append(".".join(octets[:3] + ["255"]))
-
-    sent = False
-    for target in targets:
-        try:
-            with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
-                sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-                sock.settimeout(DEFAULT_TIMEOUT)
-                for port in (7, 9):
-                    sock.sendto(packet, (target, port))
-            sent = True
-        except OSError:
-            logger.debug("Wake-on-LAN broadcast to %s failed", target, exc_info=True)
-
-    if not sent:
-        raise FrameTVConnectionError(f"Could not send the Wake-on-LAN packet for TV {ip}")
-    logger.info("Sent Wake-on-LAN packet for TV %s (%s)", ip, mac)
+    logger.info("wake on lan is currently not implemented")
+    pass
 
 def power_off(ip: str, token: Optional[str] = None) -> None:
     """
@@ -944,6 +330,14 @@ def enable_art_mode(ip: str, token: Optional[str] = None) -> None:
         token=token,
         skip_when_down=False,
     )
+
+def remove_token(ip: str) -> None:
+    """
+    Delete the authentication token file for the specified TV IP.
+    Args:
+        ip (str): IP address of the TV.
+    """
+    pass
 
 def get_available_mattes(ip: str, token: Optional[str] = None) -> Optional[Dict]:
     """
@@ -1090,6 +484,11 @@ def _collect_thumbnails(
     found: Dict[str, bytes] = {}
     missing: List[str] = []
     for cid in content_ids:
+        # The TV refuses to serve any thumbnail for its own art, so asking for it is a round
+        if cid.startswith("SAM-") or cid.startswith("SAM_") or cid.startswith("SAM"):
+            _remember_no_thumbnail(ip, cid)
+            print(f"TV {ip} has no preview for {cid}")
+            continue
         cached = _cached_thumbnail(ip, cid)
         if cached is not None:
             found[cid] = cached
@@ -1116,6 +515,10 @@ def _collect_thumbnails(
     # another one. A set that stops mid-gallery would otherwise have every image left
     # in the list written off as previewless, and a page of placeholders is worse than
     # a slow one. So refusals are noted and judged at the end.
+        # A refusal only says something about the image if the TV goes on to answer for
+    # another one. A set that stops mid-gallery would otherwise have every image left
+    # in the list written off as previewless, and a page of placeholders is worse than
+    # a slow one. So refusals are noted and judged at the end.
     refusals: List[tuple] = []
     answered = 0
     dead_in_a_row = 0
@@ -1137,6 +540,9 @@ def _collect_thumbnails(
         if on_batch:
             # Which images the blocked call was asking for, if it never comes back.
             on_batch(batch)
+            
+        answered_this_batch = 0
+        
         try:
             frames_before = frames_received() if frames_received else None
             call_started = time.monotonic()
@@ -1177,6 +583,7 @@ def _collect_thumbnails(
                     continue
                 if keep(cid, data):
                     answered += 1
+                    answered_this_batch += 1
 
         for cid in batch:
             if cid in found or _known_to_have_no_thumbnail(ip, cid):
@@ -1209,8 +616,9 @@ def _collect_thumbnails(
             dead_in_a_row = 0
             if keep(cid, payload):
                 answered += 1
+                answered_this_batch += 1
 
-        if answered == 0:
+        if answered == 0 and answered_this_batch == 0:
             # A whole batch, then every one of its images on its own, and not a single
             # answer: the set is away rather than out of previews. Walking the rest of
             # the gallery one dead call at a time would only make the page slower.
@@ -1395,26 +803,18 @@ def delete_tv_images(ip: str, content_ids: List[str], token: Optional[str] = Non
     return deleted
 
 
-def get_tv_device_info(ip: str, token: Optional[str] = None) -> Dict:
-    """Whatever the TV reports about itself, plus one raw content entry.
+def get_tv_device_info(ip: str, token: Optional[str] = None) -> Optional[Dict]:
+    """Whatever the TV reports about itself.
 
-    There is no storage endpoint in the art API. `tv_flash_size` gives the total
-    capacity but nothing reports what is used, so the content list is sampled here:
-    if entries carry a per-image size, occupancy can be summed from them.
+    There is no storage endpoint in the art API, so this is the only place any
+    capacity figure could turn up — and whether it does depends on the firmware.
     """
-    def action(session: _TVSession) -> Dict:
-        art = session.art()
-        info = art.get_device_info() or {}
-        sample = None
-        try:
-            available = art.available() or []
-            if available:
-                sample = available[0]
-        except Exception:
-            logger.debug("Could not sample the content list of TV %s", ip, exc_info=True)
-        return {'device_info': info, 'sample_content': sample}
-
-    return _tv_call(ip, "reading device info from", action, token=token)
+    return _tv_call(
+        ip,
+        "reading device info from",
+        lambda session: session.art().get_device_info(),
+        token=token,
+    )
 
 
 def get_tv_gallery_thumbnail(ip: str, content_id: str, token: Optional[str] = None) -> Optional[bytes]:
@@ -1444,3 +844,32 @@ def get_tv_gallery_thumbnail(ip: str, content_id: str, token: Optional[str] = No
         _thumb_disk_set(ip, content_id, thumbnail_bytes)
         _cache_set((ip, content_id), thumbnail_bytes)
     return thumbnail_bytes
+
+
+# Connection ownership lives in tv_connection. These aliases preserve the private
+# module surface used by older callers while keeping the session factory patchable.
+from utils import tv_connection as _tv_connection
+
+_tv_connection.configure_data_dirs(_DATA_DIR)
+FrameTVError = _tv_connection.FrameTVError
+FrameTVConnectionError = _tv_connection.FrameTVConnectionError
+FrameTVTimeoutError = _tv_connection.FrameTVTimeoutError
+FrameTVUnavailableError = _tv_connection.FrameTVUnavailableError
+_TVSession = _tv_connection._TVSession
+TV_DOWN_DIR = _tv_connection.TV_DOWN_DIR
+TV_LOCK_DIR = _tv_connection.TV_LOCK_DIR
+
+reset_connections = _tv_connection.reset_connections
+_is_connection_error = _tv_connection._is_connection_error
+set_token_observer = _tv_connection.set_token_observer
+
+
+def _tv_call(ip, action_description, action, **kwargs):
+    return _tv_connection._tv_call(
+        ip,
+        action_description,
+        action,
+        session_factory=_TVSession,
+        busy_wait=TV_BUSY_WAIT,
+        **kwargs,
+    )

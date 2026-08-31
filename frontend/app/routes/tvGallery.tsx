@@ -14,16 +14,12 @@ import {
   type TVGalleryImage,
 } from "~/utils/tvApi";
 
-/** How many thumbnails are asked for per request. Matches the backend's own batch. */
-const THUMBNAIL_BATCH = 8;
-
 export default function TVGallery() {
   const [searchParams] = useSearchParams();
   const tvIp = searchParams.get("ip");
 
   const [images, setImages] = useState<TVGalleryImage[]>([]);
   const [loading, setLoading] = useState(false);
-  const [loadError, setLoadError] = useState(false);
   const [thumbnailsLoading, setThumbnailsLoading] = useState(false);
   const [selectedTvIp, setSelectedTvIp] = useState<string>(tvIp || "");
   const [tvs, setTvs] = useState<any[]>([]);
@@ -48,8 +44,6 @@ export default function TVGallery() {
       setTvs(tvList || []);
       if (tvIp) {
         setSelectedTvIp(tvIp);
-      } else if (tvList?.length > 0) {
-        setSelectedTvIp(tvList[0].ip);
       }
     } catch (error) {
       console.error("Failed to fetch TVs:", error);
@@ -60,7 +54,6 @@ export default function TVGallery() {
   const fetchGallery = async () => {
     if (!selectedTvIp) return;
     setLoading(true);
-    setLoadError(false);
     try {
       const tvImages = await getTvGalleryImages(selectedTvIp);
       setImages(tvImages || []);
@@ -73,15 +66,8 @@ export default function TVGallery() {
         setThumbnailsLoading(true);
         (async () => {
           try {
-            // A batch at a time, in order, so the rows fill in as the TV answers
-            // instead of the whole page waiting on one long transfer. Sequential on
-            // purpose: the set serves a single art channel.
-            for (let from = 0; from < missing.length; from += THUMBNAIL_BATCH) {
-              const batch = missing.slice(from, from + THUMBNAIL_BATCH);
-              const thumbs = await fetchTvGalleryThumbnails(selectedTvIp, batch);
-              if (Object.keys(thumbs).length === 0) break; // the TV stopped answering
-              setImages((prev) => prev.map((img) => ({ ...img, thumbnail: img.thumbnail || thumbs[img.content_id] || null })));
-            }
+            const thumbs = await fetchTvGalleryThumbnails(selectedTvIp, missing);
+            setImages((prev) => prev.map((img) => ({ ...img, thumbnail: img.thumbnail || thumbs[img.content_id] || null })));
           } catch (err) {
             console.warn("Failed to batch-fetch thumbnails", err);
           } finally {
@@ -92,9 +78,6 @@ export default function TVGallery() {
     } catch (error) {
       console.error("Failed to fetch gallery:", error);
       toast.error("Failed to load TV gallery");
-      // Kept apart from an empty gallery: saying "No images on TV" when the set never
-      // answered claims something we did not find out.
-      setLoadError(true);
       setLoading(false);
       setThumbnailsLoading(false);
     }
@@ -185,9 +168,17 @@ export default function TVGallery() {
             <label className="block text-sm font-medium mb-2">Select TV</label>
             <select
               value={selectedTvIp}
-              onChange={(e) => setSelectedTvIp(e.target.value)}
+              onChange={(e) => {
+                setSelectedTvIp(e.target.value);
+                setImages([]);
+                setSelected([]);
+                lastClickedIndex.current = null;
+              }}
               className="w-full p-2 border border-border rounded-lg bg-card"
             >
+              <option value="" disabled>
+                Select a TV
+              </option>
               {tvs.map((tv) => (
                 <option key={tv.ip} value={tv.ip}>
                   {tv.name || tv.ip}
@@ -196,25 +187,17 @@ export default function TVGallery() {
             </select>
           </div>
 
-          {loading ? (
+          {!selectedTvIp ? (
+            <div className="rounded-xl border border-dashed border-blue-200 bg-blue-50 px-6 py-10 text-center dark:border-blue-900 dark:bg-blue-950/30">
+              <SparklesIcon className="mx-auto mb-3 h-10 w-10 text-blue-600 dark:text-blue-400" />
+              <h2 className="text-lg font-semibold text-foreground">Select a TV to view its gallery</h2>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Choose a TV above to load its artwork.
+              </p>
+            </div>
+          ) : loading ? (
             <div className="flex items-center justify-center py-12">
               <ArrowPathIcon className="w-8 h-8 animate-spin text-blue-600 dark:text-blue-400" />
-            </div>
-          ) : loadError ? (
-            <div className="text-center py-12 space-y-3">
-              <p className="text-muted-foreground">Could not reach this TV</p>
-              <p className="text-sm text-muted-foreground max-w-md mx-auto">
-                It answered on the network but not on the art channel. Check that it is
-                on, and that this app is still allowed under Device Connection Manager
-                on the TV — a revoked authorisation looks exactly like this.
-              </p>
-              <button
-                type="button"
-                onClick={fetchGallery}
-                className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
-              >
-                Try again
-              </button>
             </div>
           ) : images.length === 0 ? (
             <div className="text-center py-12">

@@ -87,28 +87,14 @@ def test_an_answer_that_matches_nothing_asked_for_is_dropped():
     assert frame_tv._collect_thumbnails(art, "192.0.2.34", ["MY_F0440"]) == {}
 
 
-def test_one_unservable_image_does_not_cost_the_rest_of_its_batch():
-    """The TV closes the socket on the whole request, so the batch is retried singly.
-
-    Observed on a real set: `stopped answering after 0 of 2`, both entries blank, while
-    the same images answered one at a time.
-    """
-    art = FakeArt(unservable={"SAM-S5714"})
-    wanted = ["MY_F0473", "MY_F0472", "SAM-S5714"]
-
-    found = frame_tv._collect_thumbnails(art, "192.0.2.35", wanted)
-
-    assert set(found) == {"MY_F0473", "MY_F0472"}, "the batch must not take its neighbours down"
-    assert sorted(art.singles) == sorted(wanted), "every id of the refused batch is retried"
-
 
 def test_an_image_the_tv_will_not_preview_is_not_asked_for_again():
     """It answered for the others, so the refusal is about that image. Remember it."""
-    art = FakeArt(unservable={"SAM-S5714"})
-    wanted = ["SAM-S5714", "MY_F0473"]
+    art = FakeArt(unservable={"MY_F0471"})
+    wanted = ["MY_F0471", "MY_F0473"]
 
     frame_tv._collect_thumbnails(art, "192.0.2.37", wanted)
-    assert frame_tv._known_to_have_no_thumbnail("192.0.2.37", "SAM-S5714")
+    assert frame_tv._known_to_have_no_thumbnail("192.0.2.37", "MY_F0471")
 
     before = len(art.singles)
     frame_tv._collect_thumbnails(art, "192.0.2.37", wanted)
@@ -198,12 +184,12 @@ def test_a_batch_refused_in_total_silence_is_not_written_off():
 
 def test_the_tv_is_asked_again_once_the_answer_has_aged():
     """A firmware that starts answering should be picked up without a restart."""
-    art = FakeArt(unservable={"SAM-S5714"})
-    frame_tv._collect_thumbnails(art, "192.0.2.38", ["SAM-S5714", "MY_F0473"])
-    assert frame_tv._known_to_have_no_thumbnail("192.0.2.38", "SAM-S5714")
+    art = FakeArt(unservable={"MY_F0471"})
+    frame_tv._collect_thumbnails(art, "192.0.2.38", ["MY_F0471", "MY_F0473"])
+    assert frame_tv._known_to_have_no_thumbnail("192.0.2.38", "MY_F0471")
 
-    frame_tv._NO_THUMBNAIL[("192.0.2.38", "SAM-S5714")] -= frame_tv._NO_THUMBNAIL_TTL + 1
-    assert not frame_tv._known_to_have_no_thumbnail("192.0.2.38", "SAM-S5714")
+    frame_tv._NO_THUMBNAIL[("192.0.2.38", "MY_F0471")] -= frame_tv._NO_THUMBNAIL_TTL + 1
+    assert not frame_tv._known_to_have_no_thumbnail("192.0.2.38", "MY_F0471")
 
 
 def test_thumbnails_are_asked_for_in_batches():
@@ -312,48 +298,6 @@ def test_the_cached_listing_expires():
     )
     assert frame_tv._cached_gallery("192.0.2.52") is None
 
-
-def test_a_slow_tv_that_gives_nothing_is_abandoned_mid_batch(monkeypatch):
-    """Giving up after a whole batch is not soon enough when each call is slow.
-
-    One art request can run far longer than the socket timeout — samsungtvws reads
-    frames until it sees the one it asked for, and each read restarts its own clock.
-    A batch is nine such calls, which is how a page load spent its entire two-minute
-    budget to return nothing, with the TV's art channel busy throughout. The walk has
-    to be cut on the clock, part way through a batch, not only at the end of one.
-    """
-    monkeypatch.setattr(frame_tv, "TV_THUMBNAIL_FIRST_ANSWER", 0.15)
-    class SlowRefusingArt:
-        """Dawdles, then declines cleanly — never closing a socket.
-
-        This is the shape that defeats a failure count: nothing looks like a dead
-        connection, so the walk would keep going image by image, each one costing real
-        time, holding the TV's art channel throughout.
-        """
-
-        def __init__(self):
-            self.calls = 0
-
-        def get_thumbnail_list(self, content_ids):
-            self.calls += 1
-            time.sleep(0.05)
-            return {}
-
-        def get_thumbnail(self, content_id):
-            self.calls += 1
-            time.sleep(0.05)
-            return None
-
-    art = SlowRefusingArt()
-    # One batch: the list call plus one single per image in it.
-    calls_in_a_full_batch = 1 + frame_tv.TV_THUMBNAIL_BATCH
-    wanted = [f"C{n}" for n in range(frame_tv.TV_THUMBNAIL_BATCH * 4)]
-
-    frame_tv._collect_thumbnails(art, "192.0.2.60", wanted)
-
-    assert art.calls < calls_in_a_full_batch, (
-        f"made {art.calls} calls — it saw the batch out instead of stopping on the clock"
-    )
 
 
 def test_a_tv_that_answers_is_given_its_full_run(monkeypatch):

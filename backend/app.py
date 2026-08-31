@@ -13,6 +13,7 @@ from flask_sqlalchemy import SQLAlchemy
 from utils.crop_image import crop_image_file, CropImageError, get_preset_crop_box, CROP_PRESETS
 from utils.thumbnails import get_or_create, parse_width
 from samsungtvws.exceptions import HttpApiError, ResponseError
+from samsungtvws import SamsungTVWS
 from const import CONNECTION_NAME
 from typing import Tuple, Optional
 from datetime import datetime
@@ -20,6 +21,7 @@ from flask_migrate import Migrate
 import importlib
 from media_provider_routes import media_provider_routes
 from provider_config_routes import provider_config_routes
+import requests
 
 try:
     from PIL import Image as PILImage
@@ -38,10 +40,8 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
+from utils.tv_connection import DEFAULT_PORT
 from utils.frame_tv import (
-    SamsungTVWS,
-    DEFAULT_PORT,
-    TV_PAIRING_TIMEOUT,
     upload_artwork,
     is_art_mode_on,
     is_tv_reachable,
@@ -64,9 +64,16 @@ from utils.frame_tv import (
 )
 
 DATA_DIR = os.environ.get("FRAME_TV_DATA", "data")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+if getattr(sys, 'frozen', False):
+    migrations_dir = os.path.join(sys._MEIPASS, 'migrations')
+else:
+    migrations_dir = os.path.join(BASE_DIR, 'migrations')
 
 UPLOAD_FOLDER = os.path.join(DATA_DIR, "uploads")
 INSTANCE_FOLDER = os.path.join(DATA_DIR, "instance")
+BACKEND_PORT = int(os.environ.get('BACKEND_PORT', '5000'))
 
 # Ensure directories exist
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -79,7 +86,7 @@ THUMBNAIL_DIR = Path(INSTANCE_FOLDER).joinpath('thumbnails')
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 
-app = Flask(__name__, static_folder="frontend/build/client")
+app = Flask(__name__, static_folder="../frontend/build/client")
 app.secret_key = os.environ.get('SECRET_KEY', 'frameartsecretkey')
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = int(os.environ.get('MAX_UPLOAD_SIZE_BYTES', str(20 * 1024 * 1024)))
@@ -107,7 +114,7 @@ def add_cors_headers(response):
 app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{frametv_db_path}'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-from models import db, Album, Image, TV, UploadedImage, ProviderConfig
+from models import AppSetting, db, Album, Image, TV, UploadedImage, ProviderConfig
 db.init_app(app)
 
 # Import blueprints
@@ -116,23 +123,12 @@ app.register_blueprint(provider_config_routes)
 
 # ...models are now imported from models.py...
 
-migrate = Migrate(app, db)
+migrate = Migrate(app, db, directory=migrations_dir)
 
 
 # Create database
 def init_db():
-    """Ensure database and all tables exist.
-
-    create_all() builds the schema straight from the models, so a brand new database
-    already matches the code — but alembic_version stays empty, and the migrations
-    then replay from the beginning over tables that are already complete. That only
-    ever worked by luck: the first migration to rebuild a table alembic has to reflect
-    trips over any column create_all added ahead of it.
-
-    A database created here is therefore stamped as up to date, which is what
-    `flask db upgrade` expects to find. An existing database is left untouched and
-    migrates normally.
-    """
+    """Ensure database and all tables exist."""
     with app.app_context():
         fresh = not os.path.exists(frametv_db_path)
         app.logger.info("Initializing database")
@@ -198,16 +194,6 @@ def _remember_tv_token(ip: str, token: str) -> None:
 
 
 set_token_observer(_remember_tv_token)
-
-
-def _log_tv_unreachable(context: str, exc: Exception):
-    """A TV that does not answer is expected — it may simply be off or asleep.
-
-    One line rather than a stack trace. The traceback is always the same walk through
-    websocket internals, it says nothing the message does not, and forty lines of it
-    per page load buries anything that is a real fault.
-    """
-    app.logger.warning("%s: %s", context, exc)
 
 
 def _error_response(public_message: str, status_code: int = 500):
@@ -314,15 +300,94 @@ app.media_provider = media_provider
 
 # --- API Endpoints ---
 
+import json
+from packaging.version import parse as parse_version
+
+@app.route('/api/status', methods=['GET'])
+def backend_status():
+    """Return a simple status message for health checks and update availability."""
+    current_version = os.environ.get('FRAME_TV_VERSION', 'unknown')
+    repo = 'mrtncode/frametv-art-gallery'
+    
+    cache_entry = AppSetting.query.filter_by(key='github_version_cache').first()
+    
+    now = datetime.now()
+    use_cached = False
+    cache_data = {}
+
+    if cache_entry and cache_entry.value:
+        try:
+            cache_data = json.loads(cache_entry.value)
+            last_fetched = cache_data.get('last_fetched', 0)
+            
+            # 24 hours = 86400 seconds
+            if now.timestamp() - last_fetched < 86400:
+                use_cached = True
+        except Exception:
+            app.logger.warning("Error parsing cached GitHub version data; will fetch fresh", exc_info=True)
+    if use_cached:
+        latest_version = cache_data.get('latest_version')
+        changelog = cache_data.get('changelog')
+    else:
+        latest_version = None
+        changelog = None
+        url = f'https://api.github.com/repos/{repo}/releases/latest'
+        
+        try:
+            headers = {"User-Agent": f"Flask-FrameTV/{current_version}"}
+            response = requests.get(url, headers=headers, timeout=5)
+            
+            if response.status_code == 200:
+                data = response.json()
+                latest_version = data.get('tag_name', 'unknown')
+                changelog = data.get('body', '')
+                
+                new_cache_content = {
+                    'last_fetched': now.timestamp(),
+                    'latest_version': latest_version,
+                    'changelog': changelog
+                }
+                
+                if not cache_entry:
+                    cache_entry = AppSetting(key='github_version_cache')
+                    db.session.add(cache_entry)
+                
+                cache_entry.value = json.dumps(new_cache_content)
+                db.session.commit()
+            else:
+                app.logger.warning(f"GitHub API responds with status {response.status_code}. Using cached version if available.")
+                latest_version = cache_data.get('latest_version', 'unknown')
+                changelog = cache_data.get('changelog', '')
+                
+        except Exception as e:
+            app.logger.exception("Failed to check for updates against GitHub API")
+            app.logger.warning("Using cached version as fallback.")
+            latest_version = cache_data.get('latest_version', 'unknown')
+            changelog = cache_data.get('changelog', '')
+
+    update_available = False
+    if current_version != 'unknown' and latest_version and latest_version != 'unknown':
+        try:
+            update_available = parse_version(latest_version) > parse_version(current_version)
+        except Exception:
+            app.logger.exception("Failed to parse version numbers")
+            update_available = latest_version != current_version
+
+    return jsonify({
+        'status': 'ok', 
+        'timestamp': now.isoformat(), 
+        'update_available': update_available, 
+        'current_version': current_version,
+        'latest_version': latest_version, 
+        'changelog': changelog
+    }), 200
+
 # List all uploaded images (not album-specific)
 @app.route('/api/images', methods=['GET'])
 def api_list_images():
-    """List the uploaded filenames, newest first.
-
-    The directory listing has no meaningful order, so the database's created_at is
-    used where a row exists and the file's own mtime otherwise. Pass ?q= to filter
-    by name and ?sort=oldest|name to change the order. The response stays a plain
-    list of filenames, as before.
+    """
+    List the uploaded filenames, newest first.
+    Pass params "?q=" to search specific filenames or "?sort=" to change the default sorting
     """
     upload_folder = app.config['UPLOAD_FOLDER']
     files = [
@@ -355,6 +420,45 @@ def api_list_images():
         files.sort(key=sort_key, reverse=sort != 'oldest')
 
     return {'images': files}
+
+
+@app.route('/api/backup', methods=['GET'])
+def api_backup():
+    """Download a zip of the uploads and the database."""
+    stamp = datetime.now().strftime('%Y%m%d-%H%M%S')
+    tmp_dir = tempfile.mkdtemp(prefix='frametv-backup-')
+    archive_path = os.path.join(tmp_dir, f'frametv-backup-{stamp}.zip')
+
+    try:
+        db_snapshot = os.path.join(tmp_dir, 'frametv.db')
+        source = sqlite3.connect(frametv_db_path)
+        try:
+            destination = sqlite3.connect(db_snapshot)
+            try:
+                source.backup(destination)
+            finally:
+                destination.close()
+        finally:
+            source.close()
+
+        upload_folder = app.config['UPLOAD_FOLDER']
+        with zipfile.ZipFile(archive_path, 'w', zipfile.ZIP_DEFLATED) as archive:
+            archive.write(db_snapshot, 'instance/frametv.db')
+            for filename in sorted(os.listdir(upload_folder)):
+                full = os.path.join(upload_folder, filename)
+                if os.path.isfile(full):
+                    archive.write(full, f'uploads/{filename}')
+
+        @after_this_request
+        def cleanup(response):
+            shutil.rmtree(tmp_dir, ignore_errors=True)
+            return response
+
+        return send_file(archive_path, as_attachment=True, download_name=os.path.basename(archive_path))
+    except Exception as e:
+        shutil.rmtree(tmp_dir, ignore_errors=True)
+        _log_exception('Failed to build the backup archive', e)
+        return _error_response('Failed to build the backup archive', 500)
 
 
 @app.route('/api/images/reconcile', methods=['POST'])
@@ -406,50 +510,6 @@ def api_reconcile_images():
         'hashed': hashed,
         'duplicate_groups': duplicate_groups,
     }
-
-
-@app.route('/api/backup', methods=['GET'])
-def api_backup():
-    """Download a zip of the uploads and the database.
-
-    The README tells people to back up before updating without giving them a way to
-    do it. The database is copied through sqlite's own backup API so the archive
-    holds a consistent snapshot even while the app is being used.
-    """
-    stamp = datetime.now().strftime('%Y%m%d-%H%M%S')
-    tmp_dir = tempfile.mkdtemp(prefix='frametv-backup-')
-    archive_path = os.path.join(tmp_dir, f'frametv-backup-{stamp}.zip')
-
-    try:
-        db_snapshot = os.path.join(tmp_dir, 'frametv.db')
-        source = sqlite3.connect(frametv_db_path)
-        try:
-            destination = sqlite3.connect(db_snapshot)
-            try:
-                source.backup(destination)
-            finally:
-                destination.close()
-        finally:
-            source.close()
-
-        upload_folder = app.config['UPLOAD_FOLDER']
-        with zipfile.ZipFile(archive_path, 'w', zipfile.ZIP_DEFLATED) as archive:
-            archive.write(db_snapshot, 'instance/frametv.db')
-            for filename in sorted(os.listdir(upload_folder)):
-                full = os.path.join(upload_folder, filename)
-                if os.path.isfile(full):
-                    archive.write(full, f'uploads/{filename}')
-
-        @after_this_request
-        def cleanup(response):
-            shutil.rmtree(tmp_dir, ignore_errors=True)
-            return response
-
-        return send_file(archive_path, as_attachment=True, download_name=os.path.basename(archive_path))
-    except Exception as e:
-        shutil.rmtree(tmp_dir, ignore_errors=True)
-        _log_exception('Failed to build the backup archive', e)
-        return _error_response('Failed to build the backup archive', 500)
 
 
 @app.route('/api/images/added_this_month', methods=['GET'])
@@ -772,8 +832,6 @@ def api_update_tv(ip):
     data = request.get_json() or {}
     if 'delete_other_images_on_upload' in data:
         tv.delete_other_images_on_upload = bool(data['delete_other_images_on_upload'])
-    if 'mac' in data:
-        tv.mac = (data['mac'] or '').strip() or None
     if 'one_slot_mode' in data:
         tv.one_slot_mode = bool(data['one_slot_mode'])
     if 'default_matte' in data:
@@ -836,9 +894,7 @@ def api_add_tv():
     name = data.get('name')
     # Attempt to connect to TV and obtain token
     try:
-        # Without a timeout an unreachable TV blocks here until the OS gives up on the
-        # TCP connect, which is long enough for gunicorn to kill the worker.
-        tvws = SamsungTVWS(host=ip, port=DEFAULT_PORT, name=CONNECTION_NAME, timeout=TV_PAIRING_TIMEOUT)
+        tvws = SamsungTVWS(host=ip, port=DEFAULT_PORT, name=CONNECTION_NAME)
         tvws.open()
         # Wait for pairing and token
         token = tvws.token
@@ -1041,10 +1097,10 @@ def api_get_tv_gallery(ip):
         app.logger.info('Skipping TV gallery: %s', e)
         return jsonify({'error': 'TV is unavailable', 'tv_unavailable': True}), 503
     except FrameTVTimeoutError as e:
-        _log_tv_unreachable('Timeout while fetching TV gallery', e)
+        _log_exception('Timeout while fetching TV gallery', e)
         return jsonify({'error': 'TV request timed out'}), 504
     except FrameTVConnectionError as e:
-        _log_tv_unreachable('TV gallery connection failed', e)
+        _log_exception('TV gallery connection failed', e)
         return jsonify({'error': 'TV is unavailable'}), 503
     except Exception as e:
         _log_exception('Failed to fetch TV gallery', e)
@@ -1063,10 +1119,10 @@ def api_play_tv_image(ip, content_id):
         play_uploaded_content(ip, content_id, token=tv.token)
         return jsonify({'success': True})
     except FrameTVTimeoutError as e:
-        _log_tv_unreachable('Timeout while playing TV image', e)
+        _log_exception('Timeout while playing TV image', e)
         return jsonify({'error': 'TV request timed out'}), 504
     except FrameTVConnectionError as e:
-        _log_tv_unreachable('TV connection failed while playing image', e)
+        _log_exception('TV connection failed while playing image', e)
         return jsonify({'error': 'TV is unavailable'}), 503
     except FrameTVError as e:
         _log_exception('Failed to play TV image', e)
@@ -1098,10 +1154,10 @@ def api_delete_tv_images(ip):
         _forget_uploaded(tv, content_ids=content_ids)
         return jsonify({'deleted': deleted})
     except FrameTVTimeoutError as e:
-        _log_tv_unreachable('Timeout while deleting TV images', e)
+        _log_exception('Timeout while deleting TV images', e)
         return jsonify({'error': 'TV request timed out'}), 504
     except FrameTVConnectionError as e:
-        _log_tv_unreachable('TV connection failed while deleting images', e)
+        _log_exception('TV connection failed while deleting images', e)
         return jsonify({'error': 'TV is unavailable'}), 503
     except Exception as e:
         _log_exception('Failed to delete TV images', e)
@@ -1119,9 +1175,9 @@ def api_tv_device_info(ip):
     if not tv:
         return jsonify({'error': 'TV not found'}), 404
     try:
-        return jsonify(get_tv_device_info(ip, token=tv.token))
+        return jsonify({'device_info': get_tv_device_info(ip, token=tv.token)})
     except FrameTVConnectionError as e:
-        _log_tv_unreachable('TV connection failed while reading device info', e)
+        _log_exception('TV connection failed while reading device info', e)
         return jsonify({'error': 'TV is unavailable'}), 503
     except Exception as e:
         _log_exception('Failed to read TV device info', e)
@@ -1159,10 +1215,10 @@ def api_tv_gallery_thumbnails(ip):
         app.logger.info('Skipping TV thumbnails: %s', e)
         return jsonify({'error': 'TV is unavailable', 'tv_unavailable': True}), 503
     except FrameTVTimeoutError as e:
-        _log_tv_unreachable('Timeout while fetching TV thumbnails', e)
+        _log_exception('Timeout while fetching TV thumbnails', e)
         return jsonify({'error': 'TV request timed out', 'tv_unavailable': True}), 504
     except FrameTVConnectionError as e:
-        _log_tv_unreachable('TV connection failed while fetching thumbnails', e)
+        _log_exception('TV connection failed while fetching thumbnails', e)
         return jsonify({'error': 'TV is unavailable', 'tv_unavailable': True}), 503
     except Exception as e:
         _log_exception('Failed to fetch TV thumbnails', e)
@@ -1186,10 +1242,10 @@ def api_tv_gallery_thumbnail(ip, content_id):
         app.logger.info('Skipping TV thumbnail: %s', e)
         return jsonify({'error': 'TV is unavailable', 'tv_unavailable': True}), 503
     except FrameTVTimeoutError as e:
-        _log_tv_unreachable('Timeout while fetching TV thumbnail', e)
+        _log_exception('Timeout while fetching TV thumbnail', e)
         return jsonify({'error': 'TV request timed out', 'tv_unavailable': True}), 504
     except FrameTVConnectionError as e:
-        _log_tv_unreachable('TV connection failed while fetching thumbnail', e)
+        _log_exception('TV connection failed while fetching thumbnail', e)
         return jsonify({'error': 'TV is unavailable', 'tv_unavailable': True}), 503
     except Exception as e:
         _log_exception('Failed to fetch TV thumbnail', e)
@@ -1206,10 +1262,10 @@ def api_delete_tv_image(ip, content_id):
         _forget_uploaded(tv, content_ids=[content_id])
         return jsonify({'success': True})
     except FrameTVTimeoutError as e:
-        _log_tv_unreachable('Timeout while deleting TV image', e)
+        _log_exception('Timeout while deleting TV image', e)
         return jsonify({'error': 'TV request timed out'}), 504
     except FrameTVConnectionError as e:
-        _log_tv_unreachable('TV connection failed while deleting TV image', e)
+        _log_exception('TV connection failed while deleting TV image', e)
         return jsonify({'error': 'TV is unavailable'}), 503
     except Exception as e:
         _log_exception('Failed to delete TV image', e)
@@ -1219,19 +1275,12 @@ def api_delete_tv_image(ip, content_id):
 @app.route('/api/tv/<ip>/on', methods=['POST'])
 def api_tv_power_on(ip):
     data = request.get_json(silent=True) or {}
+    mac = data.get('mac')
     tv = TV.query.filter_by(ip=ip).first()
-    # The caller may pass a MAC, but the stored one is what the TV was added with.
-    mac = data.get('mac') or (tv.mac if tv else None)
     token = tv.token if tv else None
-    if not mac:
-        return _error_response(
-            'This TV has no MAC address. Add it in TV settings so it can be woken up.', 400
-        )
     try:
         power_on(ip, mac, token=token)
         return {'success': True}
-    except ValueError as e:
-        return _error_response(str(e), 400)
     except FrameTVError as e:
         _log_exception('Failed to power on TV', e)
         return _error_response('Failed to power on TV', 500)
@@ -1327,7 +1376,15 @@ def serve(path):
 
 
 if __name__ == '__main__':
+    if "--upgrade-db" in sys.argv:
+        from flask_migrate import upgrade
+
+        with app.app_context():
+            upgrade(directory=migrations_dir)
+            
+        print("Database upgrade completed.")
+
     # Use DEBUG env variable ("1", "true", "True" = True)
     debug_env = os.environ.get('DEBUG', '').lower()
     debug = debug_env in ('1', 'true', 'yes')
-    app.run(debug=debug, host="0.0.0.0")
+    app.run(debug=debug, host="0.0.0.0", port=BACKEND_PORT)

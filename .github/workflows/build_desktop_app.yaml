@@ -1,0 +1,127 @@
+name: Build Desktop Apps
+
+on:
+  release:
+    types: [published]
+
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to use for test build"
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Windows
+            os: windows-latest
+            electron_args: "--win"
+
+          - name: Linux
+            os: ubuntu-latest
+            electron_args: "--linux"
+
+          - name: macOS
+            os: macos-latest
+            electron_args: "--mac"
+
+    env:
+      APP_VERSION: ${{ inputs.version || github.event.release.tag_name || github.ref_name }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 11
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: pnpm install --frozen-lockfile
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install Python dependencies
+        working-directory: backend
+        run: |
+            python -m pip install --upgrade pip
+            pip install .
+            pip install pyinstaller
+
+      - name: Build frontend
+        working-directory: frontend
+        env:
+          VITE_API_URL: http://127.0.0.1:5543
+          VITE_APP_VERSION: ${{ env.APP_VERSION }}
+        run: pnpm run build
+
+      - name: Build Flask backend
+        working-directory: backend
+        shell: bash
+        run: |
+          echo "FRAME_TV_VERSION=${{ env.APP_VERSION }}" > .env
+          
+          python -m PyInstaller --clean --distpath ../build-backend ./flask_backend.spec
+
+      - name: Build Electron application
+        working-directory: frontend
+        run: pnpm exec electron-builder ${{ matrix.electron_args }} --publish never
+
+      - name: Upload desktop build artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: desktop-${{ matrix.name }}
+          path: |
+            frontend/dist/*.exe
+            frontend/dist/*.dmg
+            frontend/dist/*.AppImage
+            frontend/dist/*.deb
+            frontend/dist/*.zip
+          if-no-files-found: error
+
+  upload-to-release:
+    name: Upload builds to GitHub Release
+    if: github.event_name == 'release'
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download desktop builds
+        uses: actions/download-artifact@v7
+        with:
+          path: release-assets
+          merge-multiple: true
+
+      - name: Upload builds to release
+        uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228
+        with:
+          tag_name: ${{ github.event.release.tag_name }}
+          files: |
+            release-assets/**/*.exe
+            release-assets/**/*.dmg
+            release-assets/**/*.AppImage
+            release-assets/**/*.deb
+            release-assets/**/*.zip
+          fail_on_unmatched_files: false

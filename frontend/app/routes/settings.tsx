@@ -1,15 +1,16 @@
 import React from 'react'
 import { Link } from 'react-router'
-import { toast } from 'sonner';
-import { getTvs, addTv, removeTv, removeAllTvImages, updateTv, tvPowerOn, discoverTvs, type TVUpdate, type DiscoveredTV } from '~/utils/tvApi';
-import { fetchAlbums, reconcileImages, getBackupUrl } from '~/utils/galleryApi';
+import { getTvs, addTv, removeTv, removeAllTvImages, updateTv, discoverTvs, type TVUpdate, type DiscoveredTV } from '~/utils/tvApi';
+import { fetchAlbums } from '~/utils/galleryApi';
 import { Input } from '~/components/ui/input';
 import { Button } from '~/components/ui/button';
 import { getProviders, setProvider, getProvider, deleteProvider } from '~/utils/providerApi';
+import { getBackupUrl, reconcileImages } from '~/utils/galleryApi';
+import { toast } from 'sonner';
 
 import type { ProviderConfig } from '~/utils/providerApi';
+import { SparkleIcon, SparklesIcon } from 'lucide-react';
 import { MATTE_STYLES, MATTE_COLORS, splitMatte, combineMatte } from '~/utils/matte';
-import { SparklesIcon } from 'lucide-react';
 
 interface TV {
   ip: string;
@@ -32,6 +33,7 @@ export default function Settings() {
   const [error, setError] = React.useState("");
   const [adding, setAdding] = React.useState(false);
   const [discovering, setDiscovering] = React.useState(false);
+  const [maintenanceBusy, setMaintenanceBusy] = React.useState(false);
   const [showPairModal, setShowPairModal] = React.useState(false);
   const [pairingIp, setPairingIp] = React.useState("");
   const [discoveredTvs, setDiscoveredTvs] = React.useState<DiscoveredTV[]>([]);
@@ -44,10 +46,8 @@ export default function Settings() {
   const [providerError, setProviderError] = React.useState("");
   const [providerSaving, setProviderSaving] = React.useState(false);
 
-  // Albums drive the slideshow picker; MAC drafts are per TV until saved.
+  // Albums feed the slideshow picker.
   const [albums, setAlbums] = React.useState<{ id: string; name: string }[]>([]);
-  const [macDrafts, setMacDrafts] = React.useState<Record<string, string>>({});
-  const [maintenanceBusy, setMaintenanceBusy] = React.useState(false);
 
   // Fetch TVs
   const fetchTvs = React.useCallback(async () => {
@@ -189,31 +189,11 @@ export default function Settings() {
     setError('');
     try {
       await updateTv(tvIp, updates);
-      await fetchTvs();
     } catch (e: any) {
       setError(e.message || 'Failed to update the slideshow');
+    } finally {
+      // Refetched either way, so a rejected change does not linger in the form.
       await fetchTvs();
-    }
-  };
-
-  const handleSaveMac = async (tvIp: string) => {
-    setError('');
-    try {
-      await updateTv(tvIp, { mac: (macDrafts[tvIp] || '').trim() });
-      setMacDrafts({ ...macDrafts, [tvIp]: '' });
-      await fetchTvs();
-    } catch (e: any) {
-      setError(e.message || 'Failed to save the MAC address');
-    }
-  };
-
-  const handleWake = async (tvIp: string) => {
-    setError('');
-    try {
-      await tvPowerOn(tvIp);
-      toast.success('Wake-up packet sent', { position: 'top-center' });
-    } catch (e: any) {
-      setError(e.message || 'Failed to wake the TV');
     }
   };
 
@@ -381,27 +361,6 @@ export default function Settings() {
                     <span>Delete other images on upload</span>
                   </label>
 
-                  {/* Wake-on-LAN is the only way to reach a TV that is off, and it needs the MAC. */}
-                  {!tv.mac && (
-                    <div className="mb-4">
-                      <label className="block text-sm mb-1">MAC address (to wake the TV)</label>
-                      <div className="flex gap-2">
-                        <Input
-                          type="text"
-                          value={macDrafts[tv.ip] ?? ''}
-                          onChange={e => setMacDrafts({ ...macDrafts, [tv.ip]: e.target.value })}
-                          placeholder="aa:bb:cc:dd:ee:ff"
-                        />
-                        <Button
-                          onClick={() => handleSaveMac(tv.ip)}
-                          disabled={!(macDrafts[tv.ip] || '').trim()}
-                        >
-                          Save
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-
                   <label className="flex items-start gap-2 text-sm mb-4">
                     <input
                       type="checkbox"
@@ -410,18 +369,19 @@ export default function Settings() {
                       className="mt-0.5 accent-blue-600"
                     />
                     <span>
-                      One image at a time
-                      <span className="block text-xs text-muted-foreground">
-                        Keeps only the last image this app sent. Anything else on the TV is
-                        left alone.
+                      1-slot mode (auto overwrite managed image)
+                      <span className="block text-xs text-gray-500">
+                        Keeps only one image uploaded by this app on the TV. Other TV images are left untouched.
                       </span>
                     </span>
                   </label>
 
-                  <fieldset className="mb-4 border border-border rounded-lg p-3">
+                  <fieldset className="mb-4 border border-gray-200 rounded-lg p-3">
                     <legend className="text-sm font-medium px-1">Slideshow</legend>
-                    <p className="text-xs text-muted-foreground mb-2">
-                      Rotates through images of an album that are already on this TV.
+                    <p className="text-xs text-gray-500 mb-2">
+                      Rotates through images of an album that are already on this TV. It only
+                      moves art that is already on screen, so it never interrupts what you are
+                      watching.
                     </p>
                     <div className="flex flex-col gap-2">
                       <select
@@ -444,7 +404,7 @@ export default function Settings() {
                           placeholder="Every … minutes"
                           aria-label="Slideshow interval in minutes"
                         />
-                        <span className="text-sm text-muted-foreground whitespace-nowrap">min</span>
+                        <span className="text-sm text-gray-500 whitespace-nowrap">min</span>
                       </div>
                       <label className="flex items-center gap-2 text-sm">
                         <input
@@ -492,9 +452,6 @@ export default function Settings() {
                     <Link to={`/tv-gallery?ip=${encodeURIComponent(tv.ip)}`} className="bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium py-2 px-4 rounded-lg text-center">
                       View Gallery
                     </Link>
-                    <button onClick={() => handleWake(tv.ip)} className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline">
-                      Wake the TV
-                    </button>
                     <button onClick={() => handleRemoveAllImages(tv.ip)} className="text-red-500 hover:text-red-700 text-sm font-medium">
                       Delete all Images from TV
                     </button>
@@ -509,7 +466,7 @@ export default function Settings() {
           )}
         </div>
 
-        {/* Maintenance */}
+        {/* Library */}
         <div className="bg-card rounded-2xl border border-border p-5 mb-8">
           <h2 className="text-lg font-semibold mb-4 text-foreground">Library</h2>
           <div className="flex flex-col sm:flex-row gap-3">
@@ -525,8 +482,9 @@ export default function Settings() {
           </div>
           <p className="text-sm text-muted-foreground mt-3">
             The backup is a zip of your uploads and the database — take one before updating.
-            Checking the library picks up files added or removed outside the app and reports
-            images stored twice under different names.
+            Checking the library picks up files added or removed outside the app, fills in the
+            hashes of images uploaded before this existed, and reports any stored twice under
+            different names.
           </p>
         </div>
 

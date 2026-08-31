@@ -7,7 +7,7 @@ Checked first. The app calls db.create_all() when it starts, so on a fresh insta
 column is already there by the time alembic runs with an empty alembic_version.
 
 Revision ID: e7a2c4f19b3d
-Revises: c1d2e3f4a5b6
+Revises: d3f1a7c25b90
 Create Date: 2026-08-15 09:00:00.000000
 
 """
@@ -17,7 +17,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = 'e7a2c4f19b3d'
-down_revision = 'c1d2e3f4a5b6'
+down_revision = 'd3f1a7c25b90'
 branch_labels = None
 depends_on = None
 

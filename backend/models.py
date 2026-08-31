@@ -1,8 +1,17 @@
+import datetime
+
 from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
 
 # --- Models ---
+
+class AppSetting(db.Model):
+    __tablename__ = 'app_settings'
+    key = db.Column(db.String(50), primary_key=True)
+    value = db.Column(db.Text, nullable=True)
+    updated_at = db.Column(db.DateTime, default=datetime.datetime.now(datetime.timezone.utc), onupdate=datetime.datetime.now(datetime.timezone.utc))
+
 class Album(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80), unique=True, nullable=False)
@@ -14,7 +23,7 @@ class Image(db.Model):
     album_id = db.Column(db.Integer, db.ForeignKey('album.id'), nullable=True)
     created_at = db.Column(db.DateTime, nullable=False, server_default=db.func.now())
     # Content hash, used to spot the same artwork uploaded twice under different names.
-    # Null for rows that predate this column and have not been reconciled yet.
+    # Null for rows that predate this column and have not been re-uploaded since.
     sha256 = db.Column(db.String(64), nullable=True, index=True)
 
 class TV(db.Model):
@@ -29,7 +38,7 @@ class TV(db.Model):
 
     # Slideshow: rotate through an album on this TV. Off unless switched on.
     slideshow_enabled = db.Column(db.Boolean, nullable=False, server_default=db.text("0"))
-    slideshow_album_id = db.Column(db.Integer, db.ForeignKey('album.id'), nullable=True)
+    slideshow_album_id = db.Column(db.Integer, db.ForeignKey("album.id"), nullable=True)
     slideshow_interval_minutes = db.Column(db.Integer, nullable=True)
     slideshow_last_run = db.Column(db.DateTime, nullable=True)
     slideshow_last_content_id = db.Column(db.String(255), nullable=True)

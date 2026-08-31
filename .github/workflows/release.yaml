@@ -1,4 +1,13 @@
-name: Release
+
+# DEPRECATED
+# Deactivated in Github Actions
+# NOT USING RELEASE PLEASE ANYMORE
+# USING GITHUB RELEASE TOOL NOW INSTEAD
+
+
+
+
+name: Release (DEPRECATED)
 on:
   push:
     branches:
@@ -26,10 +35,10 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           release-type: simple
-
   trigger-build:
     needs: release-please
     if: ${{ needs.release-please.outputs.release_created == 'true' }}
     uses: ./.github/workflows/build_image.yaml
     with:
       version: ${{ needs.release-please.outputs.tag_name }}
+

@@ -78,13 +78,9 @@ export default function TVGalleryImageCard({ image, selectedTvIp, thumbnailsLoad
       <div className="flex-1 min-w-0 self-center">
         <p className="font-medium truncate">{image.filename}</p>
         <div className="text-xs text-muted-foreground mt-1 space-y-1">
-          {/* Art store content carries no date, so the line drops it rather than
-              reading "Unknown" on every one of them. */}
           <p>
-            {[
-              image.date_added ? `Added: ${formatDate(image.date_added)}` : null,
-              image.width && image.height ? `${image.width}×${image.height}` : null,
-            ].filter(Boolean).join(" · ") || "On the TV"}
+            Added: {formatDate(image.date_added)}
+            {image.width && image.height ? ` · ${image.width}×${image.height}` : ""}
           </p>
           <p className="text-muted-foreground truncate">ID: {image.content_id}</p>
         </div>
