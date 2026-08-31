@@ -96,7 +96,8 @@ jobs:
         id: push
         uses: docker/build-push-action@v6.19.2
         with:
-          context: ./backend
+          # The root, so the build can reach both the frontend build and the README.
+          context: .
           file: ./backend/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}

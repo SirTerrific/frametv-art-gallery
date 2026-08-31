@@ -1,3 +1,7 @@
+# Built from the repository root, not from backend/: the app serves the frontend
+# build from one level above itself, and pyproject reads the README that lives at
+# the root, so neither is reachable from a context narrowed to the backend.
+
 # ---------- Builder ----------
 FROM python:3.13-slim AS builder
 
@@ -7,9 +11,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends git \
 
 WORKDIR /app
 
-COPY pyproject.toml README.md ./
+COPY backend/pyproject.toml README.md ./
 
-COPY . .
+COPY backend/ ./
 
 # Upgrade pip and install dependencies into custom prefix
 RUN pip install --upgrade pip \
@@ -25,21 +29,28 @@ WORKDIR /app
 COPY --from=builder /install /usr/local
 
 # Copy app code
-COPY . .
+COPY backend/ ./
+
+# The built frontend, which app.py serves from ../frontend/build/client.
+COPY frontend/build /frontend/build
 
 ENV PYTHONUNBUFFERED=1
 
 ENV PORT=8000
 
-# Get the build arg for APP_VEERSION
+# Get the build arg for APP_VERSION
 ARG APP_VERSION=unknown
 ENV FRAME_TV_VERSION=${APP_VERSION}
 
 EXPOSE 8000
 
-COPY entrypoint.sh /entrypoint.sh
+COPY backend/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
+# Run entrypoint.sh for db migrations, then the app itself.
 ENTRYPOINT ["/entrypoint.sh"]
 
-CMD ["sh", "-c", "exec gunicorn app:app --bind 0.0.0.0:${PORT} --workers ${GUNICORN_WORKERS:-4} --timeout ${GUNICORN_TIMEOUT:-180}"]
+# Several workers so one TV that stops answering cannot freeze the whole app, and a
+# timeout above FRAME_TV_UPLOAD_DEADLINE so a legitimately slow upload is not killed.
+# PORT matters on the host network, where there is no mapping to move the app with.
+CMD ["sh", "-c", "exec gunicorn app:app --bind 0.0.0.0:${PORT:-8000} --workers ${GUNICORN_WORKERS:-4} --timeout ${GUNICORN_TIMEOUT:-180}"]
