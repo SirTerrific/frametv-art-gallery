@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.1](https://github.com/SirTerrific/frametv-art-gallery/compare/v2.0.0...v2.0.1) (2026-08-31)
+
+
+### Bug Fixes
+
+* point the fork at itself instead of at upstream ([ce865fa](https://github.com/SirTerrific/frametv-art-gallery/commit/ce865fae33a544468fd0064f7bfaa33a43b64f2e))
+
 ## [2.0.0](https://github.com/SirTerrific/frametv-art-gallery/compare/v2.0.0...v2.0.0) (2026-08-31)
 
 
