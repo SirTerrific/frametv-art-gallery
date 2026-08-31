@@ -8,6 +8,10 @@ on:
 
 jobs:
   backend:
+    # A release PR only moves the changelog and the version, and its commits were
+    # already tested on main. Its run waits on an approval nobody gives, then fails:
+    # a red mark on every release that means nothing.
+    if: ${{ !startsWith(github.head_ref, 'release-please--') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -25,6 +29,8 @@ jobs:
         run: pytest -q
 
   frontend:
+    # Skipped on a release PR, for the reason given above.
+    if: ${{ !startsWith(github.head_ref, 'release-please--') }}
     runs-on: ubuntu-latest
     defaults:
       run:
