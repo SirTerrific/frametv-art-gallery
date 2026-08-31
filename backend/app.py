@@ -834,6 +834,10 @@ def api_update_tv(ip):
         tv.delete_other_images_on_upload = bool(data['delete_other_images_on_upload'])
     if 'one_slot_mode' in data:
         tv.one_slot_mode = bool(data['one_slot_mode'])
+    if 'mac' in data:
+        # A TV added by hand has no MAC, and adding it again is refused, so this is
+        # the only way to give an existing TV the address Wake-on-LAN needs.
+        tv.mac = (data['mac'] or '').strip() or None
     if 'default_matte' in data:
         tv.default_matte = (data['default_matte'] or '').strip() or None
 
@@ -1275,8 +1279,12 @@ def api_delete_tv_image(ip, content_id):
 @app.route('/api/tv/<ip>/on', methods=['POST'])
 def api_tv_power_on(ip):
     data = request.get_json(silent=True) or {}
-    mac = data.get('mac')
     tv = TV.query.filter_by(ip=ip).first()
+    mac = data.get('mac') or (tv.mac if tv else None)
+    if not mac:
+        # Wake-on-LAN is addressed to the MAC, not the IP; without one there is
+        # nothing to send.
+        return {'error': 'This TV has no MAC address saved, so it cannot be woken'}, 400
     token = tv.token if tv else None
     try:
         power_on(ip, mac, token=token)

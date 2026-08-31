@@ -167,6 +167,20 @@ export default function Settings() {
     }
   };
 
+  // A MAC typed here is a draft until it is saved, and each TV keeps its own.
+  const [macDrafts, setMacDrafts] = React.useState<Record<string, string>>({});
+
+  const handleSaveMac = async (tvIp: string) => {
+    setError('');
+    try {
+      await updateTv(tvIp, { mac: (macDrafts[tvIp] || '').trim() });
+      setMacDrafts({ ...macDrafts, [tvIp]: '' });
+      await fetchTvs();
+    } catch (e: any) {
+      setError(e.message || 'Failed to save the MAC address');
+    }
+  };
+
   const handleToggleDeleteOthers = async (tvIp: string, value: boolean) => {
     try {
       await updateTv(tvIp, { delete_other_images_on_upload: value });
@@ -350,6 +364,28 @@ export default function Settings() {
                     <div className="font-mono text-blue-700 dark:text-blue-400">{tv.ip}</div>
                     {tv.mac && <div className="text-xs bg-muted text-foreground px-2 py-1 rounded inline-block mt-2">{tv.mac}</div>}
                   </div>
+
+                  {/* Wake-on-LAN is the only way to reach a TV that is off, and it needs
+                      the MAC. A TV added by hand has none until it is filled in here. */}
+                  {!tv.mac && (
+                    <div className="mb-4">
+                      <label className="block text-sm mb-1">MAC address (to wake the TV)</label>
+                      <div className="flex gap-2">
+                        <Input
+                          type="text"
+                          value={macDrafts[tv.ip] ?? ''}
+                          onChange={e => setMacDrafts({ ...macDrafts, [tv.ip]: e.target.value })}
+                          placeholder="aa:bb:cc:dd:ee:ff"
+                        />
+                        <Button
+                          onClick={() => handleSaveMac(tv.ip)}
+                          disabled={!(macDrafts[tv.ip] || '').trim()}
+                        >
+                          Save
+                        </Button>
+                      </div>
+                    </div>
+                  )}
 
                   <label className="flex items-center gap-2 text-sm mb-4">
                     <input

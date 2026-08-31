@@ -1,6 +1,7 @@
 import base64
 import logging
 import os
+import socket
 import time
 from datetime import datetime
 from pathlib import Path
@@ -296,16 +297,55 @@ def is_tv_reachable(ip: str, token: Optional[str] = None) -> bool:
     except Exception:
         return False
 
+def _magic_packet(mac: str) -> bytes:
+    """Six 0xFF bytes followed by the MAC repeated sixteen times."""
+    cleaned = "".join(ch for ch in mac if ch.isalnum())
+    if len(cleaned) != 12:
+        raise ValueError(f"Invalid MAC address: {mac!r}")
+    try:
+        address = bytes.fromhex(cleaned)
+    except ValueError as err:
+        raise ValueError(f"Invalid MAC address: {mac!r}") from err
+    return b"\xff" * 6 + address * 16
+
+
 def power_on(ip: str, mac: str, token: Optional[str] = None) -> None:
     """
     Power on the Frame TV using Wake-on-LAN.
+
+    A TV that is off has no websocket to talk to, so this is a broadcast magic
+    packet rather than a request: it cannot be acknowledged, and a TV that ignores
+    it looks exactly like one that never received it.
+
     Args:
-        ip (str): IP address of the TV (unused, for interface consistency).
+        ip (str): IP address of the TV, used to aim the subnet broadcast.
         mac (str): MAC address of the TV.
-        token (Optional[str]): Token string to use for authentication.
+        token (Optional[str]): Unused, kept for interface consistency.
     """
-    logger.info("wake on lan is currently not implemented")
-    pass
+    packet = _magic_packet(mac)
+
+    # The global broadcast is what usually works; the subnet-directed one helps when a
+    # router forwards it and the host has several interfaces.
+    targets = ["255.255.255.255"]
+    octets = ip.split(".")
+    if len(octets) == 4 and all(o.isdigit() for o in octets):
+        targets.append(".".join(octets[:3] + ["255"]))
+
+    sent = False
+    for target in targets:
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
+                sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+                sock.settimeout(_tv_connection.DEFAULT_TIMEOUT)
+                for port in (7, 9):
+                    sock.sendto(packet, (target, port))
+            sent = True
+        except OSError:
+            logger.debug("Wake-on-LAN broadcast to %s failed", target, exc_info=True)
+
+    if not sent:
+        raise FrameTVConnectionError(f"Could not send the Wake-on-LAN packet for TV {ip}")
+    logger.info("Sent Wake-on-LAN packet for TV %s (%s)", ip, mac)
 
 def power_off(ip: str, token: Optional[str] = None) -> None:
     """

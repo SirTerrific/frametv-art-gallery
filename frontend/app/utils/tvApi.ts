@@ -33,6 +33,7 @@ export interface DiscoveredTV {
 
 export interface TVUpdate {
   delete_other_images_on_upload?: boolean;
+  mac?: string;
   one_slot_mode?: boolean;
   slideshow_enabled?: boolean;
   slideshow_album_id?: number | string | null;
