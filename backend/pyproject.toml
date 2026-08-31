@@ -24,7 +24,10 @@ dependencies = [
     "aiohttp==3.14.3",
     "aiofiles==25.1.0",
     "aioimmich==0.17.0",
-    "packaging==26.3"
+    "packaging==26.3",
+    # app.py imports it at module level for the update check. It only resolves today
+    # because samsungtvws happens to pull it in, so a change there would break startup.
+    "requests==2.34.2"
 ]
 
 [project.optional-dependencies]

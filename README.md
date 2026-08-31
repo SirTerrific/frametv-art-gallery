@@ -1,21 +1,22 @@
 <picture>
-  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/mrtncode/frametv-art-gallery/refs/heads/main/docs/header_new.png">
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/mrtncode/frametv-art-gallery/refs/heads/main/docs/header_new_dark.png">
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/SirTerrific/frametv-art-gallery/refs/heads/main/docs/header_new.png">
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/SirTerrific/frametv-art-gallery/refs/heads/main/docs/header_dark_new.png">
   <!-- Default fallback -->
-  <img alt="Header" width="100%" src="https://raw.githubusercontent.com/mrtncode/frametv-art-gallery/refs/heads/main/docs/header_new.png">
+  <img alt="Header" width="100%" src="https://raw.githubusercontent.com/SirTerrific/frametv-art-gallery/refs/heads/main/docs/header_new.png">
 </picture>
 
 
 
 # frametv-art-gallery
 
-[![Release](https://img.shields.io/github/v/release/mrtncode/frametv-art-gallery)](https://github.com/mrtncode/frametv-art-gallery/releases/latest) 
-[![Build](https://github.com/mrtncode/frametv-art-gallery/actions/workflows/build_image.yaml/badge.svg)](https://github.com/mrtncode/frametv-art-gallery/actions/workflows/build_image.yaml) 
-[![License](https://img.shields.io/github/license/mrtncode/frametv-art-gallery)](https://github.com/mrtncode/frametv-art-gallery/blob/main/LICENSE) 
+[![Release](https://img.shields.io/github/v/release/SirTerrific/frametv-art-gallery)](https://github.com/SirTerrific/frametv-art-gallery/releases/latest) 
+[![Build](https://github.com/SirTerrific/frametv-art-gallery/actions/workflows/build_image.yaml/badge.svg)](https://github.com/SirTerrific/frametv-art-gallery/actions/workflows/build_image.yaml) 
+[![License](https://img.shields.io/github/license/SirTerrific/frametv-art-gallery)](https://github.com/SirTerrific/frametv-art-gallery/blob/main/LICENSE) 
 [![Python](https://img.shields.io/badge/python-%3E%3D3.11-blue)](https://www.python.org/) 
-[![Stars](https://img.shields.io/github/stars/mrtncode/frametv-art-gallery?style=social)](https://github.com/mrtncode/frametv-art-gallery/stargazers)
-![GHCR Total downloads](https://ghcr-badge.elias.eu.org/shield/mrtncode/frametv-art-gallery/frametv-art-gallery)
+[![Stars](https://img.shields.io/github/stars/SirTerrific/frametv-art-gallery?style=social)](https://github.com/SirTerrific/frametv-art-gallery/stargazers)
+![GHCR Total downloads](https://ghcr-badge.elias.eu.org/shield/sirterrific/frametv-art-gallery/frametv-art-gallery)
 
+> A fork of [mrtncode/frametv-art-gallery](https://github.com/mrtncode/frametv-art-gallery), which it follows closely. What it adds on top is Wake-on-LAN — waking a TV that is off, rather than only reaching one that is already on.
 
 frametv-art-gallery is an independent, open-source, self-hosted gallery manager for Samsung Frame TVs. Not affiliated with Samsung. It lets you create and manage a personal gallery of images, photos, or artworks locally on your TV.
 
@@ -51,17 +52,24 @@ Example images from https://pixabay.com/
 # Installation
 
 ## Docker
-docker volume create frametv_uploads
-docker volume create frametv_db
+
+```
+docker volume create frametv_data
 
 docker run -d \
-  --name frametv \
-  -v frametv_uploads:/app/uploads \
-  -v frametv_db:/app/instance \
-  -p 8000:8000 \
-  frametvartgallery:latest
+  --name frametv_artgallery \
+  -v frametv_data:/data \
+  -e FRAME_TV_DATA=/data \
+  --network host \
+  ghcr.io/sirterrific/frametv-art-gallery:latest
+```
 
-Or use the docker-compose.yml file: https://github.com/mrtncode/frametv-art-gallery/blob/main/docker-compose.yml
+The host network is what lets the app find TVs by itself, and what lets it wake one:
+both use UDP broadcast, which never leaves the bridge. On the default bridge, swap
+`--network host` for `-p 8000:8000` and add each TV by typing its address — everything
+else works the same.
+
+Or use the compose file: https://github.com/SirTerrific/frametv-art-gallery/blob/main/backend/docker-compose.yml
 
 # Update
 ## Docker (docker run)
@@ -201,4 +209,6 @@ Backend:
 - Flask (Python)
 
 # Credits
-Speical thanks to https://github.com/xchwarze/samsung-tv-ws-api
+Built on [mrtncode/frametv-art-gallery](https://github.com/mrtncode/frametv-art-gallery), which this fork follows.
+
+Special thanks to https://github.com/xchwarze/samsung-tv-ws-api

@@ -55,7 +55,7 @@
     "vite-tsconfig-paths": "^6.1.1"
   },
     "build": {
-    "appId": "com.mrtncode.frametv-art-gallery",
+    "appId": "com.sirterrific.frametv-art-gallery",
     "files": [
       "main.js",
       "build/client/**/*" 

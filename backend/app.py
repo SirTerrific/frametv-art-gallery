@@ -308,7 +308,9 @@ from packaging.version import parse as parse_version
 def backend_status():
     """Return a simple status message for health checks and update availability."""
     current_version = os.environ.get('FRAME_TV_VERSION', 'unknown')
-    repo = 'mrtncode/frametv-art-gallery'
+    # This fork's own releases: the version the app reports is built here, so upstream's
+    # tags would announce updates that no image of this fork ever carries.
+    repo = 'SirTerrific/frametv-art-gallery'
     
     cache_entry = AppSetting.query.filter_by(key='github_version_cache').first()
     
