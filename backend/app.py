@@ -1,5 +1,6 @@
 import base64
 import hashlib
+import logging
 import io
 import shutil
 import sqlite3
@@ -63,6 +64,14 @@ from utils.frame_tv import (
     get_tv_gallery_thumbnail,
     set_token_observer,
 )
+
+# Nothing configures logging otherwise, so the module loggers sit at WARNING and every
+# INFO line the TV code writes is dropped. Set FRAME_TV_LOG_LEVEL=INFO (or DEBUG) to
+# follow what a TV is actually doing; unset, the app is as quiet as before.
+_LOG_LEVEL = os.environ.get("FRAME_TV_LOG_LEVEL", "").strip().upper()
+if _LOG_LEVEL:
+    logging.basicConfig(level=_LOG_LEVEL, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
+    logging.getLogger("utils").setLevel(_LOG_LEVEL)
 
 DATA_DIR = os.environ.get("FRAME_TV_DATA", "data")
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))

@@ -737,8 +737,13 @@ def get_tv_gallery_images(ip: str, token: Optional[str] = None) -> List[Dict]:
         return listing
 
     def action(session: _TVSession) -> List[Dict]:
+        session.note_context("opening the art channel")
         art = session.art()
+        session.note_context("asking for the content list")
+        logger.info("TV %s: art channel ready, asking for the content list", ip)
         available = art.available() or []
+        logger.info("TV %s: content list came back with %d entries", ip, len(available))
+        session.note_context("reading cached thumbnails")
 
         images = []
         seen_content_ids = []

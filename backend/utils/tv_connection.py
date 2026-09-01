@@ -404,8 +404,10 @@ def _tv_call(ip, action_description, action, *, token=None, deadline=None,
                 while not finished.wait(1):
                     idle = session.idle_for()
                     if idle >= stall_timeout:
-                        logger.warning("TV %s sent nothing for %.0fs while %s; closing the connection (%s)",
-                                       ip, idle, action_description, session.describe_traffic())
+                        logger.warning("TV %s sent nothing for %.0fs while %s%s; closing the connection (%s)",
+                                       ip, idle, action_description,
+                                       f" ({session._context})" if session._context else "",
+                                       session.describe_traffic())
                         session.close()
                         return
 
@@ -422,7 +424,19 @@ def _tv_call(ip, action_description, action, *, token=None, deadline=None,
                 session.close()
             keep_any_new_token()
             _mark_tv_down(ip)
-            logger.warning("TV %s timed out %s", ip, action_description)
+            # Which phase ran out is the whole diagnosis: an unfinished open means the
+            # set never completed the handshake, an unfinished action means it accepted
+            # the connection and then went quiet. The traffic count separates a TV that
+            # said nothing at all from one that answered and stopped.
+            logger.warning(
+                "TV %s timed out %s — open: %s, action: %s, %s, token %s",
+                ip,
+                action_description,
+                f"{phases['open']:.1f}s" if "open" in phases else "unfinished",
+                f"{phases['action']:.1f}s" if "action" in phases else "unfinished",
+                session.describe_traffic(),
+                "sent" if token else "absent",
+            )
             raise FrameTVTimeoutError(
                 f"Timeout after {deadline}s while {action_description} TV {ip}"
             ) from err
