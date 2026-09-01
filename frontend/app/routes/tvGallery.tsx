@@ -14,6 +14,11 @@ import {
   type TVGalleryImage,
 } from "~/utils/tvApi";
 
+// A Frame TV serves a single art channel, and one request for the whole gallery
+// holds it for as long as the transfer takes. Asking a slice at a time lets the
+// rows fill in as the set answers, and leaves the channel free between slices.
+const THUMBNAIL_BATCH = 8;
+
 export default function TVGallery() {
   const [searchParams] = useSearchParams();
   const tvIp = searchParams.get("ip");
@@ -66,8 +71,14 @@ export default function TVGallery() {
         setThumbnailsLoading(true);
         (async () => {
           try {
-            const thumbs = await fetchTvGalleryThumbnails(selectedTvIp, missing);
-            setImages((prev) => prev.map((img) => ({ ...img, thumbnail: img.thumbnail || thumbs[img.content_id] || null })));
+            // Sequential on purpose: parallel slices would fight over the one art
+            // channel, and the set answers none of them while they do.
+            for (let from = 0; from < missing.length; from += THUMBNAIL_BATCH) {
+              const batch = missing.slice(from, from + THUMBNAIL_BATCH);
+              const thumbs = await fetchTvGalleryThumbnails(selectedTvIp, batch);
+              if (Object.keys(thumbs).length === 0) break; // the TV stopped answering
+              setImages((prev) => prev.map((img) => ({ ...img, thumbnail: img.thumbnail || thumbs[img.content_id] || null })));
+            }
           } catch (err) {
             console.warn("Failed to batch-fetch thumbnails", err);
           } finally {
