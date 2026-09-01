@@ -41,7 +41,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from utils.tv_connection import DEFAULT_PORT
+from utils.tv_connection import DEFAULT_PORT, TV_PAIRING_TIMEOUT
 from utils.frame_tv import (
     upload_artwork,
     is_art_mode_on,
@@ -925,11 +925,18 @@ def api_add_tv():
     name = data.get('name')
     # Attempt to connect to TV and obtain token
     try:
-        tvws = SamsungTVWS(host=ip, port=DEFAULT_PORT, name=CONNECTION_NAME)
-        tvws.open()
-        # Wait for pairing and token
-        token = tvws.token
-        tvws.close()
+        # The timeout is what bounds the wait for the prompt on the TV to be accepted.
+        # Without it the socket has none at all, so a prompt nobody answers parks the
+        # request until gunicorn kills the worker — and the half-open socket it leaves
+        # behind holds the TV's single art channel, which is what makes every later
+        # call time out rather than this one alone.
+        tvws = SamsungTVWS(host=ip, port=DEFAULT_PORT, name=CONNECTION_NAME, timeout=TV_PAIRING_TIMEOUT)
+        try:
+            tvws.open()
+            # Wait for pairing and token
+            token = tvws.token
+        finally:
+            tvws.close()
         # Extract token string if needed
         if isinstance(token, dict) and 'token' in token:
             token = token['token']

@@ -139,3 +139,58 @@ def test_the_new_token_is_written_to_the_tv_row(client):
 
 def test_a_token_for_an_unknown_tv_is_ignored(client):
     backend._remember_tv_token("192.0.2.86", "fresh")  # must not raise
+
+
+# --- pairing is bounded, and never leaves the socket open ---
+
+class _RecordingTVWS:
+    """Stands in for SamsungTVWS during the add-a-TV pairing handshake."""
+
+    last = None
+
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
+        self.token = "12345678"
+        self.opened = False
+        self.closed = False
+        self.raise_on_open = None
+        _RecordingTVWS.last = self
+
+    def open(self):
+        self.opened = True
+        if self.raise_on_open:
+            raise self.raise_on_open
+
+    def close(self):
+        self.closed = True
+
+
+def test_pairing_waits_with_a_deadline(client, monkeypatch):
+    """samsungtvws defaults to no read timeout at all.
+
+    A prompt nobody answers would then park the request until gunicorn kills the
+    worker, and the half-open socket it leaves behind holds the TV's single art
+    channel — so every later call times out too, not just this one.
+    """
+    monkeypatch.setattr(backend, "SamsungTVWS", _RecordingTVWS)
+
+    res = client.post("/api/tvs", json={"ip": "192.0.2.90", "name": "Living room"})
+    assert res.status_code == 200
+
+    assert _RecordingTVWS.last.kwargs.get("timeout") == backend.TV_PAIRING_TIMEOUT
+    assert backend.TV_PAIRING_TIMEOUT > 0
+
+
+def test_a_refused_pairing_still_closes_the_connection(client, monkeypatch):
+    monkeypatch.setattr(backend, "SamsungTVWS", _RecordingTVWS)
+
+    def blow_up(**kwargs):
+        tvws = _RecordingTVWS(**kwargs)
+        tvws.raise_on_open = OSError("the TV never answered")
+        return tvws
+
+    monkeypatch.setattr(backend, "SamsungTVWS", blow_up)
+
+    res = client.post("/api/tvs", json={"ip": "192.0.2.91"})
+    assert res.status_code == 500
+    assert _RecordingTVWS.last.closed, "a socket left open holds the TV's art channel"
