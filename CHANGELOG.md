@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2.0](https://github.com/SirTerrific/frametv-art-gallery/compare/v2.1.0...v2.2.0) (2026-09-01)
+
+
+### Features
+
+* ask the TV why, when its art channel says nothing ([c875fa5](https://github.com/SirTerrific/frametv-art-gallery/commit/c875fa5567bf9c39c732726d350ce0f20825040e))
+
 ## [2.1.0](https://github.com/SirTerrific/frametv-art-gallery/compare/v2.0.3...v2.1.0) (2026-09-01)
 
 
