@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.0.3](https://github.com/SirTerrific/frametv-art-gallery/compare/v2.0.2...v2.0.3) (2026-09-01)
+
+
+### Bug Fixes
+
+* ask the TV for its thumbnails a few at a time again ([eb091c0](https://github.com/SirTerrific/frametv-art-gallery/commit/eb091c0e2e84a30f35a8b3b580f8c1baf11831e1))
+* stop claiming a date the TV never gave ([c01a248](https://github.com/SirTerrific/frametv-art-gallery/commit/c01a24803c074399b1d9fe5d45cd438f9a82ab84))
+
 ## [2.0.2](https://github.com/SirTerrific/frametv-art-gallery/compare/v2.0.1...v2.0.2) (2026-09-01)
 
 
