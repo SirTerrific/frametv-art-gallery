@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.0](https://github.com/SirTerrific/frametv-art-gallery/compare/v2.0.3...v2.1.0) (2026-09-01)
+
+
+### Features
+
+* say where a TV call gave up, and let the log be turned up ([b7782c9](https://github.com/SirTerrific/frametv-art-gallery/commit/b7782c9171f406285bd47bbd453a0110cad9ff44))
+
 ## [2.0.3](https://github.com/SirTerrific/frametv-art-gallery/compare/v2.0.2...v2.0.3) (2026-09-01)
 
 
