@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.2](https://github.com/SirTerrific/frametv-art-gallery/compare/v2.0.1...v2.0.2) (2026-09-01)
+
+
+### Bug Fixes
+
+* bound the wait for a TV to accept the pairing prompt ([862c4f3](https://github.com/SirTerrific/frametv-art-gallery/commit/862c4f30bda9988175f97d6d692c2edc2a215209))
+
 ## [2.0.1](https://github.com/SirTerrific/frametv-art-gallery/compare/v2.0.0...v2.0.1) (2026-08-31)
 
 
