@@ -8,6 +8,7 @@ from concurrent.futures import ThreadPoolExecutor, TimeoutError as FutureTimeout
 from pathlib import Path
 from typing import Any, Callable, Dict, Optional
 
+import requests
 import websocket
 from samsungtvws import SamsungTVWS
 from samsungtvws.exceptions import ConnectionFailure
@@ -16,6 +17,30 @@ from const import CONNECTION_NAME
 
 logger = logging.getLogger(__name__)
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
+
+
+
+def describe_tv_state(ip: str) -> str:
+    """What the TV says about itself over its plain HTTP endpoint.
+
+    The art channel is a websocket the set can accept and then never answer on, which
+    from here is indistinguishable from a network fault. This endpoint needs no token
+    and no websocket, so it still answers when the art channel does not — and what it
+    reports usually names the reason on its own.
+    """
+    try:
+        response = requests.get(f"http://{ip}:8001/api/v2/", timeout=5)
+        device = (response.json() or {}).get("device") or {}
+    except Exception as err:  # pylint: disable=broad-except
+        return f"the TV did not answer its info endpoint either ({type(err).__name__})"
+    parts = [
+        f"PowerState={device.get('PowerState', 'unreported')}",
+        f"FrameTVSupport={device.get('FrameTVSupport', 'unreported')}",
+    ]
+    name = device.get("name")
+    if name:
+        parts.append(f"name={name}")
+    return "the TV reports " + ", ".join(parts)
 
 
 def _env_int(name: str, default: int) -> int:
@@ -437,6 +462,11 @@ def _tv_call(ip, action_description, action, *, token=None, deadline=None,
                 session.describe_traffic(),
                 "sent" if token else "absent",
             )
+            if "no traffic" in session.describe_traffic():
+                # Nothing came back at all, so the question is whether the set is even
+                # in a state to serve the art channel. Asking costs one HTTP call on a
+                # path that has already failed.
+                logger.warning("TV %s: %s", ip, describe_tv_state(ip))
             raise FrameTVTimeoutError(
                 f"Timeout after {deadline}s while {action_description} TV {ip}"
             ) from err

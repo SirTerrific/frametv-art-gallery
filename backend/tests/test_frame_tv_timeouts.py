@@ -440,3 +440,34 @@ def test_a_call_that_keeps_reporting_progress_is_left_alone():
         "192.0.2.76", "testing", slow_but_alive,
         deadline=10, open_remote=False, stall_timeout=1,
     ) == "done"
+
+
+# --- a silent art channel is explained, not just reported ---
+
+def test_the_tv_state_probe_reads_what_the_set_reports(monkeypatch):
+    """A websocket the TV accepts and never answers on looks like a network fault.
+
+    The plain HTTP endpoint needs no token and no websocket, so it still answers and
+    usually names the reason.
+    """
+    from utils import tv_connection
+
+    class _Response:
+        @staticmethod
+        def json():
+            return {"device": {"PowerState": "standby", "FrameTVSupport": "true", "name": "[TV] Frame"}}
+
+    monkeypatch.setattr(tv_connection.requests, "get", lambda url, timeout: _Response())
+    said = tv_connection.describe_tv_state("192.0.2.70")
+    assert "PowerState=standby" in said
+    assert "FrameTVSupport=true" in said
+
+
+def test_a_tv_that_answers_nothing_at_all_still_gets_a_sentence(monkeypatch):
+    from utils import tv_connection
+
+    def refuse(url, timeout):
+        raise OSError("no route to host")
+
+    monkeypatch.setattr(tv_connection.requests, "get", refuse)
+    assert "did not answer" in tv_connection.describe_tv_state("192.0.2.71")
