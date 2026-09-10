@@ -14,6 +14,7 @@ import sys
 from flask_sqlalchemy import SQLAlchemy
 from utils.crop_image import crop_image_file, CropImageError, get_preset_crop_box, CROP_PRESETS
 from utils.thumbnails import get_or_create, parse_width
+from utils.reframed_gallery import get_image_from_reframed_gallery
 from samsungtvws.exceptions import HttpApiError, ResponseError
 from samsungtvws import SamsungTVWS
 from const import CONNECTION_NAME
@@ -784,6 +785,66 @@ def upload():
         'duplicate_of': duplicate_of,
     }
     
+
+@app.route('/api/import/reframed', methods=['POST'])
+def import_image_from_reframed_gallery():
+    """Add the artwork on a Reframed gallery page to the local gallery.
+
+    Reframed serves the full-size file from its own CDN, so the page is only read to
+    find that address; nothing else on it is followed.
+    """
+    data = request.get_json(silent=True) or {}
+    url = data.get('url')
+    album_id = data.get('album_id')
+    if not isinstance(url, str) or not url.strip():
+        return {'error': 'Reframed gallery URL required'}, 400
+
+    album = None
+    if album_id not in (None, ''):
+        try:
+            album = Album.query.get(int(album_id))
+        except (TypeError, ValueError):
+            return {'error': 'Invalid album'}, 400
+        if not album:
+            return {'error': 'Album not found'}, 404
+
+    try:
+        filename = get_image_from_reframed_gallery(url, location=app.config['UPLOAD_FOLDER'])
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        digest = _file_sha256(file_path)
+        image = Image.query.filter_by(filename=filename).first()
+        if not image:
+            image = Image(filename=filename)
+            db.session.add(image)
+
+        duplicate_of = None
+        if digest:
+            twin = Image.query.filter(Image.sha256 == digest, Image.filename != filename).first()
+            if twin and os.path.isfile(os.path.join(app.config['UPLOAD_FOLDER'], twin.filename)):
+                duplicate_of = twin.filename
+            image.sha256 = digest
+        if album:
+            image.album = album
+        db.session.commit()
+        return {
+            'success': True,
+            'filename': filename,
+            'album_id': album.id if album else None,
+            'duplicate_of': duplicate_of,
+        }
+    except (ValueError, requests.RequestException) as error:
+        # Said out loud on purpose: a wrong address or a page with no artwork on it is
+        # something the person can fix, unlike the failures below.
+        return {'error': str(error)}, 400
+    except OSError:
+        db.session.rollback()
+        return {'error': 'Could not save the imported artwork'}, 500
+    except Exception as error:
+        db.session.rollback()
+        _log_exception('Failed to import Reframed artwork', error)
+        return {'error': 'Failed to import artwork'}, 500
+
+
 # --- Play Uploaded Image on TV ---
 @app.route('/api/tv/play_uploaded', methods=['POST'])
 def api_play_uploaded_image():

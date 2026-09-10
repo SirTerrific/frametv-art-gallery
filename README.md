@@ -49,6 +49,14 @@ You can use any kind of image! Either upload your own personal photos or import 
 </p>
 Example images from https://pixabay.com/
 
+## Import from Reframed Gallery
+
+Browse [Reframed Gallery](https://reframed.gallery), copy the address of an artwork you
+like, and paste it into the import button on the gallery page. The app reads that page
+only to find the full-size file on Reframed's own CDN, downloads it, and adds it to your
+gallery ready to send to a TV. Addresses outside reframed.gallery are refused, and an
+import is held to the same size limit as an upload.
+
 # Installation
 
 ## Docker
@@ -96,8 +104,8 @@ All optional, with sensible defaults. Set them as environment variables on the c
 | `FRAME_TV_PAIRING_TIMEOUT` | `45` | How long adding a TV waits for the pairing prompt to be accepted. |
 | `FRAME_TV_DOWN_COOLDOWN` | `30` | Seconds a TV is skipped after it failed to answer. |
 | `FRAME_TV_BUSY_WAIT` | `90` | How long a deliberate action queues behind another operation on the same TV. |
-| `FRAME_TV_STALL_TIMEOUT` | `45` | Seconds of silence on a connection before it is closed from the outside. |
-| `FRAME_TV_THUMBNAIL_BATCH` | `2` | Thumbnails asked for per request. Lower it if a TV drops long transfers. |
+| `FRAME_TV_STALL_TIMEOUT` | `25` | Seconds of silence on a connection before it is closed from the outside. |
+| `FRAME_TV_THUMBNAIL_BATCH` | `8` | Thumbnails asked for per request. Lower it if a TV drops long transfers. |
 | `FRAME_TV_THUMBNAIL_DEADLINE` | `120` | Seconds a page of thumbnails may take in total. |
 | `FRAME_TV_THUMBNAIL_FIRST_ANSWER` | `25` | Seconds a page may run without a single thumbnail before it stops. |
 | `FRAME_TV_THUMBNAIL_GIVE_UP` | `3` | Images that may die in a row before the rest are left for next time. |
@@ -105,6 +113,7 @@ All optional, with sensible defaults. Set them as environment variables on the c
 | `FRAME_TV_GALLERY_TTL` | `15` | How long the TV's image list is reused, so a reload need not wait on the set. |
 | `FRAME_TV_MAX_PARALLEL_CALLS` | `8` | Concurrent TV requests per worker. |
 | `FRAME_TV_SLIDESHOW` | `1` | Set to `0` to stop the slideshow loop from running at all. |
+| `FRAME_TV_LOG_LEVEL` | unset | Set to `INFO` or `DEBUG` to follow what a TV is doing. |
 
 # Tests
 

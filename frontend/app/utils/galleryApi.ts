@@ -172,3 +172,12 @@ export function getUploadUrl(filename: string, width?: 160 | 400 | 800) {
   const base = `${API_BASE}/uploads/${encodeURIComponent(filename)}`;
   return width ? `${base}?w=${width}` : base;
 }
+export async function importReframedGallery(url: string, albumId?: string | number) {
+  const res = await fetch(`${API_BASE}/api/import/reframed`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ url, album_id: albumId || undefined }),
+  });
+  if (!res.ok) throw new Error((await res.json()).error || 'Failed to import artwork');
+  return await res.json();
+}
