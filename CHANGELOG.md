@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.3.0](https://github.com/SirTerrific/frametv-art-gallery/compare/v2.2.0...v2.3.0) (2026-09-10)
+
+
+### Features
+
+* import an artwork from a Reframed gallery page ([97a5c86](https://github.com/SirTerrific/frametv-art-gallery/commit/97a5c8636d1d8f889a56f802bab714718bf01e5d))
+
 ## [2.2.0](https://github.com/SirTerrific/frametv-art-gallery/compare/v2.1.0...v2.2.0) (2026-09-01)
 
 
