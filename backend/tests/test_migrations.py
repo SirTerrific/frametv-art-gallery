@@ -121,3 +121,25 @@ def test_an_existing_database_still_migrates(data_dir):
     result = run_upgrade(data_dir)
     assert result.returncode == 0, f"upgrade failed:\n{result.stderr[-2000:]}"
     assert stamped_revision(data_dir) == [head], "the pending migration should have run"
+
+
+def test_running_alembic_leaves_the_app_loggers_alone(data_dir):
+    """fileConfig disables every existing logger unless told otherwise.
+
+    app.py stamps a fresh database at import, which runs migrations/env.py inside the
+    server process, so the default would silence the whole utils.* tree — every TV
+    diagnostic included — until the next restart.
+    """
+    script = (
+        "import logging, os;"
+        "lg = logging.getLogger('utils.tv_connection');"
+        f"os.environ['FRAME_TV_DATA'] = {str(data_dir)!r};"
+        "import app;"
+        "print('DISABLED', lg.disabled)"
+    )
+    result = subprocess.run(
+        [sys.executable, "-c", script],
+        cwd=PROJECT_ROOT, capture_output=True, text=True, timeout=180,
+    )
+    assert result.returncode == 0, result.stderr
+    assert "DISABLED False" in result.stdout, result.stdout

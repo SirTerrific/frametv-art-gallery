@@ -11,7 +11,11 @@ config = context.config
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
-fileConfig(config.config_file_name)
+# disable_existing_loggers defaults to True, which switches off every logger already
+# created — the whole utils.* tree included. app.py stamps a fresh database at import,
+# which runs this file inside the server process, so a first start silently lost all the
+# TV diagnostics until the next restart.
+fileConfig(config.config_file_name, disable_existing_loggers=False)
 logger = logging.getLogger('alembic.env')
 
 
