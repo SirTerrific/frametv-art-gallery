@@ -6,9 +6,11 @@ services:
     volumes:
       - frametv_data:/data
 
-    # The host network is what lets the app find TVs by itself, and what lets it wake
-    # one: both use UDP broadcast, which never leaves the bridge. On the bridge you can
-    # still add a TV by typing its address — everything else works the same.
+    # The host network is what lets the app wake a TV (Wake-on-LAN is a UDP broadcast,
+    # which never leaves the bridge) and find TVs by itself (the scan probes the /24 of
+    # the address the container uses, which on the bridge is Docker's own subnet, not
+    # your LAN). On the bridge you can still add a TV by typing its address —
+    # everything else works the same.
     network_mode: host
 
     # Swap the two blocks above and below to go back to the bridge.

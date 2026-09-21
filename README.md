@@ -72,10 +72,11 @@ docker run -d \
   ghcr.io/sirterrific/frametv-art-gallery:latest
 ```
 
-The host network is what lets the app find TVs by itself, and what lets it wake one:
-both use UDP broadcast, which never leaves the bridge. On the default bridge, swap
-`--network host` for `-p 8000:8000` and add each TV by typing its address — everything
-else works the same.
+The host network is what lets the app wake a TV, because Wake-on-LAN is a UDP broadcast
+and a broadcast never leaves the bridge. It is also what lets the app find TVs by itself:
+the scan probes the /24 of the address the container uses, which on the bridge is Docker's
+own subnet, not your LAN. On the default bridge, swap `--network host` for `-p 8000:8000`
+and add each TV by typing its address — everything else works the same.
 
 Or use the compose file: https://github.com/SirTerrific/frametv-art-gallery/blob/main/backend/docker-compose.yml
 
@@ -143,7 +144,7 @@ requests that follow are deliberately silent.
 Make sure that:
 - Your TV is on and connected to the same network as the server.
 - Your TV is connected to the same subnet as the server. Some routers isolate Wi-Fi and wired networks, or different VLANs, which prevents discovery.
-- You use network="host" mode in Docker. Discovery uses UDP broadcast, which is not supported in bridge mode.
+- You use network="host" mode in Docker. Discovery probes every address of the /24 that the container itself sits on. In bridge mode that is Docker's subnet, not your LAN, so it finds nothing.
 
 ## "The TV is busy with another request"
 
