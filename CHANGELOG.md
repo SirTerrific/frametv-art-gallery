@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.3.2](https://github.com/SirTerrific/frametv-art-gallery/compare/v2.3.1...v2.3.2) (2026-09-21)
+
+
+### Bug Fixes
+
+* stop a fresh database from silencing every log the app writes ([206991d](https://github.com/SirTerrific/frametv-art-gallery/commit/206991dba9c04e91affd491b2bf78ab92fed0af5))
+
 ## [2.3.1](https://github.com/SirTerrific/frametv-art-gallery/compare/v2.3.0...v2.3.1) (2026-09-21)
 
 
