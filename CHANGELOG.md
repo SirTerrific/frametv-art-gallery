@@ -1,5 +1,14 @@
 # Changelog
 
+## [2.3.1](https://github.com/SirTerrific/frametv-art-gallery/compare/v2.3.0...v2.3.1) (2026-09-21)
+
+
+### Bug Fixes
+
+* let an album be deleted when one of its images was sent to a TV ([5b6cb15](https://github.com/SirTerrific/frametv-art-gallery/commit/5b6cb153ed54c9fff47c4049a588d61456693ab2))
+* read the traffic figure before closing the session that produced it ([0f7905f](https://github.com/SirTerrific/frametv-art-gallery/commit/0f7905f11ba54700ce3b2efea01b47d36687b209))
+* stop /api/tv/send from fetching arbitrary URLs, and answer a bad MAC with 400 ([7ed5f40](https://github.com/SirTerrific/frametv-art-gallery/commit/7ed5f407c6a0ae3e06bdd4db5218ce2abb468557))
+
 ## [2.3.0](https://github.com/SirTerrific/frametv-art-gallery/compare/v2.2.0...v2.3.0) (2026-09-10)
 
 
