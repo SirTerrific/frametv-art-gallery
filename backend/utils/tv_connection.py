@@ -445,6 +445,11 @@ def _tv_call(ip, action_description, action, *, token=None, deadline=None,
             finally:
                 finished.set()
         except FutureTimeoutError as err:
+            # Read before closing. Closing unblocks the worker, and the worker deletes
+            # its traffic counters as it unwinds, so a figure read afterwards can say
+            # "no traffic recorded" for a call that did receive frames.
+            traffic = session.describe_traffic()
+            frames = session.frames_received()
             if not future.cancel():
                 session.close()
             keep_any_new_token()
@@ -459,14 +464,19 @@ def _tv_call(ip, action_description, action, *, token=None, deadline=None,
                 action_description,
                 f"{phases['open']:.1f}s" if "open" in phases else "unfinished",
                 f"{phases['action']:.1f}s" if "action" in phases else "unfinished",
-                session.describe_traffic(),
+                traffic,
                 "sent" if token else "absent",
             )
-            if "no traffic" in session.describe_traffic():
+            if frames == 0:
                 # Nothing came back at all, so the question is whether the set is even
-                # in a state to serve the art channel. Asking costs one HTTP call on a
-                # path that has already failed.
-                logger.warning("TV %s: %s", ip, describe_tv_state(ip))
+                # in a state to serve the art channel. The answer can take seconds, so
+                # it is fetched on the side: the caller is already past its deadline and
+                # must not wait longer, nor keep the TV's lock, to read a log line.
+                threading.Thread(
+                    target=lambda: logger.warning("TV %s: %s", ip, describe_tv_state(ip)),
+                    name="frametv-state-probe",
+                    daemon=True,
+                ).start()
             raise FrameTVTimeoutError(
                 f"Timeout after {deadline}s while {action_description} TV {ip}"
             ) from err

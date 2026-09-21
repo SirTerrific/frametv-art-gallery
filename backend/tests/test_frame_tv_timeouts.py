@@ -471,3 +471,58 @@ def test_a_tv_that_answers_nothing_at_all_still_gets_a_sentence(monkeypatch):
 
     monkeypatch.setattr(tv_connection.requests, "get", refuse)
     assert "did not answer" in tv_connection.describe_tv_state("192.0.2.71")
+
+
+# --- the traffic figure must survive the session being closed ---
+
+def test_the_timeout_line_reports_frames_that_arrived_before_the_close(monkeypatch, caplog):
+    """Closing unblocks the worker, which deletes its counters as it unwinds.
+
+    The figure used to be read after the close, so a call that had received frames could
+    still log "no traffic recorded". This simulates the worker unwinding the moment the
+    session closes, and checks the line still carries what had arrived.
+    """
+    probed = []
+    monkeypatch.setattr(frame_tv, "describe_tv_state", lambda ip: probed.append(ip) or "probe")
+
+    def close_and_unwind(self):
+        frame_tv._forget_inflight(self._worker_thread_id)
+
+    monkeypatch.setattr(frame_tv._TVSession, "close", close_and_unwind)
+
+    def action(session):
+        frame_tv._note_traffic(threading.get_ident(), b"abcd")
+        time.sleep(STUCK)
+
+    with caplog.at_level("WARNING", logger=frame_tv.logger.name):
+        with pytest.raises(FrameTVTimeoutError):
+            frame_tv._tv_call("192.0.2.80", "testing", action, deadline=1, open_remote=False)
+
+    assert "1 frame(s), 4 byte(s) received" in caplog.text
+    assert "no traffic recorded" not in caplog.text
+    time.sleep(0.2)  # a wrongly started probe runs on its own thread
+    assert probed == [], "a TV that sent frames is not a silent one, so it is not probed"
+
+
+def test_a_call_that_received_nothing_asks_the_tv_for_its_state_without_waiting(monkeypatch):
+    """The probe can take seconds; the caller is already late and must not wait for it."""
+    asked = threading.Event()
+    release = threading.Event()
+
+    def slow_probe(ip):
+        asked.set()
+        release.wait(STUCK)
+        return "probe"
+
+    monkeypatch.setattr(frame_tv, "describe_tv_state", slow_probe)
+
+    started = time.monotonic()
+    with pytest.raises(FrameTVTimeoutError):
+        frame_tv._tv_call(
+            "192.0.2.81", "testing", lambda session: time.sleep(STUCK), deadline=1, open_remote=False
+        )
+    elapsed = time.monotonic() - started
+    release.set()
+
+    assert asked.wait(2), "a silent TV should be asked for its state"
+    assert elapsed < STUCK, "the call waited on the probe"
