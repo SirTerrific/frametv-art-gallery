@@ -98,3 +98,30 @@ def test_invalid_bulk_payloads_are_rejected(client, payload):
 def test_assigning_to_a_missing_album_is_a_404(client):
     upload(client, "a.png")
     assert client.post("/api/albums/Nope/add", json={"images": ["a.png"]}).status_code == 404
+
+
+def test_deleting_an_album_whose_image_was_sent_to_a_tv(client):
+    """The upload record points at the image, and its image_id is not nullable.
+
+    Deleting the image row used to make SQLAlchemy try to null that column, so the whole
+    delete failed and the album stayed.
+    """
+    with backend.app.app_context():
+        album = backend.Album(name="Sent")
+        image = backend.Image(filename="sent.png", album=album)
+        tv = backend.TV(ip="192.0.2.60", token="1")
+        backend.db.session.add_all([album, image, tv])
+        backend.db.session.commit()
+        backend.db.session.add(
+            backend.UploadedImage(image_id=image.id, tv_id=tv.id, content_id="MY_F0001")
+        )
+        backend.db.session.commit()
+
+    res = client.delete("/api/albums/Sent")
+    assert res.status_code == 200
+
+    with backend.app.app_context():
+        assert backend.Album.query.count() == 0
+        assert backend.Image.query.count() == 0
+        assert backend.UploadedImage.query.count() == 0
+        assert backend.TV.query.count() == 1, "the TV itself is untouched"

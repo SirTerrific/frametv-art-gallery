@@ -63,7 +63,10 @@ class UploadedImage(db.Model):
     content_id = db.Column(db.String(255), nullable=False)
     created_at = db.Column(db.DateTime, nullable=False, server_default=db.func.now())
 
-    image = db.relationship('Image', backref='uploaded_images')
+    # Deleting an image takes its upload records with it. Without the cascade,
+    # SQLAlchemy tries to null image_id, which is not nullable, and the delete fails:
+    # that is what broke deleting an album holding an image already sent to a TV.
+    image = db.relationship('Image', backref=db.backref('uploaded_images', cascade='all, delete-orphan'))
     tv = db.relationship('TV', back_populates='uploaded_images')
 
 class ProviderConfig(db.Model):
