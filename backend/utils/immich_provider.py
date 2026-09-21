@@ -30,15 +30,6 @@ class ImmichProvider(MediaProvider):
             } for album in albums
         ]
 
-    def download_image(self, url: str, dest_path: str):
-        """Download an image from a direct Immich asset URL and save to dest_path."""
-        import requests
-        resp = requests.get(url, headers={"x-api-key": self.api_key}, stream=True)
-        resp.raise_for_status()
-        with open(dest_path, "wb") as f:
-            for chunk in resp.iter_content(chunk_size=8192):
-                f.write(chunk)
-
     async def download_image_by_id(self, image_id: str, dest_path: str, size: str = "fullsize"):
         """Download an image by Immich asset ID and save to dest_path using aioimmich."""
         immich, session = await self._get_client()

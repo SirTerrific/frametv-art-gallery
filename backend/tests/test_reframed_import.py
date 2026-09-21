@@ -145,3 +145,20 @@ def test_an_address_that_is_not_reframed_is_refused_with_a_reason(client, monkey
 
 def test_a_missing_url_is_refused(client):
     assert client.post("/api/import/reframed", json={}).status_code == 400
+
+
+# --- the deprecated provider_url used to carry the Immich API key anywhere ---
+
+def test_a_provider_url_is_refused_and_nothing_is_requested(client, monkeypatch):
+    """provider_url made the server fetch any address with the API key attached."""
+    class Provider:
+        def __getattr__(self, name):
+            raise AssertionError(f"the provider must not be used: {name}")
+
+    monkeypatch.setattr(backend.app, "media_provider", Provider(), raising=False)
+    res = client.post(
+        "/api/tv/send",
+        json={"ip": "192.0.2.61", "filename": "elsewhere.png", "provider_url": "http://198.51.100.9/asset"},
+    )
+    assert res.status_code == 400
+    assert "provider_id" in res.get_json()["error"]

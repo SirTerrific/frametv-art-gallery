@@ -1048,30 +1048,25 @@ def api_send_to_tv():
     filename = data.get('filename')
     brightness = data.get('brightness')
     display = data.get('display', True)
-    provider = data.get('provider')
     provider_id = data.get('provider_id')
-    # provider_url is deprecated, but fallback if present
-    provider_url = data.get('provider_url')
     if not ip or not filename:
         return {'error': 'TV IP and filename required'}, 400
+    if data.get('provider_url'):
+        # This used to download whatever address it was given with the provider's API
+        # key attached, so any client that could reach the API could make the server
+        # send that key anywhere. An image is now named by its id, never by a URL.
+        return {'error': 'provider_url is no longer supported; send provider_id instead'}, 400
     tv = TV.query.filter_by(ip=ip).first()
     token = tv.token if tv else None
     try:
         filename, art_path = _normalized_upload_path(filename)
         os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
         # If the file does not exist locally, try to fetch from media provider
-        if not os.path.isfile(art_path) and (provider_id or provider_url):
+        if not os.path.isfile(art_path) and provider_id:
             if not hasattr(app, 'media_provider') or not app.media_provider:
                 return {'error': 'No media provider configured'}, 400
             try:
-                # If provider is specified and is 'immich', use download_image_by_id
-                if provider == 'immich' and provider_id:
-                    app.media_provider.download_image_by_id_sync(provider_id, art_path)
-                elif provider_url:
-                    app.media_provider.download_image(provider_url, art_path)
-                elif provider_id:
-                    # fallback for other providers
-                    app.media_provider.download_image_by_id_sync(provider_id, art_path)
+                app.media_provider.download_image_by_id_sync(provider_id, art_path)
             except Exception as e:
                 _log_exception('Failed to fetch image from provider', e)
                 return _error_response('Failed to fetch image from provider', 500)
@@ -1393,6 +1388,9 @@ def api_tv_power_on(ip):
     try:
         power_on(ip, mac, token=token)
         return {'success': True}
+    except ValueError:
+        # power_on rejects an address that is not twelve hex digits.
+        return {'error': 'The MAC address is not valid'}, 400
     except FrameTVError as e:
         _log_exception('Failed to power on TV', e)
         return _error_response('Failed to power on TV', 500)

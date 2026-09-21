@@ -69,3 +69,13 @@ def test_a_mac_can_be_added_to_a_tv_that_has_none(client):
     assert res.status_code == 200
     with backend.app.app_context():
         assert backend.TV.query.filter_by(ip="192.0.2.22").first().mac == "aa:bb:cc:dd:ee:ff"
+
+
+def test_a_malformed_mac_is_a_clear_400_not_a_server_error(client):
+    with backend.app.app_context():
+        backend.db.session.add(backend.TV(ip="192.0.2.23", name="Bad MAC", mac="not-a-mac", token="1"))
+        backend.db.session.commit()
+
+    res = client.post("/api/tv/192.0.2.23/on", json={})
+    assert res.status_code == 400
+    assert "MAC" in res.get_json()["error"]
