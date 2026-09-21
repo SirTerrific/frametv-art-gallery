@@ -210,3 +210,13 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# graphify: local structural graph of the repo, rebuilt with `graphify update .`
+graphify-out/
+
+# openwiki: local project wiki and the pointer files it maintains for coding agents.
+# Kept out of this public repo on purpose; regenerate with `openwiki --update`.
+openwiki/
+AGENTS.md
+CLAUDE.md
+.github/workflows/openwiki-update.yml
