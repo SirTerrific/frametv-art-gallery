@@ -7,6 +7,8 @@ TV call in a deadline. These tests exercise that wrapper without touching the ne
 Run with: pytest tests/test_frame_tv_timeouts.py
 """
 
+import contextlib
+import logging
 import shutil
 import threading
 import time
@@ -23,6 +25,20 @@ from utils.tv_connection import (
 # Long enough to outlive the deadlines below, short enough that the worker threads are
 # gone before the interpreter shuts down.
 STUCK = 3
+
+# The autouse fixture below stubs the module attribute, so the real one is kept here
+# for the two tests that exercise the probe itself.
+_REAL_DESCRIBE_TV_STATE = frame_tv.describe_tv_state
+
+
+@pytest.fixture(autouse=True)
+def never_probe_a_real_address(monkeypatch):
+    """A timed-out call asks the TV for its state over HTTP, on its own thread.
+
+    Nothing in this suite may reach the network, so the probe is stubbed for every
+    test. The two tests that observe it patch it again with their own stub.
+    """
+    monkeypatch.setattr(frame_tv, "describe_tv_state", lambda ip: "stubbed")
 
 
 @pytest.fixture(autouse=True)
@@ -458,7 +474,7 @@ def test_the_tv_state_probe_reads_what_the_set_reports(monkeypatch):
             return {"device": {"PowerState": "standby", "FrameTVSupport": "true", "name": "[TV] Frame"}}
 
     monkeypatch.setattr(tv_connection.requests, "get", lambda url, timeout: _Response())
-    said = tv_connection.describe_tv_state("192.0.2.70")
+    said = _REAL_DESCRIBE_TV_STATE("192.0.2.70")
     assert "PowerState=standby" in said
     assert "FrameTVSupport=true" in said
 
@@ -470,12 +486,40 @@ def test_a_tv_that_answers_nothing_at_all_still_gets_a_sentence(monkeypatch):
         raise OSError("no route to host")
 
     monkeypatch.setattr(tv_connection.requests, "get", refuse)
-    assert "did not answer" in tv_connection.describe_tv_state("192.0.2.71")
+    assert "did not answer" in _REAL_DESCRIBE_TV_STATE("192.0.2.71")
 
 
 # --- the traffic figure must survive the session being closed ---
 
-def test_the_timeout_line_reports_frames_that_arrived_before_the_close(monkeypatch, caplog):
+class _Collect(logging.Handler):
+    """Collects records straight off the logger under test.
+
+    caplog attaches to the root logger, which makes it depend on propagation staying
+    untouched by anything else in the suite. This listens to the one logger involved.
+    """
+
+    def __init__(self):
+        super().__init__(level=logging.WARNING)
+        self.lines = []
+
+    def emit(self, record):
+        self.lines.append(record.getMessage())
+
+
+@contextlib.contextmanager
+def _warnings_from(logger):
+    collector = _Collect()
+    previous = logger.level
+    logger.addHandler(collector)
+    logger.setLevel(logging.WARNING)
+    try:
+        yield collector
+    finally:
+        logger.removeHandler(collector)
+        logger.setLevel(previous)
+
+
+def test_the_timeout_line_reports_frames_that_arrived_before_the_close(monkeypatch):
     """Closing unblocks the worker, which deletes its counters as it unwinds.
 
     The figure used to be read after the close, so a call that had received frames could
@@ -494,12 +538,13 @@ def test_the_timeout_line_reports_frames_that_arrived_before_the_close(monkeypat
         frame_tv._note_traffic(threading.get_ident(), b"abcd")
         time.sleep(STUCK)
 
-    with caplog.at_level("WARNING", logger=frame_tv.logger.name):
+    with _warnings_from(frame_tv.logger) as logged:
         with pytest.raises(FrameTVTimeoutError):
             frame_tv._tv_call("192.0.2.80", "testing", action, deadline=1, open_remote=False)
 
-    assert "1 frame(s), 4 byte(s) received" in caplog.text
-    assert "no traffic recorded" not in caplog.text
+    written = "\n".join(logged.lines)
+    assert "1 frame(s), 4 byte(s) received" in written, written
+    assert "no traffic recorded" not in written, written
     time.sleep(0.2)  # a wrongly started probe runs on its own thread
     assert probed == [], "a TV that sent frames is not a silent one, so it is not probed"
 
