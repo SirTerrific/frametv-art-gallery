@@ -98,7 +98,7 @@ export default function ImageDropZone({
           className={`fixed inset-0 z-40 flex items-center justify-center pointer-events-none ${
             hasImageFiles
               ? "bg-green-200 opacity-80"
-              : "bg-red-500 bg-opacity-20"
+              : "bg-red-500/20"
           }`}
         >
           <div className="text-center">

@@ -9,6 +9,7 @@ const VERSION = import.meta.env.VITE_APP_VERSION || "dev";
 const pageNames: { [key: string]: string } = {
   "/": "Home",
   "/gallery": "Gallery",
+  "/tv-gallery": "TV Gallery",
   "/settings": "Settings"
 };
 
@@ -38,7 +39,8 @@ function ThemeToggle() {
 
 export default function Header() {
   const location = useLocation();
-  const pageName = pageNames[location.pathname] || "Page";
+  const pageName = pageNames[location.pathname]
+    ?? (location.pathname.startsWith("/album/") ? "Album" : "");
   return (
     <header className="sticky top-0 z-40 w-[95%] self-center rounded-4xl mt-2 bg-white/95 dark:bg-gray-900/70 text-gray-900 dark:text-white border border-gray-200/60 dark:border-gray-800 backdrop-blur-md ">
       <div className="flex items-center justify-between px-6 py-3">

@@ -25,7 +25,7 @@ export default function BottomTabs() {
   }, []);
 
   return (
-    <div className={`fixed z-50 w-full max-w-lg -translate-x-1/2 ${isIOS ? 'bottom-0' : 'bottom-4'} left-1/2`} >
+    <div className={`fixed z-40 w-full max-w-lg -translate-x-1/2 ${isIOS ? 'bottom-0' : 'bottom-4'} left-1/2`} >
       <div className="grid h-16 grid-cols-4 mx-auto bg-card border border-border rounded-full">
         <style>{`
           .bottom-tab-icon {
@@ -35,8 +35,10 @@ export default function BottomTabs() {
             transform: scale(1.2) rotate(-6deg);
           }
           .bottom-tab-active {
-            transform: scale(1.3);
             color: #2563eb; /* blue-600 */
+          }
+          .bottom-tab-active .bottom-tab-icon {
+            transform: scale(1.15);
           }
           /* blue-600 only reaches 3.5:1 on the dark surface, so lift it to blue-400. */
           :where(.dark) .bottom-tab-active {
@@ -49,13 +51,13 @@ export default function BottomTabs() {
             key={item.id}
             to={item.href}
             className={({ isActive }) =>
-              `inline-flex flex-col items-center justify-center px-5 h-full group ${
+              `inline-flex flex-col items-center justify-center px-2 h-full rounded-full group ${
                 isActive ? "bottom-tab-active" : "hover:bg-neutral-secondary-medium"
               }`
             }
           >
             <span className="bottom-tab-icon">{item.icon}</span>
-            <span className="sr-only">{item.label}</span>
+            <span className="mt-0.5 text-[11px] font-medium leading-none">{item.label}</span>
           </NavLink>
         ))}
       </div>

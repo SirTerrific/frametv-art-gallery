@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useSearchParams } from "react-router";
+import { Link, useSearchParams } from "react-router";
 import { SparklesIcon, ArrowPathIcon } from "@heroicons/react/24/outline";
 import TVGalleryImageCard from "~/components/TVGalleryImageCard";
 
@@ -165,13 +165,16 @@ export default function TVGallery() {
 
   return (
     <div className="container mx-auto px-4 py-6 max-w-2xl">
-      <div className="flex items-center gap-2 mb-6">
-        <h1 className="text-2xl font-bold mb-6 mt-3 text-center text-foreground">TV Settings</h1>
+      <div className="flex items-center justify-center gap-2 mb-6">
+        <h1 className="text-2xl font-bold mb-6 mt-3 text-center text-foreground">TV Gallery</h1>
       </div>
 
       {tvs.length === 0 ? (
         <div className="text-center py-12">
           <p className="text-muted-foreground">No TVs configured</p>
+          <Link to="/settings" className="mt-3 inline-block text-sm font-medium text-blue-600 hover:underline dark:text-blue-400">
+            Add a TV in Settings
+          </Link>
         </div>
       ) : (
         <>
