@@ -43,12 +43,43 @@ export interface TVUpdate {
 
 export class TVError extends Error {
   status: number;
-  constructor(message: string, status: number) {
+  /** What the backend says went wrong, e.g. "tv_busy", "tv_timeout" or "tv_unreachable". */
+  code?: string;
+  constructor(message: string, status: number, code?: string) {
     super(message);
     this.name = "TVError";
     this.status = status;
+    this.code = code;
   }
 }
+
+/** The plain HTTP probe: cheap, and never takes the TV's single art channel. */
+export interface TVReachability {
+  reachable: boolean;
+  latency_ms?: number;
+  model?: string | null;
+  frame_tv_support?: boolean;
+  /** The firmware's own word. Some firmware says "standby" while the TV shows art. */
+  reported_power_state?: string | null;
+}
+
+export type TVArtError = 'unreachable' | 'busy' | 'timeout' | 'refused' | 'error';
+
+export interface TVDiagnostics {
+  probe: TVReachability;
+  art: { api_version: string | null; art_mode: boolean; artwork_count: number | null } | null;
+  art_error: TVArtError | null;
+  has_mac: boolean;
+}
+
+/** Plain-language explanation and next step for each way the art session can fail. */
+export const TV_ART_ERROR_HELP: Record<TVArtError, string> = {
+  unreachable: 'The TV does not answer on the network. Check that it is plugged in and on the same network, and that its IP address has not changed.',
+  busy: 'The TV is busy with another request. Wait a moment and test again.',
+  timeout: 'The TV answers on the network but not on its art channel. It may be fully off (wake it, or switch it to Art Mode), or it may be waiting for you to accept the connection on screen.',
+  refused: 'The TV refused the connection. Check the access setting in Connection → Device Connection Manager, and that this app is not in the blocked devices list.',
+  error: 'Something unexpected went wrong. The app logs have the details.',
+};
 
 
 // Play an already uploaded image on the TV by content_id (filename)
@@ -199,7 +230,7 @@ export async function sendToTV({payload, brightness, display }: { payload: any, 
   }
   console.log("res stat", res.status)
   if (!res.ok) {
-    throw new TVError(data?.error || 'Failed to send to TV', res.status);
+    throw new TVError(data?.error || 'Failed to send to TV', res.status, data?.code);
   }
 
   return data; // ok, gibt JSON zurück
@@ -226,6 +257,18 @@ export async function tvArtMode(ip: string) {
   const res = await fetch(`${API_BASE}/api/tv/${encodeURIComponent(ip)}/artmode`, {
     method: 'POST' });
   if (!res.ok) throw new Error((await res.json()).error || 'Failed to set art mode');
+  return await res.json();
+}
+
+export async function tvReachability(ip: string): Promise<TVReachability> {
+  const res = await fetch(`${API_BASE}/api/tv/${encodeURIComponent(ip)}/reachability`);
+  if (!res.ok) throw new Error((await res.json()).error || 'Failed to check the TV');
+  return await res.json();
+}
+
+export async function tvDiagnostics(ip: string): Promise<TVDiagnostics> {
+  const res = await fetch(`${API_BASE}/api/tv/${encodeURIComponent(ip)}/diagnostics`);
+  if (!res.ok) throw new Error((await res.json()).error || 'Failed to test the connection');
   return await res.json();
 }
 

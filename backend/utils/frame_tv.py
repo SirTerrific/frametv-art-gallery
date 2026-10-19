@@ -1,8 +1,10 @@
 import base64
+import json
 import logging
 import os
 import socket
 import time
+import urllib.request
 from datetime import datetime
 from pathlib import Path
 from typing import Callable, Dict, List, Optional, Tuple
@@ -846,6 +848,49 @@ def delete_tv_images(ip: str, content_ids: List[str], token: Optional[str] = Non
         _CACHE.pop((ip, content_id), None)
     forget_gallery(ip)
     return deleted
+
+
+def probe_tv(ip: str, timeout: float = 3.0) -> Dict:
+    """Ask the TV's plain HTTP endpoint who it is, without touching the art channel.
+
+    A Frame TV serves a single art channel, so a status check that opened it would
+    compete with an upload or a thumbnail batch. This only reads port 8001, which
+    answers while the art channel is busy, and says nothing about art mode.
+    `reported_power_state` is the firmware's own word, and some firmware reports
+    "standby" while the TV is showing art, so it is not a verdict on its own.
+    """
+    started = time.monotonic()
+    try:
+        with urllib.request.urlopen(f"http://{ip}:8001/api/v2/", timeout=timeout) as response:
+            device = (json.load(response) or {}).get("device") or {}
+    except Exception:
+        return {"reachable": False}
+    return {
+        "reachable": True,
+        "latency_ms": round((time.monotonic() - started) * 1000),
+        "model": device.get("modelName"),
+        "frame_tv_support": str(device.get("FrameTVSupport", "")).lower() == "true",
+        "reported_power_state": device.get("PowerState"),
+    }
+
+
+def diagnose_tv(ip: str, token: Optional[str] = None) -> Dict:
+    """One art session that reads what the app depends on: API version, art mode, art count."""
+
+    def read(session):
+        art = session.art()
+        result = {
+            "api_version": art.get_api_version(),
+            "art_mode": art.get_artmode() == "on",
+        }
+        try:
+            result["artwork_count"] = len(art.available())
+        except Exception:
+            # The count is a bonus; the version and art mode already prove the channel works.
+            result["artwork_count"] = None
+        return result
+
+    return _tv_call(ip, "running diagnostics on", read, token=token)
 
 
 def get_tv_device_info(ip: str, token: Optional[str] = None) -> Optional[Dict]:

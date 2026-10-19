@@ -25,6 +25,10 @@ export default function AlbumPage() {
   const [tvs, setTvs] = useState<TVInfo[]>([]);
   const [selectedTvIp, setSelectedTvIp] = useState('');
   const [sendProgress, setSendProgress] = useState('');
+  // Images handled so far (sent or failed) drive the progress bar; the failures are kept
+  // by name, so a partly sent album says which images did not make it.
+  const [sendDone, setSendDone] = useState(0);
+  const [failedSends, setFailedSends] = useState<{ filename: string; message: string }[]>([]);
 
   const loadAlbum = async () => {
     if (!albumId) return;
@@ -65,6 +69,9 @@ export default function AlbumPage() {
     let sent = 0;
     let consecutiveFailures = 0;
     let lastError = '';
+    const failures: { filename: string; message: string }[] = [];
+    setFailedSends([]);
+    setSendDone(0);
 
     for (let i = 0; i < album.images.length; i++) {
       const image = album.images[i];
@@ -79,6 +86,8 @@ export default function AlbumPage() {
         consecutiveFailures = 0;
       } catch (e: any) {
         lastError = e.message || 'Failed to send image';
+        failures.push({ filename: image.filename, message: lastError });
+        setFailedSends([...failures]);
         consecutiveFailures++;
         // A TV that failed three times in a row is not coming back mid-album.
         if (consecutiveFailures >= 3) {
@@ -86,6 +95,7 @@ export default function AlbumPage() {
           break;
         }
       }
+      setSendDone(i + 1);
     }
 
     setSendProgress('');
@@ -188,8 +198,37 @@ export default function AlbumPage() {
                 )}
               </div>
             </div>
+            {sendProgress && (
+              <div
+                className="mt-4 h-2 w-full overflow-hidden rounded-full bg-muted"
+                role="progressbar"
+                aria-valuemin={0}
+                aria-valuemax={album.images.length}
+                aria-valuenow={sendDone}
+                aria-label="Sending the album to the TV"
+              >
+                <div
+                  className="h-full bg-blue-600 transition-all duration-300"
+                  style={{ width: `${(sendDone / album.images.length) * 100}%` }}
+                />
+              </div>
+            )}
             {error && <div className="text-red-600 text-sm mt-4">{error}</div>}
             {successMessage && <div className="text-green-700 text-sm mt-2">{successMessage}</div>}
+            {failedSends.length > 0 && (
+              <div className="mt-3 rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-700 dark:border-red-800 dark:bg-red-950/40 dark:text-red-300">
+                <p className="font-medium">
+                  {failedSends.length} image{failedSends.length === 1 ? '' : 's'} did not go through:
+                </p>
+                <ul className="mt-1 list-disc pl-5">
+                  {failedSends.map(f => (
+                    <li key={f.filename}>
+                      <span className="font-mono">{f.filename}</span>: {f.message}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
 
 

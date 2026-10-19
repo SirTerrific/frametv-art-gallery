@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react'
 import { useLocation } from "react-router";
 import { useTheme } from "next-themes";
 import { MoonIcon, SunIcon } from "@heroicons/react/24/outline";
+import TvStatusIndicator from "./TvStatusIndicator";
 
 const VERSION = import.meta.env.VITE_APP_VERSION || "dev";
 
@@ -49,6 +50,7 @@ export default function Header() {
           <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">{VERSION}</span>
         </div>
         <div className="flex items-center gap-3">
+          <TvStatusIndicator />
           <span className="text-base font-semibold text-gray-700 dark:text-gray-200">{pageName}</span>
           <ThemeToggle />
         </div>

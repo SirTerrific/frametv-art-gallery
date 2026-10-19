@@ -61,6 +61,8 @@ from utils.frame_tv import (
     delete_tv_image,
     delete_tv_images,
     get_tv_device_info,
+    probe_tv,
+    diagnose_tv,
     play_uploaded_content,
     get_tv_gallery_thumbnail,
     set_token_observer,
@@ -1142,6 +1144,21 @@ def api_send_to_tv():
                 elif cleared_stale:
                     _forget_uploaded(tv, content_ids=cleared_stale)
         return jsonify({'success': True, 'content_id': content_id})
+    except FrameTVUnavailableError as e:
+        db.session.rollback()
+        app.logger.info('Could not send artwork, the TV was busy: %s', e)
+        return jsonify({'error': 'The TV is busy with another request, try again in a moment', 'code': 'tv_busy'}), 503
+    except FrameTVTimeoutError as e:
+        db.session.rollback()
+        _log_exception('The TV stopped answering while sending artwork', e)
+        return jsonify({
+            'error': 'The TV did not answer. It may be fully off or waiting for you to accept the connection on screen',
+            'code': 'tv_timeout',
+        }), 504
+    except FrameTVConnectionError as e:
+        db.session.rollback()
+        _log_exception('Could not reach the TV to send artwork', e)
+        return jsonify({'error': 'The TV could not be reached. Check that it is on and on the same network', 'code': 'tv_unreachable'}), 503
     except (FrameTVError, HttpApiError) as e:
         _log_exception('Failed to send artwork to TV', e)
         return jsonify({'error': 'Failed to send artwork to TV'}), 500
@@ -1428,6 +1445,42 @@ def api_tv_status(ip):
     except FrameTVError as e:
         _log_exception('Failed to get TV status', e)
         return _error_response('Failed to get TV status', 500)
+
+@app.route('/api/tv/<ip>/reachability', methods=['GET'])
+def api_tv_reachability(ip):
+    """Cheap liveness check for the header indicator.
+
+    Reads the TV's plain HTTP endpoint only, so it never takes the single art channel
+    away from an upload or a thumbnail batch in progress.
+    """
+    if not TV.query.filter_by(ip=ip).first():
+        return {'error': 'TV not found'}, 404
+    return probe_tv(ip)
+
+@app.route('/api/tv/<ip>/diagnostics', methods=['GET'])
+def api_tv_diagnostics(ip):
+    """What the "Test connection" button shows: the HTTP probe plus one art session."""
+    tv = TV.query.filter_by(ip=ip).first()
+    if not tv:
+        return {'error': 'TV not found'}, 404
+    result = {'probe': probe_tv(ip), 'art': None, 'art_error': None, 'has_mac': bool(tv.mac)}
+    if not result['probe']['reachable']:
+        result['art_error'] = 'unreachable'
+        return result
+    try:
+        result['art'] = diagnose_tv(ip, token=tv.token)
+    except FrameTVUnavailableError:
+        result['art_error'] = 'busy'
+    except FrameTVTimeoutError:
+        # The art channel opened and then stayed silent: what a TV that is fully off, or
+        # one still waiting for its pairing prompt to be answered, looks like.
+        result['art_error'] = 'timeout'
+    except FrameTVConnectionError:
+        result['art_error'] = 'refused'
+    except Exception as e:
+        _log_exception('Failed to run TV diagnostics', e)
+        result['art_error'] = 'error'
+    return result
 
 @app.route('/tv/<ip>/on', methods=['POST'])
 def tv_power_on(ip):
