@@ -1,8 +1,8 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Cropper from "react-cropper";
-import 'cropperjs';
+import "cropperjs/dist/cropper.css";
 import { XMarkIcon } from "@heroicons/react/24/outline";
-import { cropImage } from "../utils/galleryApi";
+import { cropImage, getCropPresets, type CropPreset } from "../utils/galleryApi";
 
 interface CropImageModalProps {
   isOpen: boolean;
@@ -25,13 +25,12 @@ const CropImageModal: React.FC<CropImageModalProps> = ({
   const [cropActionLoading, setCropActionLoading] = useState(false);
   const [cropMessage, setCropMessage] = useState('');
 
-  const cropPresets = [
-    { label: '640x480', width: 640, height: 480 },
-    { label: '800x600', width: 800, height: 600 },
-    { label: '1024x768', width: 1024, height: 768 },
-    { label: '1280x960', width: 1280, height: 960 },
-    { label: '1920x1080', width: 1920, height: 1080 },
-  ];
+  // The backend owns the preset list, so the Frame TV's own 3840x2160 shows up here too.
+  const [cropPresets, setCropPresets] = useState<CropPreset[]>([]);
+  useEffect(() => {
+    if (!isOpen) return;
+    getCropPresets().then(setCropPresets).catch(() => setCropPresets([]));
+  }, [isOpen]);
 
   const handleCrop = async () => {
     if (!filename || !cropperRef.current?.cropper) {
@@ -48,39 +47,13 @@ const CropImageModal: React.FC<CropImageModalProps> = ({
     setCropMessage('');
 
     try {
-      let res;
-
-      // If a preset is selected, use backend preset calculation
-      if (cropPreset) {
-        console.log('Crop request (preset):', { preset: cropPreset });
-        res = await cropImage(filename, undefined, undefined, undefined, undefined, cropPreset);
-      } else {
-        // Use direct coordinates from crop box
-        const cropper = cropperRef.current.cropper;
-        const imageData = cropper.getImageData();
-        const cropBox = cropper.getCropBoxData();
-
-        if (!imageData || !cropBox) {
-          setCropMessage('Cannot read crop area. Please try again.');
-          return;
-        }
-
-        const scaleX = imageData.naturalWidth / imageData.width;
-        const scaleY = imageData.naturalHeight / imageData.height;
-
-        const x = Math.max(0, Math.round((cropBox.left - imageData.left) * scaleX));
-        const y = Math.max(0, Math.round((cropBox.top - imageData.top) * scaleY));
-        const width = Math.max(1, Math.round(cropBox.width * scaleX));
-        const height = Math.max(1, Math.round(cropBox.height * scaleY));
-
-        if (!Number.isFinite(x) || !Number.isFinite(y) || !Number.isFinite(width) || !Number.isFinite(height)) {
-          setCropMessage('Crop coordinates are invalid. Try adjusting the crop area.');
-          return;
-        }
-
-        console.log('Crop request (direct):', { x, y, width, height });
-        res = await cropImage(filename, x, y, width, height);
+      // Always crop what the box shows, so a preset box the person moved is honoured.
+      const { x, y, width, height } = cropperRef.current.cropper.getData(true);
+      if (![x, y, width, height].every(Number.isFinite) || width < 1 || height < 1) {
+        setCropMessage('Crop coordinates are invalid. Try adjusting the crop area.');
+        return;
       }
+      const res = await cropImage(filename, Math.max(0, x), Math.max(0, y), width, height);
 
       if (!res.success) throw new Error((res as any).error || 'Crop failed');
 
@@ -100,6 +73,7 @@ const CropImageModal: React.FC<CropImageModalProps> = ({
     if (!cropperRef.current?.cropper) return;
     try {
       const cropper = cropperRef.current.cropper;
+      cropper.setAspectRatio(width / height);
       const imageData = cropper.getImageData();
       if (!imageData) {
         console.warn('Image data not ready for preset');
@@ -130,7 +104,7 @@ const CropImageModal: React.FC<CropImageModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
       <div className="w-full max-w-4xl rounded-lg bg-card shadow-lg overflow-hidden">
         <div className="flex items-center justify-between border-b px-4 py-3">
           <h3 className="text-lg font-semibold">Crop Image: {filename}</h3>
@@ -165,17 +139,19 @@ const CropImageModal: React.FC<CropImageModalProps> = ({
               <select
                 value={cropPreset}
                 onChange={e => {
-                  const selected = cropPresets.find(p => p.label === e.target.value);
+                  const selected = cropPresets.find(p => p.id === e.target.value);
                   setCropPreset(e.target.value);
                   if (selected) {
                     applyCropPreset(selected.width, selected.height);
+                  } else {
+                    cropperRef.current?.cropper?.setAspectRatio(16 / 9);
                   }
                 }}
                 className="w-full border rounded px-2 py-1"
               >
-                <option value="">Auto</option>
+                <option value="">Free 16:9 (fills a Frame TV)</option>
                 {cropPresets.map(opt => (
-                  <option key={opt.label} value={opt.label}>{opt.label}</option>
+                  <option key={opt.id} value={opt.id}>{opt.label}</option>
                 ))}
               </select>
             </div>

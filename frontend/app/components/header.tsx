@@ -3,12 +3,14 @@ import React, { useEffect, useState } from 'react'
 import { useLocation } from "react-router";
 import { useTheme } from "next-themes";
 import { MoonIcon, SunIcon } from "@heroicons/react/24/outline";
+import TvStatusIndicator from "./TvStatusIndicator";
 
 const VERSION = import.meta.env.VITE_APP_VERSION || "dev";
 
 const pageNames: { [key: string]: string } = {
   "/": "Home",
   "/gallery": "Gallery",
+  "/tv-gallery": "TV Gallery",
   "/settings": "Settings"
 };
 
@@ -38,7 +40,8 @@ function ThemeToggle() {
 
 export default function Header() {
   const location = useLocation();
-  const pageName = pageNames[location.pathname] || "Page";
+  const pageName = pageNames[location.pathname]
+    ?? (location.pathname.startsWith("/album/") ? "Album" : "");
   return (
     <header className="sticky top-0 z-40 w-[95%] self-center rounded-4xl mt-2 bg-white/95 dark:bg-gray-900/70 text-gray-900 dark:text-white border border-gray-200/60 dark:border-gray-800 backdrop-blur-md ">
       <div className="flex items-center justify-between px-6 py-3">
@@ -47,6 +50,7 @@ export default function Header() {
           <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">{VERSION}</span>
         </div>
         <div className="flex items-center gap-3">
+          <TvStatusIndicator />
           <span className="text-base font-semibold text-gray-700 dark:text-gray-200">{pageName}</span>
           <ThemeToggle />
         </div>

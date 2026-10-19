@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { toast } from "sonner";
 import { getTvs, sendToTV, playUploadedImage, tvPowerOn, type TVInfo } from "../utils/tvApi";
 import { addImageToAlbum } from "../utils/galleryApi";
 import CropImageModal from "./CropImageModal";
@@ -109,6 +110,10 @@ const ImageCard: React.FC<ImageCardProps> = ({
       return;
     }
     setTvLoading(true);
+    // An upload takes several seconds, and the button alone says nothing about whether
+    // it worked once the modal is closed, so the outcome also goes to a toast.
+    const tvName = tvs.find((t) => t.ip === selectedTvIp)?.name || selectedTvIp;
+    const toastId = toast.loading(`Sending to ${tvName}…`);
     try {
       let payload: any = { ip: selectedTvIp, filename: image?.filename };
       if (matteTouched) payload.matte = combineMatte(matteStyle, matteColor);
@@ -118,8 +123,11 @@ const ImageCard: React.FC<ImageCardProps> = ({
       }
       await sendToTV({ payload });
       setError("");
+      toast.success(`Sent to ${tvName}`, { id: toastId });
     } catch (e: any) {
-      setError(e.message || "Failed to send to TV");
+      const message = e.message || "Failed to send to TV";
+      setError(message);
+      toast.error(message, { id: toastId });
     } finally {
       setTvLoading(false);
     }

@@ -1,5 +1,6 @@
 import React from 'react'
 import { Link } from 'react-router'
+import TvDiagnosticsPanel from '~/components/TvDiagnosticsPanel';
 import { getTvs, addTv, removeTv, removeAllTvImages, updateTv, discoverTvs, type TVUpdate, type DiscoveredTV } from '~/utils/tvApi';
 import { fetchAlbums } from '~/utils/galleryApi';
 import { Input } from '~/components/ui/input';
@@ -483,6 +484,8 @@ export default function Settings() {
                       </select>
                     </div>
                   </fieldset>
+
+                  <TvDiagnosticsPanel ip={tv.ip} />
 
                   <div className="flex flex-col gap-2">
                     <Link to={`/tv-gallery?ip=${encodeURIComponent(tv.ip)}`} className="bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium py-2 px-4 rounded-lg text-center">

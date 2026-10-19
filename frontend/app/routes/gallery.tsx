@@ -486,7 +486,7 @@ export default function Gallery() {
 
           {/* Modal for Create Album */}
           {showCreateAlbumModal && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
               <div className="bg-card rounded-lg shadow-lg p-6 w-full max-w-sm relative">
                 <button
                   className="absolute top-2 right-2 text-muted-foreground hover:text-muted-foreground text-xl font-bold"

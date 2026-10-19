@@ -59,6 +59,15 @@ export async function fetchImagesAddedThisMonth() {
   return (await res.json()).count;
 }
 
+export type CropPreset = { id: string; label: string; width: number; height: number };
+
+export async function getCropPresets(): Promise<CropPreset[]> {
+  const res = await fetch(`${API_BASE}/api/crop-presets`);
+  if (!res.ok) return [];
+  const data = await res.json();
+  return data.presets ?? [];
+}
+
 export async function cropImage(
   filename: string,
   x?: number,

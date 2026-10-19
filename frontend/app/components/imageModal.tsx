@@ -2,6 +2,7 @@ import React from "react";
 import { ArrowUpTrayIcon, ExclamationCircleIcon, TrashIcon, XMarkIcon, SparklesIcon, TvIcon } from "@heroicons/react/24/outline";
 import { Button } from "./ui/button";
 import { MATTE_STYLES, MATTE_COLORS } from "../utils/matte";
+import MattePreview from "./MattePreview";
 
 export interface TV {
   ip: string;
@@ -204,6 +205,7 @@ const ImageModal: React.FC<ImageModalProps> = ({
             {/* Matte settings */}
             <div className="space-y-1">
               <label className="text-xs font-medium text-muted-foreground">Matte / Frame Options</label>
+              <MattePreview src={imageURL} alt={alt} style={matteStyle} color={matteColor} />
               <div className="grid grid-cols-2 gap-2">
                 <select
                   className="border border-border bg-background px-2.5 py-2 rounded-lg text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
