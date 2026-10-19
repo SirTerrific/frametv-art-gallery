@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.4.0](https://github.com/SirTerrific/frametv-art-gallery/compare/v2.3.2...v2.4.0) (2026-10-19)
+
+
+### Features
+
+* **ui:** TV status light, connection test, matte preview and clearer send errors ([f4d0df3](https://github.com/SirTerrific/frametv-art-gallery/commit/f4d0df314b125fb5cc72bd425b9b4885b01d87d2))
+
+
+### Bug Fixes
+
+* **ui:** restore the cropper stylesheet, and tidy navigation and overlays ([fbdcee8](https://github.com/SirTerrific/frametv-art-gallery/commit/fbdcee8dd338f36f895806adfe215b58c88516c7))
+
 ## [2.3.2](https://github.com/SirTerrific/frametv-art-gallery/compare/v2.3.1...v2.3.2) (2026-09-21)
 
 
