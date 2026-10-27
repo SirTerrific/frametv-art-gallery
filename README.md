@@ -116,6 +116,10 @@ All optional, with sensible defaults. Set them as environment variables on the c
 | `FRAME_TV_SLIDESHOW` | `1` | Set to `0` to stop the slideshow loop from running at all. |
 | `FRAME_TV_LOG_LEVEL` | unset | Set to `INFO` or `DEBUG` to follow what a TV is doing. |
 
+# Documentation
+
+A generated project wiki covers the architecture, how the app talks to a TV, diagnostics and the test suite: [openwiki](openwiki/index.md).
+
 # Tests
 
 ```
