@@ -1,0 +1,126 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:d4f51ae3565b49aa0f6ac5bcff17471d864bf5df7bb3cc13fcf952d1dc44c2d9",
+  "claims": [
+    {
+      "id": "claim_bbdf7dc19d9645e79097854ca8a88809",
+      "statement": "Adding a TV posts to /api/tvs, refuses an address that already exists, opens a connection built with FRAME_TV_PAIRING_TIMEOUT to obtain a token and always closes it, and stores a TV row with address, name, MAC and token.",
+      "evidence": [
+        {
+          "resource": "repo://backend/app.py#L986-L1028",
+          "version": "repo-lines-v1:sha256:0cf0c321a4a8512ebeec7f7c9997debb492da5327bd2f3c990c65664389f20a7:eyJzZWxlY3RlZExpbmVDb3VudCI6NDMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg2ZDkyMDE1YTliYTI3OTc3YTYyOTQ1MjE1ZDJhZWE5N2Y0N2FmNjNhZjI0N2JkYmU0MWRmNTcwYjMyMGZmOWMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImUwMWM1YWRiZTNjNDE0MmI0NjJiOTgzZWNhMzJjNmY2NzIyMzllNDMzNzA4M2M3NmEyYTliY2FmM2ZjYjI2NGUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjczYTFiMWNhNGM5ZWM3MGM5M2E0OTdhMTllNWJhNjEyZDI5YTM3MmI0MzhlY2YxMDQ0NTkzZjQzYTk5M2IyMjgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY0ZTgzNmRjZjNlMjE2ZTk0YjFhYWE1Njk1Y2E0NzgwODcxNDkyZjk5YzE5NDA2YjBmMmZkNTRiNDU0ZGQ2ODQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_18347e380ec2449884d78ab8e565ee66",
+      "statement": "A pairing token must be a non-empty numeric string, otherwise the add-TV request is rejected with 403 telling the person to accept pairing on the TV.",
+      "evidence": [
+        {
+          "resource": "repo://backend/app.py#L1010-L1018",
+          "version": "repo-lines-v1:sha256:c107a5c5ff42208c948a8b96c61aca7a2fcaa9aac889d29d4b79e765ac847ba5:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZTc1YWJhYTRmMWY1NDgyZmQwMDQzYWJkYmVkMjU1N2Y0NzFkMzkxZDBjNWUzYWY3NDUxYjY0NDA0NjQxZjFkMiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZjlmMDdmMDZiNDIyMGNjYzgyNTlkNTg5YjI3ODJjYWRhZDg2YzFiZWQyYmMwMTVmYmZjMmIzOTEzMzExZjQzMSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMGI2NzM0MzY4MDY1YTczNTk0OTIyNGM0ZmQyMmMzMjI0NzI1NGVhNTFhZTk0NDQ2ZTNiOTBkNWYwYjIzYjY4NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYjMyOGU2MzRmOGFiYjcwZTQ3YzE0ZjBkNWI4NzMzZWZkMzMyOGJjYWY5MmE0YWNlNGJlZjdiNmFkMTc4OTljOSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_ec4bfc942a4e4ae483a9cbb7988bc941",
+      "statement": "The add-TV handler catches FrameTVError and then any other exception with generic 500 responses, so a pairing timeout raised by the underlying library returns Unexpected error while adding TV.",
+      "evidence": [
+        {
+          "resource": "repo://backend/app.py#L1019-L1024",
+          "version": "repo-lines-v1:sha256:cb20ba98774ee4af5d3b2b828cbc067a412d921de4e8bdbe7bc60740fe822070:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMjJiYTlhYjE0ZDVlYjIwZTNjMmNhM2ViMjk1ZTQ2ZTY4MTgwNmE4MGIzN2FiNzA3NWFjOTVkNzkzYTAyNjkzNCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiODVhNDA3ODcwM2E3ZmYzZjY1OWUwMzNmMDAzYTdkMzg5YTliNjczYzZhMzYwMWI4MzA3MGZlNDFjZTk2ODcwMiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYmRiM2Q2NDI0MzBjOWJhZDY1Zjk0ZmExZDU3ZTAxYmU3YTE4ZWNlODYxNzdmNzM0MGI1OGIyODRmMjcxODU0OSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZjY5ZDAxNDg3MDk4NTdiYTgxNzg4N2U5ZDAzY2E0NTNjMDg0NWRmYzE0NzViMWI5ZThkNWE0NzMyY2E2YWM0ZCJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_a66f531e1f8d40879a018308db0412bc",
+      "statement": "The newest token the TV hands back after any call, even a failed one, is written to the TV's row by an observer, because a Frame TV issues a fresh token on each connection and stops honouring the previous one.",
+      "evidence": [
+        {
+          "resource": "repo://backend/app.py#L186-L207",
+          "version": "repo-lines-v1:sha256:423bc658809bfc043b6373aae25aa533dc6e7601326b400727d5aedb9dfb34bb:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMwNjlmYzVlZGYyZDU3ZTNiNDVlZDYxZjM1MTc4MjQ4ODVkNDI5MjVhMDcyYWU2ZGM4NmY5YTdkMDdiYTQ2OTMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFiZmFjMTU2MDUzMzBlZmZlODA1ZjFkZTc5ZGUzZDVmMzMyNjEyZWRmZjUzOGIyMWNlMDExYzc3OGE3YTE0ZjEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijg4OWQ1MGYwZmZhNzIxYjAwMTUwNDlhOGVmMzFjNjE1OGQ1ZjU3MzVlYmM3OWExYzkyMWMzYTkwODRlNGZmZjEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijc0NDk5YTJiNTM3YmNhNzVjZTJkM2UzNjVjMTZhNDJiMWFhMDI2YTJkOWU4ZmFhZWNiNDBkNGMyY2NkY2VmYjcifQ"
+        },
+        {
+          "resource": "repo://backend/utils/tv_connection.py#L416-L424",
+          "version": "repo-lines-v1:sha256:2c4a3a54a307cde1e408f34ab1f0ca7dcb8b62784e07e297d45d84adb0f0e00d:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMzBlZDhjMjExMDc5NTlmYThiZTRkNTJhOTNiM2I2ZDRlYzQ4N2FjZTJjZDUxNjk2NTc0ZDM4ZjM0NjM4MmMyMiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiN2MzMjhkZWU3ZTY2ZmEwNGZiZWVkODUxNDRhYzc1YTliY2RiMDU1NTdiYzBmYzU2MTMwMTliYWFmMGI3ZjQ3ZiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMzMxMzgzYzExZDMwZGIyNTk2NDhhNjZhNjg5YWUxMDJkZmYzYTMxZTk0Nzk0YWFmNmFlMTQ3NDJmYzNjY2QyYyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNjdlYTI1YzBmMzMyZWZmMGRlZGNmYjBjYTg0MDRkMmU4MjAxMjQ5ZDU2ZTAwZDdhNWI5YjllMGYwZjY2Y2M4MiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_4772a7f80d5d4d0eae946842fb390b48",
+      "statement": "The token is stored as text on the TV model.",
+      "evidence": [
+        {
+          "resource": "repo://backend/models.py#L34-L34",
+          "version": "repo-lines-v1:sha256:f379bc33b203c1814ffc5b116bdd0c624c67ca5a8ca38a7787c1b688a9706c55:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZjM3OWJjMzNiMjAzYzE4MTRmZmM1YjExNmJkZDBjNjI0YzY3Y2E1YThjYTM4YTc3ODdjMWI2ODhhOTcwNmM1NSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZjM3OWJjMzNiMjAzYzE4MTRmZmM1YjExNmJkZDBjNjI0YzY3Y2E1YThjYTM4YTc3ODdjMWI2ODhhOTcwNmM1NSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMmM5ZDk3YTUxZmViMjQzNjQ0NGI3YzdlYTYzODk5ZjA5ZDc4M2EzNDJlN2M3ZjhiMDc4MDdiNDM1ODQ1MTEyOCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMzEzNjU2MjMyNzQ0NWNjNDdlZjE1NWZjMDljZjQwNTc0M2UzM2IxNDQ5NDg1Y2VmNjZhNzYwYWUzMTYwOTQzMiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_34aa4979217d4cafa37787bab3c57cf4",
+      "statement": "Discovery works out the local /24 subnet from the socket's own address, then probes every address from .1 to .254 with an HTTP request to port 8001 using 60 threads and a 0.8 second timeout, and treats an address as a TV when its device type contains Samsung or its model contains FRAME.",
+      "evidence": [
+        {
+          "resource": "repo://backend/utils/tv_discovery.py#L6-L46",
+          "version": "repo-lines-v1:sha256:19b8bed46fc46245afd6b75abe46ad9d8f4917f736183047eb32a7d1fcefc949:eyJzZWxlY3RlZExpbmVDb3VudCI6NDEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE0YzMyNDA4ZDIyZjQ4M2NiZDQyYzY3NTY1MGE4YzkwYmVjMzIyNTkzZGFmMDY0YWVlOTNkODIyMTFlMzIxYTciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY1OWY2YmM3ZTlkMzY0N2E0NjM5ZTBhZjA2MGMwZTUxZTk0YjRjNmU2ZDQxYjM0OWI0OGY1MjNhM2Y3YjdiNzciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImU1MjVjNzZhNjMzN2UyMzUzNTg2NzcyN2I2MjE3NmQ2OTQ1ZjIwNDkyNmZjMWMwZTJhZjg1MDdkMjUyMTYxYWEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImJiMTExMzE5YzliZWM1ZDMxMjA0NTIzNDRiOTc0ZjlmZTBiNTg4NjFlODg1NTIxODIzMTAxZDU3OGNmN2FiYjQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_426bb95e53d046cfa5dff22421ef6d3f",
+      "statement": "Wake-on-LAN builds a magic packet of six 0xFF bytes followed by the MAC repeated sixteen times and sends it by UDP broadcast to ports 7 and 9, to both the global broadcast address and the broadcast address of the TV's /24 subnet, succeeding if at least one send worked and raising a connection error if none did.",
+      "evidence": [
+        {
+          "resource": "repo://backend/utils/frame_tv.py#L300-L348",
+          "version": "repo-lines-v1:sha256:71e8face565778250a2d2d8c4c5b50d0c4b8d71b676063a3c8f70334101838ae:eyJzZWxlY3RlZExpbmVDb3VudCI6NDksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImExNWFlOTZjMmEyYWM4ZDFiMjI5MGI3ZTE2MGNiN2IzZGQwZWE3MThjMWFlOTJhZWIzYzFkZTVjODc3Mzc1ODkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjUyZjhjZjNmNDMzMTJmMGMwNjRiY2FjOTI4Nzg5MGU5MjIwY2E3NDhiM2QyMDIxN2FkNDNhMmM0YWIwMWZkNWYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQ5ZDA1ZWNhNDA0NzgwNDU5Njc5NWFlNThmNzEzY2ZjOGI0OGJiMWUzN2M2ZmI5NzQ5YTVmYjE3ODk3YjY5NzkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjYwZGFmNjQ4ZGEwZTU3M2IyMjZiMzYxYjFjZmM5ODViZDNhMmZiZjFkMDU4YmM4ZjYxMzgxYWIwYzQzMzJlYmMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_b8248e26760e4323b6a191b1f150c858",
+      "statement": "The power-on endpoint uses the MAC from the request or falls back to the one stored on the TV, answers 400 when neither exists, and answers 400 with 'The MAC address is not valid' when the packet builder raises ValueError for a malformed MAC, before handling FrameTVError.",
+      "evidence": [
+        {
+          "resource": "repo://backend/app.py#L1379-L1396",
+          "version": "repo-lines-v1:sha256:193a87234fa21948144ebae3777ecc6a86bf653dedecc5f51b83813e550950b3:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY2ZmYzNGU4ZjZjN2Y0MTUxZDUzZGRkODgzYjgxZDY0NGRjZWI2YmIzYmIyNDMwZjI4YWYwYWY3MGFjNzdmYTAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZjMjgzM2U2MjM4NGJkMzQ2NGM4ZjZhNjMzMjhlMTllZDdkZTgwMjIyNmYwYmFjYzkwNzRiOTE5NzY3OTg5NDkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImM5Yjk2OTlhNTQ4MjI5MDRkODVkZjI5NTYwMWM0NDEwYWIwMzlhMTc5NjEzOGQ4ZGI3YTQ3ODgzMGViNzZhYTkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImZkYjk3ZmU0ZTJjOTE1MzMyY2MwOGRjYmYzYjFiM2Q2ODNkNDc1ZDBiMTYxNWI2Mjc0N2Q2YTliMWY0Y2ZhNDEifQ"
+        },
+        {
+          "resource": "repo://backend/utils/frame_tv.py#L300-L309",
+          "version": "repo-lines-v1:sha256:5fa031ac9e0cf9c5fd9a7aad4c5eb6ec386642dc94682957eb6030d84be5568a:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImExNWFlOTZjMmEyYWM4ZDFiMjI5MGI3ZTE2MGNiN2IzZGQwZWE3MThjMWFlOTJhZWIzYzFkZTVjODc3Mzc1ODkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY4ZmQzNjFjNTc2YzU4YzcxNzQyN2VkMTA0NzllOGZhODUzMWMzNjYwYThjYzRmNWU1MjY3M2FlOThkYjEyODYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQ5ZDA1ZWNhNDA0NzgwNDU5Njc5NWFlNThmNzEzY2ZjOGI0OGJiMWUzN2M2ZmI5NzQ5YTVmYjE3ODk3YjY5NzkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjRlMThiMGYwY2RkNzQyZWRiNDlkMTgyZmRhM2ZjNjE4ZDM1NjdlN2EzNjUwODU2OTY0NzM0NWI2ZjM0ZmE2ZmEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_aa8532efe8ce4db693c1f9c0f456f68d",
+      "statement": "A MAC can be saved on an existing TV through PATCH /api/tvs/<ip>, and the Settings page shows a MAC field for any TV that lacks one.",
+      "evidence": [
+        {
+          "resource": "repo://backend/app.py#L925-L940",
+          "version": "repo-lines-v1:sha256:e3de95c592e533b14303ab86a8ee5d01e6749ff9fe6175306bbbd7f51c1c4cb8:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhjNTRiOGQ3YmUyNmI4MmIyN2MyOTBkM2Q1N2RmZmEwZGFkNTg1MGI1ZGY0ZDI0YTZjMzMxOWQwNWU3NGFhNjAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdlYjcwMjU3NTkzZGEwNmY2ODJhM2RkZGE1NGE5ZDI2MGQ0ZmM1MTRmNjQ1MjM3ZjVjYTc0YjA4ZjhkYTYxYTYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQ0OWVlNGFlMGQ1ZTVlMDNjZTNjNDMyZWNlMjU0NDU2NWE1NTU3MjNmODVmNTUyNGUzMDZiMzU3N2NhOTk2MWEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI3MGFmODYxYWJmYWFmMThlNTg2NmU5ZmMyNGMzMzMwYmY5MDc1MjQ4OTJkM2ZmNGEyNzg5ODVjMjgxZWMyNGQifQ"
+        },
+        {
+          "resource": "repo://frontend/app/routes/settings.tsx#L173-L185",
+          "version": "repo-lines-v1:sha256:b01ce3ecb7bb501e0b93ef15cd1ebd8a3e04304931d552d31dc5d2e11f2f22d4:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMzNjdiNGI4ZTZlNWYxNWIwZTk5ODAwY2RhMTgxMWE1OGZiNjUxYmRhMGJiOWE1OTYwYTA2ZTRlNWNkNjIzOTEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE2MmI0MTRkNzJiMjI3NTg3NDZlYjQ1MDM2NTQ4OGIzMTFhOGEyNDY5Y2E4NWM0ODhkOWIxNzVlNDcwODM0MDkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZkNjE0MzgwNjBkMTI4MDVmMmIzYWI1ZGRhOTU1NmMxMWNlODEwZmQ1M2MzMDI4ZDdjMDVhNzUwZDc4ODI0NGYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY3MjI4ODQ1MmJmNTE1MzY4NDRiNGY1NzBhNzI4ZDUxNWE3OTUwYjRmMjY3YzUzYzM1YWZmZGFkMmE4ZjQwY2IifQ"
+        },
+        {
+          "resource": "repo://frontend/app/routes/settings.tsx#L370-L390",
+          "version": "repo-lines-v1:sha256:997f010ef4f98a163305880c046d51ee6ea80a9d63b2bd2764c81bfc7dc8fd6d:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI5Y2I1NGYwMjdjNjkyZTBhZDhlNDU0YTQzYTM1N2RmMTUzOTI1MGYwOTJjMGZjNmYyYTgwY2I2ODkxMzA5NTYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM5ODVkZTgyMDEzYTRiZDQzNWU1OGI4YTJlMTE3YTQ4ODBmMmRiMTkzMmY3NmJlYmUzNDJmOTUxOThlM2M4M2MiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk1MzQzNzA0MWM2ZGNkYWEzY2Y1N2UwMmE2OWYyYTIyMGZkZTRlNjg1MzU2YjEwOTM0ODU1NWNjOTJjODE2MGIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI4N2JmNGUxYWE1YjdiODg0OTdhMjE4NWE1YzFjYWY1Y2RhZGFkNzc1MjZlZTlhZTk3M2NkZmNlNzIzODM3ZDIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_10ca2d9cc97a4d52aee6d00a1da43f2c",
+      "statement": "The compose file uses the host network because a Wake-on-LAN broadcast sent from a bridged container stays on Docker's bridge, and because discovery on the bridge probes Docker's own subnet; on the bridge each TV must be added by typing its address.",
+      "evidence": [
+        {
+          "resource": "repo://backend/docker-compose.yml#L9-L14",
+          "version": "repo-lines-v1:sha256:c7568d8eccf8ee51a9cae5d1f7344d2184369337010657a579471b8687741d26:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYTQ5OWMyYjY4Mzg4OTlmYzVjNDM5M2RlNjU3MTM1YThjYTBlMDdhYTM5NTg3Y2JiN2U0NTc5ZmMwNzkwYTMwZCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMTYxMTJkMzNkNjgzYzUxODE2ZTA4ZjM4YTA4YjIzYzM2NGQ1YzI1ODY1MmYyMTlmYmQyMzdmY2M3OGEzYTNiNiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZmNlMmNhNDJmYTk2ZmY3ZjllMTY5NjhkYzk3NTBhNTMzZTgwZDEwNWY4Zjc3MWQ4N2U5M2QxMjc0Mzk0YzYwOCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYmRlZTRlNjI0N2I4ZGU1ZmMwY2RkNGZlZmQ2MDJlNTI0OGIxOTMxYTMyOGI5YWMyODZmZjNiYTRmOGQ4NDJlOCJ9"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.5.1",
+    "at": "2026-09-21T12:08:00.549Z"
+  }
+}

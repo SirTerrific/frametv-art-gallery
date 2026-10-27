@@ -1,0 +1,188 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:db18b28fb573be7178ef63be850a6cfd08004a22306f7ddecd85b7318c072ac5",
+  "claims": [
+    {
+      "id": "claim_92212bba56c944f8afd92ca3da701d66",
+      "statement": "The TV gallery page loads the list of images first and shows it at once, then requests missing thumbnails in sequential slices of eight, merging each answer into the page, and stops walking as soon as one slice comes back empty.",
+      "evidence": [
+        {
+          "resource": "repo://frontend/app/routes/tvGallery.tsx#L17-L20",
+          "version": "repo-lines-v1:sha256:240053d34f93eb459980107ab8279e39ac171f40dca80ba70ad5d00d2dd95cb9:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYWE1NTY5OGNmOTFhNWQwYTVhMDE0NGFlZDUwZWRhYmU3YzJiOTNjZmUyYTFiOGRlMjk4ZDFmMDk0ZTU3NWUwNiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZTU0YTVhZDQyMTRiYTAwMjgwNjIxMzYzM2Y1MDNjYzMwNDkzYzA1NmQ0ZjY1N2RiNDMwY2ViZDJkMzg0Mzg3ZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOTgzOWU2OTEzMmViMmUzMTU5MWE3OWJiMDJjNGZlNzRiOWQ0MjQzYmVmYWE0OGEwMDZmYjZjY2E5NTFmODJhNyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZWY2N2VkYzljOWMyZDI3YjM3ZmJmZTFkZDA1Nzg4MTU2YmI0MzA3NzVjYzM5M2NiY2ZjNmFkZTZlZWRhYjQ1MSJ9"
+        },
+        {
+          "resource": "repo://frontend/app/routes/tvGallery.tsx#L59-L95",
+          "version": "repo-lines-v1:sha256:625044a7e889753b28f4860b8207c1098ff078944ee20953472be33ca30ef541:eyJzZWxlY3RlZExpbmVDb3VudCI6MzcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBhYjA4Y2E2MzA0MGZjMjhmNDljNDBhODE2YzY4YjBiODdiMGQ3OThhNThmMjQyNmI4OWQ2ZjFlMTI1MGUzOGUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjUzZmI5M2VjY2ZhYzExNmZjN2Q4OGQ3OTk1ZGRkOTJiOTdiMmEyZDQ5YjMxZDM5NmU2ZWEyYjFhZmFlOGQ4MGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjAxNDU4ZWEwYjZkNzFhZWI1YWYxZTc2YWUzZjMwYmQ1MGE5M2MyYjc5ZmFhZTg0NTRmOTg5Y2U5ZmE4ZDI5YmEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImZmNGNhMDFlMWEwNjEzZWNiNGQ4MTA1MGE5ZjZjOTAzNDhlZTZkODUwYWI5YzVkYWRlZDM3YmM3MWM3MTJlZjYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_b90a3abbfc0742ea8ae53ce8f84ed4fa",
+      "statement": "get_tv_gallery_images builds the list from the TV's content list and attaches only thumbnails that are already cached, without asking the TV for missing ones, and runs with the stall watchdog enabled.",
+      "evidence": [
+        {
+          "resource": "repo://backend/utils/frame_tv.py#L721-L778",
+          "version": "repo-lines-v1:sha256:21ef2a2307faf6563628d7039ce57403ffc50a48cdf192a404b6eb559ce05ae4:eyJzZWxlY3RlZExpbmVDb3VudCI6NTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZlMWM4YTcxZDljOGRiMzU3ZWMwZTc1MzkyMTRmOGM5YjVjZjYyODRhZjI2NWFjNjljMjdjMmU4ZGJjNGJiMTAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM5MjIwNGM2NWY1MDJkYzE2NDU0YjYyNDA4NTZhOWFiN2FkZTAwM2E4ZTlmODYzMzNlYzBiN2M5ZTQwOTQ5MWQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImExODgyZDk5OTQ3NjdhZmI2Y2Q4NjRmNWM2NzVlNmJlZGIxYzcyMzUyMmVjYTQwOWNmZGQ3NWE3ZDczNWMxNzUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY5ZTM5OGE3ODU5M2I1MmQxZGEzNjQ5YzM4MTM2N2I5N2Q1YjY4ZTgwM2FjZDQwODE1NGQwYjBjZjJiZWUxYzMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_68aff2f975b04089beae72fef3296cc0",
+      "statement": "The image list is cached in memory per TV for FRAME_TV_GALLERY_TTL seconds and the cache is dropped immediately by uploads and deletes, so changes show at once.",
+      "evidence": [
+        {
+          "resource": "repo://backend/utils/frame_tv.py#L178-L178",
+          "version": "repo-lines-v1:sha256:4c273685c52ed8016a5e4d81c5b047f8a957385bee7b8f008ffb65f7f25e6bd2:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNGMyNzM2ODVjNTJlZDgwMTZhNWU0ZDgxYzViMDQ3ZjhhOTU3Mzg1YmVlN2I4ZjAwOGZmYjY1ZjdmMjVlNmJkMiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNGMyNzM2ODVjNTJlZDgwMTZhNWU0ZDgxYzViMDQ3ZjhhOTU3Mzg1YmVlN2I4ZjAwOGZmYjY1ZjdmMjVlNmJkMiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMGFhNjBkZTY0NDM0ZjNkNDVhYjJhNmM0ODNiYzI5MmQwZGMwOGFmZGQzOGFmMWU2N2NmYTE0ZTIxYjdkOTVjYSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYWFkMDgwNmQ3NGYzMTFkNWM2NDc3MDQxOTBhNWQ1ZGI3MmZkZTMyNzkxOTNkNGRhOTM0NTAzYmZhOWQ5NTFlYyJ9"
+        },
+        {
+          "resource": "repo://backend/utils/frame_tv.py#L234-L234",
+          "version": "repo-lines-v1:sha256:4c273685c52ed8016a5e4d81c5b047f8a957385bee7b8f008ffb65f7f25e6bd2:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNGMyNzM2ODVjNTJlZDgwMTZhNWU0ZDgxYzViMDQ3ZjhhOTU3Mzg1YmVlN2I4ZjAwOGZmYjY1ZjdmMjVlNmJkMiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNGMyNzM2ODVjNTJlZDgwMTZhNWU0ZDgxYzViMDQ3ZjhhOTU3Mzg1YmVlN2I4ZjAwOGZmYjY1ZjdmMjVlNmJkMiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYjU4M2E1MDgwMTllZDEyZWVlMWQ1ODA5MjMyNWJjYjgzZDNiYTIxOTdiOGExOWY3YTYwZmIwZjVhODI2Y2VjZCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMzY2NmRhMDViOGI0N2MwNzUwMTExYzA3NmU0YjFhNjQwN2MzZGY0ZmRmNjE2MzgwMGE0NGUyMzU1YmJlNjczYyJ9"
+        },
+        {
+          "resource": "repo://backend/utils/frame_tv.py#L69-L89",
+          "version": "repo-lines-v1:sha256:f59083fed0cbf42e73af8d3a367104664b2cbecec6b4cb842a546fdc13d356a8:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI4ODJmNDIwZTVkNDZiYzUzYmQyNTZhYzNiNGZiMThjZjk1NjU1MzcxNmY3YTIyMjAzNjQ4MjY2MjE4ZmNlMjYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFiZWY1YzczNWFjYWU2YzI3MzlhMmFkZjkzMDEwZTkyNjY5MzY3YmY0M2IxNmQ1YTE2ZDM3OWQ4MGQ0ZDAyZWQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImM5NGM0ZGNhY2JiMTc3OTA3YjY1ZjlhYmRmYzBiNjBlMmM0ZGE5Y2NmZmZiOTNjMTAyMjhmNjRiYTViNzU0OWQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBhY2I2MzZiNWZlM2YwZmI3ZDNjOTg0M2YzMTlkZDI0M2UyMDNlOTNmZDQ5NGE4MWVhMzljYTNkMTJiMDI5MjYifQ"
+        },
+        {
+          "resource": "repo://backend/utils/frame_tv.py#L799-L799",
+          "version": "repo-lines-v1:sha256:4c273685c52ed8016a5e4d81c5b047f8a957385bee7b8f008ffb65f7f25e6bd2:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNGMyNzM2ODVjNTJlZDgwMTZhNWU0ZDgxYzViMDQ3ZjhhOTU3Mzg1YmVlN2I4ZjAwOGZmYjY1ZjdmMjVlNmJkMiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNGMyNzM2ODVjNTJlZDgwMTZhNWU0ZDgxYzViMDQ3ZjhhOTU3Mzg1YmVlN2I4ZjAwOGZmYjY1ZjdmMjVlNmJkMiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNWRkNzRhZDhmYzg3N2Y0NGY2ZDY3Y2RiYzNkM2U5Mzk3ZTRkZjk3OGE5OTAxODYwMDIzYjQxNzhjMzdiMDFlZSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNWY2ZWJhY2MxN2EyMTg0MDlmMzM5ODhkMzM4Njg5ZTY1YTIwMTRkZjI0NDVmODIzMWE3NjY3ZDE0YzQ0ZGFkMCJ9"
+        },
+        {
+          "resource": "repo://backend/utils/frame_tv.py#L847-L847",
+          "version": "repo-lines-v1:sha256:4c273685c52ed8016a5e4d81c5b047f8a957385bee7b8f008ffb65f7f25e6bd2:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNGMyNzM2ODVjNTJlZDgwMTZhNWU0ZDgxYzViMDQ3ZjhhOTU3Mzg1YmVlN2I4ZjAwOGZmYjY1ZjdmMjVlNmJkMiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNGMyNzM2ODVjNTJlZDgwMTZhNWU0ZDgxYzViMDQ3ZjhhOTU3Mzg1YmVlN2I4ZjAwOGZmYjY1ZjdmMjVlNmJkMiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNTI4NzQwZDdiYjQxNjViMGUzMDdlZjZkN2FjYjRjOTQwMTRmZDE2NTVjNzAyZDM4OThhODkxZWVkOGQxNWFjMiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiODNmM2U4MDgzNzIxZmYxNWFkNDE4ODNiMjZhMDQzZDExZjcyZmE3OGY1YjM0YmQxOTVhMjcyZDhlMmQ2ZjNkZiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_c7cb8a1a073149ad8dacb4d3ea9613e6",
+      "statement": "The batch thumbnail endpoint accepts a list of content ids and returns a map of content id to base64 image, responding 404 for an unknown TV, 400 for a malformed list or more than 500 ids, and 503 or 504 with tv_unavailable true when the TV cannot be reached.",
+      "evidence": [
+        {
+          "resource": "repo://backend/app.py#L1295-L1335",
+          "version": "repo-lines-v1:sha256:015866034bdfe9dfa18d48c7922aa9db7e71a49ff8e1fbf2a3141e97d19dbe3c:eyJzZWxlY3RlZExpbmVDb3VudCI6NDEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJkM2M3MDU2MDA4MWE2NzYwZTBmYzZlNTlmOTMwMzRlZGEzMzQ3NmU5Mjg5ZTc0ZDBhODcwZWNmZjhjN2JiYTYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdlYjcwMjU3NTkzZGEwNmY2ODJhM2RkZGE1NGE5ZDI2MGQ0ZmM1MTRmNjQ1MjM3ZjVjYTc0YjA4ZjhkYTYxYTYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijc3ODZlMzBmZjFhODkwM2ZiN2JkZmI3MWMyZmJjZjY2NTQxNDJkMjUyOTY1ZTA0YWI5YTAxMTY0MTlkYTdlMjgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImU2NWY0ZDJhNjBmODk1YmFlYzlkYzJhNjA5NTUzNTRlZDVhYjVlYzkwNWE5ZDA0OGVkYjU1NTBiN2YwMGVlODQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_f57b36763be041ec929caeafe85dee54",
+      "statement": "Thumbnails are cached in memory for 60 seconds and on disk under instance/tv_thumbnails per TV with no expiry, and a disk hit refills memory.",
+      "evidence": [
+        {
+          "resource": "repo://backend/utils/frame_tv.py#L33-L49",
+          "version": "repo-lines-v1:sha256:ca57df3f1f3e5279751012a42c91e282b5be49a066b175b470b47a70a1e24ef1:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMwMTgwY2VmMmY3NTU5NTM4NTk4MDZkZTJiMGRjYWVjM2ZhMjJmNWZmN2Q4NGMyYzNjZjY1ZTVhODVmZTg4N2YiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVjNTA5OTcyOTZjZDFmNTUzMTIyYmU1NTNmNGU1YTY3YzUzNmRmYTA0NjAzZmZlY2VkYmIwZWIyYTE3NjlhYjgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImU0N2FmYWFhYzgxMDQzNTZkYjljN2M2NjkyNzhiNDY5Y2Q4MzBmYTdmY2Q4YWNmM2FlYmM0MTMwNjliZWVkNDQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImIzMzc4MTdkODBjMDQ0OThhN2Q2NmJlMDA4NjRiMGI1MmJjZjNmMmQ4MjAzYjY4YzUzMDhkMjY4NjBlMDNmMzAifQ"
+        },
+        {
+          "resource": "repo://backend/utils/frame_tv.py#L438-L445",
+          "version": "repo-lines-v1:sha256:debefccd23a225994afc7d88a6e736e1ab667014b727565f11ff786bef1f13a4:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZTE1MjE1Njc4MWRkN2NmZmUwOGE0YTBiNjg4YmYyM2Q0OWUxYjdlZDBlYjRjMWY1Y2I5MTBkY2Y4ZTMwOTMwYiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDkxMmIyNTVjMTkwMGJiN2M5ZmVkMDA5ZjhmMDcwZTE4N2ZlZGI3ZThiNWVmODdjOWQ3OWU4MTU4Y2IxNjRkYiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNmJlMTFjNzRiOGNlNWJmYzQ3Y2ZlNzFkYzBlM2RiNmNlODRmNWIyZjA0YTEzZmFiOTAxMGVhNjgzYzhjMjZmNCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMjA0Y2MwNDRmMDkxMjFkYzk1ZDI5MDJkOWI4ZWExOTY3YjIwZWExZjhiMTNiNWZhMTFlZjFiMDhlNGJjYzk1MyJ9"
+        },
+        {
+          "resource": "repo://backend/utils/frame_tv.py#L92-L112",
+          "version": "repo-lines-v1:sha256:6d01ff20aa78eb685ec2bb15005e180ed5029f5abd264a06988cf59f49d0bf64:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAzZDcwZTk1MGIyYWI3Yjc5YTg5YmJlNjQyNzI0ODAxOTE2OTEyMjFjNTM2NjgwOWQ0ODI3OWRlYTliOTcwZDUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZiODYwNzZhYzY4YTk4ZThjYWE4OTRkODc1ZTkwNWNlM2VlN2ZhMDNlN2E3ZjJkYzU3YjRkYzlmYTFiZmQ0ZjAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk4NTQ2NzBjY2ZjMjQ3NjNlYjBlOTE3MjdhMTA0MGZiMmUzN2M5MjczYWM4MjViODMwN2Y3ZDhkNWNmOTc3NGQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijg1MWRhZWNhM2I0MmY4ZjVlYmZmYTZjMTRmMmQxNWFkYmMwNTkwMGJhMTMyZmQ0NTU5YjIzMWY4N2RlMjA0Y2IifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_9128af37380648baba0bec64ca470775",
+      "statement": "Content ids beginning with SAM, the TV's built-in art, are never requested and are recorded as previewless, and an id remembered as previewless is skipped for FRAME_TV_NO_THUMBNAIL_TTL seconds, 3600 by default.",
+      "evidence": [
+        {
+          "resource": "repo://backend/utils/frame_tv.py#L448-L467",
+          "version": "repo-lines-v1:sha256:e1fbf2b85de5844989a295b814a8fe8ffd3d2968733369a08da6dd10198c45ae:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc3MDA1NmYxMDY3NzVlODg0ZWQxNmUxZDhmMTBjZTAyNjAzMGQzMGRkNDBhMGRlMDA5ZThiYTk2MzUyODdjOTgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ4MWFiYjFlOTFjMDQxNTk5ZTQzNzRkN2NkODIzZWJmN2ZhMmE4NTRmNjVhYWJjMzMxYThjZjQ0MzNkYmMzMDQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijg3MzczYTM0ZWU1YTdjNjAyZDcwMjNiMGNjODk4MWEzOWU4ZGUwZDU0NGFjN2FlOWNiMjBhMTIyZjhjYTI4YWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjUzZTE0NDBhNDIzOTNjZTM5YmY5MjRhNTYxNDYyOTE2MTgwOWZmYjY2NjdlYmZmMDVlYmM0MTM0YzY4NGRmOGEifQ"
+        },
+        {
+          "resource": "repo://backend/utils/frame_tv.py#L527-L531",
+          "version": "repo-lines-v1:sha256:d21cb99c951cf0423a5bc0b3bb39a12134d878ab2e2a4dbf2608b51f5b2fe64a:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNzBkNThkMjc2OGY2MjI3NDViZThiMjRlMjllN2EwMTgyMzAxMTkwNGFiZTAwYjRhZTNhM2IzMDhlMDA4NGQwMSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYzkxN2Q4NTQ2MGJkYjgyOTRiZmQzZjdiOGJiODM4Mzg2Yjc5ODAwNmY4MDNhZjU3MTA2YWUyODI5ZDdiODU5OCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYWIyZmJhNTA0MzBkN2Y3NGNlYWNmNmYyMzNkOTcyMWVmZGM3MTkwNDFiYjFhN2U0OGY5N2U5M2JiZTZjNzNlMSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMmU2YjViNjM1NzE5Y2UxNTUxM2Y1ZjJmMTcyODU2MjVkMWM3NGYzMTE2NjQ4NDRlYTZjOTA1NmJlYWQ3Zjg1YyJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_ea4867d826ea4a98b19e5b54c49e8d88",
+      "statement": "Missing thumbnails are requested in batches of FRAME_TV_THUMBNAIL_BATCH, default 8, because the TV streams a whole request down one socket before returning, so a single request for a large gallery either finishes entirely or is lost entirely; each batch is saved to disk and memory as it lands.",
+      "evidence": [
+        {
+          "resource": "repo://backend/utils/frame_tv.py#L504-L523",
+          "version": "repo-lines-v1:sha256:a1fd452210033e67c9f292162d183ed48015dd179a2a754bb19adea833bdfe8e:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM2NzViMzlmNWE0Y2UwY2YxZjM5NGRhNTg1MGQ2NmIwNGQyZDMxMTcwNzJkNWZmNzU5YWI0NmI1ZTAyZDc2NWQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjlmODczZThlZDA1N2RiZmM5ZGJkZTA3NWI1ZTQ3MmU5NWE3MjMzZmJjODBiYzY4NDI3OTJhMmQyMWJiZmNmZmEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjBhMzk4NWZiY2JiODQ3M2ExNDNlYjlkZDQ5NjI2M2NiMjUxYWY1ODFiMjcyYjU3MmYxMDNiNzI1Njc2ZDRmODAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImFiMmZiYTUwNDMwZDdmNzRjZWFjZjZmMjMzZDk3MjFlZmRjNzE5MDQxYmIxYTdlNDhmOTdlOTNiYmU2YzczZTEifQ"
+        },
+        {
+          "resource": "repo://backend/utils/frame_tv.py#L545-L552",
+          "version": "repo-lines-v1:sha256:c75bd75aed14222bb9ed922a5d43baae9d8f81d002bf5f21b0f175a9229ecf08:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiY2QyNGZiZmFiNGY1OWY2OTRlNjNjYjQ5YTVlNTJmZGY3YjNhODJlMTBmOGFkNWExY2ExZTJjMTE3MGRhZGNlZSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNTMxOGRkY2ZhNzkwM2VlMDQ4ZWM2ODgyZTU1MGNkODc0YjEwMzVkZGMyZjkyNGRkMjViNjBiYmJjZjA5NzZhZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiY2Y0ODgyOGNmODM3YWU2MTA3ZDM2MTc5MjZhMmRlYzRkNjZlZmFhMzIyZTRjOTNlYTM2ZDQ4MjE0NzUwZGQ0YSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNmZkZWY4NDBkNjc2MGQxMmZjZjBlM2QwYmIwZmRiOTk5MmIwNDkzZGZlNTA0MjljNWE2YmQ2ZGM5NmQ4NjA2MSJ9"
+        },
+        {
+          "resource": "repo://backend/utils/frame_tv.py#L571-L589",
+          "version": "repo-lines-v1:sha256:a1a2683db77992dfe321ab8f6da986c9467a9e10dca102a4d15e72817599e617:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVjZjVjMjA2NGVjNjdjNjJmNDdjMmUxMjkyOTkwZTY3MGE0ZjM1ZmNiNzFiMWQzYjU2YzhjZTg5ODNhYzUwNzMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZiZDNhNDA3NjJlN2YyNDg4MDY1ZGM4ZjAwNTdjMWJkMjk5YzE0NzYzOThiOWQwMWIzZGNlNzA3MzlkMWMzOTUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImM2ZWM1YWViYzM3NzUwODQxZjY5MzRmZDczZTA1YzI5YzEyNzA4MDUxMTZmMmMxMmY0YjJhNjBjNjFmMzRiN2UiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM4MDM3ZDA1ZWY0NTRiZGI3MWNlYmQ3NmRkZWEyMmM2NjM0Nzc4MDIxYzUyMmI5Yjc4YmYyMjg2OGU1MDc1NzAifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_3dbb131da51444a1a73898655ed58421",
+      "statement": "A batch thumbnail answer is keyed by fileID.fileType such as MY_F0440.jpg, and the key is trimmed back to the content id before filing because keeping it verbatim once left every thumbnail under a name nothing looked up.",
+      "evidence": [
+        {
+          "resource": "repo://backend/utils/frame_tv.py#L470-L481",
+          "version": "repo-lines-v1:sha256:62b0a1ad31c913af30147cf532bc773cf59089c8a5d3ac57d14d2425a69d10b8:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRiNGZkYTE1MWJkM2MzNmYyOTE0NmQxNjU3OTBlNmE5NDE4MWYxM2ZkMDk1NDhhYjc3YjgzNGZjNzY1MDI5MDEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc5ZDE1NmFlOGNiNzNhYjI2NzM5YjhkNzJhMGEwMmU1ZTRiZjUzNDRlNTNhY2NhYzEwYjU1NzdkMjY4OGE3ZmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk5MzQyYTVjNTg5ZjcyNjVkMTUwZTllZjRjOTdiMjM2MmZiMTdiMWRiMTQ4YzI2MzZlZjcyNGRkMjJkMjQ3YmIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjkxZDViMTRiMjk5MjAzMTZjZjhlMGI0OGIwOGI0NjI4ODBhMDJmNjkzN2M3NjNiYTkwNjZhZGI5NmIyNGI1ZDcifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_37b4cd686ef74a5485db919dc5bbe313",
+      "statement": "A batch that raises is treated as a stall, and its images remembered as previewless, only if frames arrived during the call and it ran close to the stall timeout; otherwise it is logged as refused and the images are retried one at a time.",
+      "evidence": [
+        {
+          "resource": "repo://backend/utils/frame_tv.py#L586-L616",
+          "version": "repo-lines-v1:sha256:ded0b9c058639a27f4307299b2684f061377b23fce1b4321812c664352cf462e:eyJzZWxlY3RlZExpbmVDb3VudCI6MzEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZhOWFiODBlODQ3ZjZkYWZmZDA3ZTIyZTRmYjA4OTc3ZWQ3MmM2MDU4ZjA5MDQwYTgzY2QwYzQ3MjMyMjFmMDIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk2ODI2ZDYxNDY2ZjMxM2E3MDc4YjI5ZmFiNjY1NjE2ZDgzOWM3ZDVlMTM0NjA4MGU0ZDI4ZmFjZDI5YTQ5NmQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQ5MWQ1MDlmYzlhM2FlZGJhODVlZGIzOGUzMzVlZjVhNTMyNDZkMzc1ZjQ5NzdlYWQ4ZGY3Yjg0OTE4MWRkNDQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjA4ZGJiZjNjMWFkZTE0OGM1ZjEwNmZlOWI2ZWI2YjUwYjRiOTAzYTgyNzNiNGQ2YWFhZDMxYTE2OTM2N2I2YTcifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_d2d6ec29fd32459dac82f5ce69d42fdf",
+      "statement": "Images left after a batch are fetched one at a time because one unservable image takes its whole batch down, and the walk stops when nothing arrives within FRAME_TV_THUMBNAIL_FIRST_ANSWER seconds, when FRAME_TV_THUMBNAIL_GIVE_UP connection-level failures occur in a row, or when a whole batch and each of its images singly produce no answer.",
+      "evidence": [
+        {
+          "resource": "repo://backend/utils/frame_tv.py#L567-L577",
+          "version": "repo-lines-v1:sha256:5e96cb3d83d339703e3a406d25a8fc7863945c6dbb008c28426b8cfdb4883c46:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE1MGZkNzRhNGIwMDBiYzhiY2M4NmY2ZTM0YzI5OGYyNzdhNjc4YjU3ZDJmZDhiZmMxMjZhODUxY2EzODAxYWMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVlZWJlZGYwNTZlNjE5YWQ5ZjUxYWNiMWFlNmE3OTg5MDIyOTZiNjg5ZTM2ZjE3OWVmMmM0NTFhMDQ5ZDM0N2EiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk1YzM2MjRjMGRkZmJjYjJiYTk5NThhMjM1OWUwYmE2Yjk5MGUwOGRiZTRhYzVmNzI1MjVkMWM0ZjNlNmExODMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjgzOTllNjI0NzY4YTY2Mzk2OTE0NTFiZmNjODEyNjk1ZjRkMjkyMGJjMzc2ZjM2ZjNhYTQ2OTZiNDA0MWIyNmMifQ"
+        },
+        {
+          "resource": "repo://backend/utils/frame_tv.py#L628-L666",
+          "version": "repo-lines-v1:sha256:fe0c9e57fbc3a1897305abf2253cc798c23afc848ffbe42aeca496c0a19b7aa9:eyJzZWxlY3RlZExpbmVDb3VudCI6MzksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE3MjI0NjAzZWQzMzNiZjcwNjFlYWMyYWJmNWM2MWMzZDkxN2FjMmRiODI5MzcwYzE2OTk1NjkwMDA2MTNmM2MiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVlZWJlZGYwNTZlNjE5YWQ5ZjUxYWNiMWFlNmE3OTg5MDIyOTZiNjg5ZTM2ZjE3OWVmMmM0NTFhMDQ5ZDM0N2EiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjRjNmI2NzU5NDdhMDE0Mjg2MTY2NGYyYTdhZDY5ZGZjM2VkN2UzMDUxYzk1Mjg4YWQyMmJlYjA4MzllNDNhNmEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjJjODZiYmQzYzhiYTlmMWYyNDA1YTQyY2NiMDM1NmFmMjgzYjRjNWRjY2FhYTQ5ZjkxMmIxNDhlNmZiN2UyYTgifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_f8803bf36a0c4051b4fa9fec4fc3fb9a",
+      "statement": "Refusals are recorded with the number of answers received so far and judged after the walk: an image refused before the TV went on to answer for others is remembered as previewless.",
+      "evidence": [
+        {
+          "resource": "repo://backend/utils/frame_tv.py#L554-L562",
+          "version": "repo-lines-v1:sha256:56c1684e62d5461cd38dc8edd6a8d7c362cfe88ff78e035bdd7b9a61f7d1cf61:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNzZiNTQyZWVhMDE0NDQ1YTIyY2FhZDQwMTEwN2FiZGJhYjI3MjA2MWZkZDQ3NDYzMGE0NTc5ZjEyZTcyYjczMiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYjY5MjAwNTIzN2E1ZWFiYmY2MWJlNGM3MTRiZjMxNzgwZWU3YjNhM2U1ODQ0YjQ4OTZjZDM5OGUwNzEwM2Q2NCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNjcwYzhiMDBhYTY1NTY4MTQ2OWM1MDhjMTRhOGEyZjg1YTM2ZDRkYTIwODdhMWFjYmQ3MTA1MTUwZTZmNmFhYyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZjE1NzNjOTI0ZjFiNjNkMjJhYjg0Zjg1ZDkwN2QxOTAxNTY2YmJiMThjMWFlYTkyMDQzNGViZDFkOWU3ZWE1MSJ9"
+        },
+        {
+          "resource": "repo://backend/utils/frame_tv.py#L668-L675",
+          "version": "repo-lines-v1:sha256:45647131fb9ab86aaf049c910c73912fa820fcf28a59146284cae8256e20ab29:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMTRkMDI2M2EyN2U5ZTI5ODgyNmMzM2Y3NDgxYmQ5ZTU3MTRhZThjMzA3NjU1MWZiMzg4MWYxZjA3MzVmMWViMSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZGM5MGMwYTRhZDI5Y2EwNDZmMjRhZjI4NTFjZTgwZDk1MjBkYmQyMzgwOTcwNTI1YjVlOGMxMzRjZmUxNWE2OSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNTlmYzZiOTlhYWJmNGQ4ZTgyZDA5Y2UwMThlZmExOGQyZGE5ZTkwMWZjMzZiOTJjZmRjNGFkYzBmY2RhZmEzOSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZjc5ODgwM2JhMzM5OTAwMzAzMmRmMTllM2I1NWM0MGNiZGEyOTNhZmYyYzEwZDFkODZiOWEwMDY1NjFmMmJhZiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_80e21e4e07d540f7b44e15cd286eccd5",
+      "statement": "get_tv_gallery_thumbnails runs the collection inside a TV call with its own overall deadline, FRAME_TV_THUMBNAIL_DEADLINE, and the stall watchdog, and if the call raises a TV error it logs one warning and returns whatever was cached instead of failing.",
+      "evidence": [
+        {
+          "resource": "repo://backend/utils/frame_tv.py#L678-L718",
+          "version": "repo-lines-v1:sha256:bf9b86df2da877aa8421c66787c91e991218a32ccd0e374e438acb24893abafe:eyJzZWxlY3RlZExpbmVDb3VudCI6NDEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk4OWE0M2M1MWY2ZThkMDgyYjQzNjllNzZlYjZiNjUwNzhkZWYzY2VhNDQzMjg5NWYxNDk0Mzk3MzI0MzZiNTEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRlYjYyM2YwZGMwMjJjNWZmYmI2ZGJkYzRmOWU0OTIzZjcyMTk2ZWU0Nzk3OGRmMzM0ODIxNmM1YjExOTBiMTYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImM0M2VjNTk1MTY2ZjViNzgwYjdhNzc5NGI2OTVkM2M5NTdkNWY3NWJkMDY2ODVhOWE4NmM4YWRjNzA1ZThhYTciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU0NWYwODY2ZDAxZDQyNzBiMzA5MzVkN2I3ZDY0ZDE0ZGMwZTY5OTIyNTAwZjFjMjBmOGYwOGY3NGQzZmJmNDYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_4be783585e274300a67784c04c631a20",
+      "statement": "The line reporting that a TV has no preview for its built-in SAM art is written with print rather than the logger, so the log level setting does not affect it.",
+      "evidence": [
+        {
+          "resource": "repo://backend/utils/frame_tv.py#L530-L530",
+          "version": "repo-lines-v1:sha256:2802120e6b935942cd65fecd8c1ad86bdc74a4698cb748ddbe6c17c068924996:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMjgwMjEyMGU2YjkzNTk0MmNkNjVmZWNkOGMxYWQ4NmJkYzc0YTQ2OThjYjc0OGRkYmU2YzE3YzA2ODkyNDk5NiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMjgwMjEyMGU2YjkzNTk0MmNkNjVmZWNkOGMxYWQ4NmJkYzc0YTQ2OThjYjc0OGRkYmU2YzE3YzA2ODkyNDk5NiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiN2JmMTkyODlkNDk3ZGQ4MmFjNWEwZDE5Y2Y2ZDA5YzdiZWFiYzdiMTlkMTdmYjkxOWM0MWE2ODY0YTRjYWU2OCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMTQ2YmQ2OGNlMTQ2ZjlmMDU1YzFmMzk2MmQ2YTFiNzYxYWFmOWUxZGQxYzdlZDM4YjZkYzI5NWFjMmYwYTRlOCJ9"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.5.1",
+    "at": "2026-09-21T02:31:07.302Z"
+  }
+}

@@ -1,0 +1,114 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:6377c1ae87bd3d80cbd28cdd8de16809c8b10b8c204766fd32d68e5e648a6ac5",
+  "claims": [
+    {
+      "id": "claim_7f445f624dfd4910946ecf6d0bda5f6c",
+      "statement": "conftest points FRAME_TV_DATA at a folder under the system temp directory before anything is imported, because app and the TV modules read it at import time, so tests never write uploads, database or thumbnails into the working tree.",
+      "evidence": [
+        {
+          "resource": "repo://backend/tests/conftest.py#L5-L11",
+          "version": "repo-lines-v1:sha256:85e2962e6c77c46ca3e69299a17a4664403f6697a8b57298ecfe3e5c3d9212e6:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMmVlMTM0ZTUzMjNmOTQxNTJhNWRiZjY3MzJhODUwZmJjN2E1YzQyNTk1ZTA1ZDFhMGRhZTAzNDQ1ZGNmZWM2ZiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDRmZGYwMjY4ZWEyNzE5MzA4ZGRjZWM5ZmZiYmNkZDI5ZDcyYzQ2YWRlZGQ5Y2QwYTk3OGZmMTNkZjE2YTRmOSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNmFmMGFhNGNhZjYxYzZlZTg2N2ExZDBjMDc1NjlkZjdhYTU3MzZlYzU4NWQ0OTgyOThmYmZhYmIzZDM3N2JlNSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_54af8c8105a24d1db62d252eb61dc7d8",
+      "statement": "The test extra of the backend package contains only pytest.",
+      "evidence": [
+        {
+          "resource": "repo://backend/pyproject.toml#L35-L35",
+          "version": "repo-lines-v1:sha256:e7bd8894151127d4eb2768396bdb5c18842c5f249dd27ad3645e0b4fa900d6e1:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZTdiZDg4OTQxNTExMjdkNGViMjc2ODM5NmJkYjVjMTg4NDJjNWYyNDlkZDI3YWQzNjQ1ZTBiNGZhOTAwZDZlMSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZTdiZDg4OTQxNTExMjdkNGViMjc2ODM5NmJkYjVjMTg4NDJjNWYyNDlkZDI3YWQzNjQ1ZTBiNGZhOTAwZDZlMSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOTQ2YjE2ZjU5NTY1ZmM4OWZjN2MzZGUxMTEzOGU2N2EwYWFiMzM0ZGY2ZmFjMzU3NjIwMjAzMDZiYzg1YTE1MCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiODkzNGNmMTZiMjBhZDVjZjU1NzZjYzVlZGJkYjgwNTNkZTMzZGIwMTQxNjJmMTg3MmM1NWM0Mjg2Zjk0MjI0NSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_952620fcc433464db9b5e9ac4b7f1ac4",
+      "statement": "The TV timeout tests exercise the call wrapper without a network by passing open_remote=False and using an action that sleeps in place of a stuck read, with a module constant STUCK sized to outlive the deadlines but end before interpreter shutdown.",
+      "evidence": [
+        {
+          "resource": "repo://backend/tests/test_frame_tv_timeouts.py#L1-L27",
+          "version": "repo-lines-v1:sha256:1f3a2d674bd0256ea5516315cb87b73c39a60dfdfee31dea05758f3740464edf:eyJzZWxlY3RlZExpbmVDb3VudCI6MjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFhMWIwY2RhODlkNGQwNWRhMjYzYmZiYTJlNTBiZWFjYTYxZDUyMGJmNWY5ZDhiYjdhZDNmOTdmNjRkNzgyYjciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ0MTE3MzcwNDM3ZTA3NGQzYjQ3N2FjOGU1NjQ3OGQ5ZWM1MTM1MDMyMTE1ZTMyNDY0YjgwMTBkNjQ4NWQxYWIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjUzNzRiYWM2ZmFjOTQwYjIwNzA2YmJiNTM4YmVjNzdmNGI0YWQ5Y2Q3OWIwNDA2ZWI1MTg4ZGZhNzgxZjliNGQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_ce13bea8f643413083f5d0c992630ef3",
+      "statement": "An autouse fixture in the timeout tests deletes the cooldown marker directory before and after every test so one test's failed TV cannot put another test's TV into cooldown.",
+      "evidence": [
+        {
+          "resource": "repo://backend/tests/test_frame_tv_timeouts.py#L44-L49",
+          "version": "repo-lines-v1:sha256:e7939a7d1724e97c464acd73e0177d7282abba86c009ac0e0c514a51b178a646:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZTJjMWYxMDBhOThjMmZjOTYzYjlhMzMyYmJmNTZiOGZmZmIzZTgzYmMwZTdjZjRmMjA3NzkwNzgxNDA2MGRmNiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiN2ViNzAyNTc1OTNkYTA2ZjY4MmEzZGRkYTU0YTlkMjYwZDRmYzUxNGY2NDUyMzdmNWNhNzRiMDhmOGRhNjFhNiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiN2VmYzVlZDMxMjA3OGY2MzM5MzE0OTBkOWJjMDU2ZjliZDA1NjU2MTgxNGMzN2U3NDgzZTUyZWIzZTY3MjhhZiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMmFmYWQzNjhmNjY0MGM3N2UyMzM2NzIzNDRkNmMwMjI2ZjYyYmMyNzNiY2I3NGFjNzhmZDlmYjMyNTExYjllMCJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_b2ef2b3fc39246f394a140e98a33bdfc",
+      "statement": "The migration tests run flask db upgrade in a separate process against a throwaway data directory because the in-process fixtures use create_all and never touch alembic, and they check that a fresh install ends at head, is stamped rather than replayed, upgrades idempotently, and that an existing database still migrates.",
+      "evidence": [
+        {
+          "resource": "repo://backend/tests/test_migrations.py#L1-L8",
+          "version": "repo-lines-v1:sha256:9ca10683b2bf21a11ab9e6b0edef60b68c26dbd4433b6502fbf3fb76216d1e83:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZDhkMDg4NWRhNmNlNjU3MDE0NjUzZDY2ZjU3YmFiNjM0ZmYzMTRiOGFkMjc0MGYxZWQzN2MzYjkxNWFmZTRlYyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYjY4ZjI3OTk4N2M2ODZmZWE2YmU3Mzc4YzBjNzcwY2NlNmI1NGM4MWZmNDNjMDc3ZjNhNTg1MTE5NzhkYzFiMCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjAsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDY5NWU5ZjBjOTc4YzM0MTBhZWQ0YzA5OWYxZGQ4MDg0MjVkMTMxOTRmNDc0NTI2YWIzOTZhNzJkNWU5ZjNmYiJ9"
+        },
+        {
+          "resource": "repo://backend/tests/test_migrations.py#L70-L100",
+          "version": "repo-lines-v1:sha256:afec723172c6232746703c6e530c3d4aab8dedd27f61bc1f806e7c8cbfa299e0:eyJzZWxlY3RlZExpbmVDb3VudCI6MzEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU2ODc2OTkxN2UxYWRlNzFjODUzOTk3MzYxZDQ4YzU0MDRjNmQ5MGVkYWRhZmIwMWY5OWEyZmVkYzQ0NjU0MjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdlYjcwMjU3NTkzZGEwNmY2ODJhM2RkZGE1NGE5ZDI2MGQ0ZmM1MTRmNjQ1MjM3ZjVjYTc0YjA4ZjhkYTYxYTYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE2ODk3MTJkMmIyMWRjMmM4ODI4YjdjYWZiMzI5YjcwZmVlMGNkNTdlZjgxODE4MWM2NDdjMzY4ZTU0ZjgyNjgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU2ZGNiNGM4MjZiZTA4MGViOTFlZjI4MTQ0MmI0OWVkZmUxYzNiZmE1MzZiZGFkYWUxYzM3NDM4MGQxYTEzYWMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_95f1463aefc94ebf979180ddf76f5eb6",
+      "statement": "The migration tests find the head revision by reading the revision files and fail with a clear message when there is more than one head.",
+      "evidence": [
+        {
+          "resource": "repo://backend/tests/test_migrations.py#L24-L37",
+          "version": "repo-lines-v1:sha256:d230955509adb1330d65201c4f5515c6c4ffc0a14754a8aa24f5a99fb6674b08:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJlZmQ2NTFlYjY3NTkyOThkZmRhOGEwZWEwNTM4MDY1YzA5NDYzMWM5NGY2ODg2NGY5MDlmM2M1NmNmZTI4N2MiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdlYjcwMjU3NTkzZGEwNmY2ODJhM2RkZGE1NGE5ZDI2MGQ0ZmM1MTRmNjQ1MjM3ZjVjYTc0YjA4ZjhkYTYxYTYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImY2MTE4MGU0MjE4MzA5MTlkYmY5Y2M3YTE1YzRjZDExZDE3NjcyM2JmMDM3YWI1MDlmMzE1ZmY5OTVjNWRiZmYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijc3NTQ5OTUxYmM0MjJhMWM1Yzk3NjUwOGI4OTk3MGUzM2VjZTFkNGU1MTVmN2YyYmI5ODJjOTkyMmQzMDQ5NTMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_d70e8c32a96844f7a9e85424b53d6be4",
+      "statement": "The Reframed import tests patch the HTTP layer so that a request to an address outside Reframed would fail the test, and use internal addresses as inputs that must be refused.",
+      "evidence": [
+        {
+          "resource": "repo://backend/tests/test_reframed_import.py#L70-L95",
+          "version": "repo-lines-v1:sha256:00762585b45d43664578d1a95227afbcb8ac3f427928d1ebaa1346ba9b854e59:eyJzZWxlY3RlZExpbmVDb3VudCI6MjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdlYjcwMjU3NTkzZGEwNmY2ODJhM2RkZGE1NGE5ZDI2MGQ0ZmM1MTRmNjQ1MjM3ZjVjYTc0YjA4ZjhkYTYxYTYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQzOGJmN2VkMDdlYjBiZjgwYjUyNTU4NzVhMmFjMWIzNzhjZmU0NzhjOTM2NmY1OGE3NDA5NmZkMGNkMTM1ZTciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUyYjgyNTlkNDBhOTkxYWYyMDJkYTY3YTk5MWE2M2I1YThkOWUwMzc4ZjlhOTkzOTFlNzExMWZjMzM5OTM3YmYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUwZDZkOTQ4YTlkZWVmMGQ3ZTZhZDNiMzAwZDNiNzVlODVlOTlhMjA5YTZkMDVmMTEyNGI5MTNkZmIyNzYwMzMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_501ac47a1fc74ad5a43860f3eadb851e",
+      "statement": "The timeout tests stub describe_tv_state for every test with an autouse fixture so nothing reaches the network, keeping the real function in a module constant for the two tests that exercise the background probe.",
+      "evidence": [
+        {
+          "resource": "repo://backend/tests/test_frame_tv_timeouts.py#L29-L41",
+          "version": "repo-lines-v1:sha256:7124de43ad09ca1760dc54c0bed8cbee8e7235e7d172883c43bfb04d1943f00f:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjkwZTRlZWQyNmM2YzljNjAxNTFhYjM5N2ZiMjNjNGFhMGI1YjIxZjQ0YTFkZWE1MWIwZWZkODg2Njg2NDAzYmQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjUwYWE5ZjI4NDg3ZWFkOWQ3NmUyZGUwZjMzNTE2ODM5Y2U1Yjg3N2YxNjJlZjVlOWYzNGQ4NGI1NmIwYmNkODgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImFkNjY1Y2I5ODVlMDFmNTc5ZTIxZmU5YWI1MTg4ZDBjNmE0N2IzMTI2ZGEyMTEyMzFkYjUzOTI2MTBhYzUyZWYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjAyMGJjZTMwYjljYmNjZGRjMDZmNjA1YWU1YzZhNzAyMzc0OWFiM2MzMzE4NDEwNTEzMjJmMzhmZGNhOWZmMTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_42f0172bc5a94a5a91063d018d90b29c",
+      "statement": "test_running_alembic_leaves_the_app_loggers_alone guards against alembic's env.py disabling existing loggers when a fresh database is stamped.",
+      "evidence": [
+        {
+          "resource": "repo://backend/tests/test_migrations.py#L126-L140",
+          "version": "repo-lines-v1:sha256:b4e1e93722ae7247c4ab0663507dc709a366dab45535cc2f6a9b92aa2e3578fc:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE0ZjQ2MGY3MTJhZjRjMjRjMmNiZWJmZWVmMWI1M2E2YmY2OTA0MDk3NTYxMGE2YjY1NTE5NTA3NDQ3ZGE5ZGYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjIwNWMzNzQ3MzJhZDE3MzQwNzkyZDk2YjRjMjBmMTk2Y2UzNjRjM2RmNzc3NThiZjRiODUxY2E3ZWM4ZDBiYzciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA4MTRhMmU2YjcwMTA5YWIzYmRiMTIyY2I3MDgwOTMxYmJiZWM2OGMyMzRmMWZlZjczZWNhYzU0YjM4ZWJhNzUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjcwMzBjODFmMTc2NjYxY2U1YzliMTFmYzYxZDdmMmRhY2Q2MmY2YmI2NDNjNDMwZDg2M2MxM2IzZDdkOTAyYjEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_866c4708d6c64435abf72ff3fd6c7136",
+      "statement": "The backend tests directory holds 18 test files with 141 test functions, including test_tv_diagnostics.py, which covers the TV probe, the reachability and diagnostics routes, and the code carried by a failed send.",
+      "evidence": [
+        {
+          "resource": "repo://backend/tests/test_tv_diagnostics.py#L52-L165",
+          "version": "repo-lines-v1:sha256:d9cb24acec282eaaac92a054c309a01d1118e2550fe08a98f9b59cb16d515f91:eyJzZWxlY3RlZExpbmVDb3VudCI6MTE0LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiJjZDAzOGJjNDM3M2YwODMyZmM2MGI4ZDc1MGUzOGUwMTU4NDI2NDRlNjNiMmUwNWJjNWZkNDcxM2E4ZGNkNWU1IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiIwYjlkMmFlY2NmOTNiOGY5YWZjYjA2OWVkYTFmNjFjY2JmMzMwN2IzMzZlNmE2NDE0NjgyZDUwYWIxZGE2ZGY0IiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiI2ZDBmY2VkMWVmY2JlNmRmNWYyN2ZlYWI3ZmU1ZWI3YWRjMWI0Y2JmM2YzMGRkOWE0YmY5NjY5M2QwYzJkMWE4IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiJlODMyMGZmNDIwY2MzOTVkOWU2OTcxNTViZTQ0ZjY1MGZjOGM1ZWFiMjllOGE2ODBjYTQwYzJmYzk1NDQxZGYyIn0"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.7.2",
+    "at": "2026-10-27T18:55:06.371Z"
+  }
+}
