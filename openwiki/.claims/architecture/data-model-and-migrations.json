@@ -1,0 +1,158 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:7272d8dae6301a28de0cd4ac516339d338cf43cf117b76386ed8c0bf7a036e2f",
+  "claims": [
+    {
+      "id": "claim_ce88836a1f524c7fb727dc918d7df78a",
+      "statement": "init_db runs at module import, always calls db.create_all, and stamps alembic at head only when the database file did not exist beforehand; an existing database is left to migrate normally.",
+      "evidence": [
+        {
+          "resource": "repo://backend/app.py#L141-L155",
+          "version": "repo-lines-v1:sha256:25a7936d5ed3f2dcd1a98d0c94a28350265055845658043e529cabb2673a6086:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjgyNzExNjQ0YTc4NWEyOTMwODcyMTEyZmIwZWM2MzlkZTU2ODVjNjgxODU2MmY3NmIwYjRlYTVhNTI5YWZmZWUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhjZmMyNWMxMjEyYWY1NmM5ZTA5MTk4NDM5Y2M0NDA4MjA2Y2FmNjljZmJiZTc5ZTg0YzRmNmRjZTdhMmY0MjMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjM5NzViN2MzYjUyMThjMWEyNWNhMWI0ZTEzMWJhZDU1YWM3MzU3NDUzZTI3MzZjYzBlNTU4YWQwNjVjYzQzMGUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijg3Y2E5OWJkMWFjZjc4MjU4ODBkN2U5MjEzM2E5NTFkMGNkMWQ0M2YyOTgzMWVjMGE4NjgwYTU1Y2YyNjI4YzcifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_b235b50df3654227a12dd22200a7a9f5",
+      "statement": "The container entrypoint runs flask db upgrade before starting the server and exits with status 1, printing an explanation, if the upgrade fails, so the app does not start against a schema it could not migrate.",
+      "evidence": [
+        {
+          "resource": "repo://backend/entrypoint.sh#L4-L31",
+          "version": "repo-lines-v1:sha256:d6b2573914e45cbde4ef46921510a953ca61075bac607abb0031ec50eb5b0f6e:eyJzZWxlY3RlZExpbmVDb3VudCI6MjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjljODc5OTFlZWRiMzFhMjcwNTE5NzAxMjUxYzYwMGY5MzkxYTNjM2ZlNWQ4NWQxYzVjMGIzZjRlNjRjNzkxMDkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ2NTc1YzhmYjk2NDlkNzZjZDRiMzdmZDIwNzk3MjQ2Y2FjYjQyODFkMWFmMzA3MDQwNjFiNWEyMGJkY2QyNDMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUyYzMwZTc3ZjA3OGI0MDg2MzczMDg4MzQ3ZDUxODhiNzY5ODQ5YTFlNDAxNDQxZTE0ZjE0MjBiZmYzNzI2NjIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjJlMTI0YjMwMTEzZGQyYWJiZTY4NGQ5MjJjMDk3YWE0OThjZTVhOGE1ZjIyNTVhOTQxZmYyYzFlMDVkNGUxOTYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_7c2ffde7b038466eb1399bf8822236a1",
+      "statement": "Going back to an older image does not roll the schema back: an older image lacks the newer database revision, so the upgrade fails with Can't locate revision, and the entrypoint explains the two recoveries (run the newer image, or rewind alembic_version by hand).",
+      "evidence": [
+        {
+          "resource": "repo://backend/entrypoint.sh#L12-L27",
+          "version": "repo-lines-v1:sha256:049c0615d88416a67d40ae309bb5ea540fe41aca0b43119a1868344dd576392c:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFlNzU2MDAyZDQwY2JmMDYzNmVjN2Y2MjhjYmI5NWEwYThlN2Y1YzI5N2JlNjc0MTQ4MTU5NzM4MDM2YTc5YmQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc4YmU2ZWIwYzc5NDY4YTA2N2Y2YmFlNGZmZTcyY2U4OWJjY2IwMGUxZTdlMThhNjJlYmViMzM5MjJkMDQwYTgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijc0YzA4YTVlNDUwMGVjMjQ3ZjJhODQwNTU1ODAyOTQyNDMxNjJmMzZkYjM0MTVmZWU1Zjk2MTQ1ZDRkYTQ1NzUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM4ODllNGI4NjQ4NGNmZmJhZjI2NWQyY2NlNjNmNzZhNjRiOTBiODMxZWQyM2QzODI2OGQ3ZDZjZDg5MmRkNDMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_e2d55a622e45441eb507e9f25d7dafe3",
+      "statement": "The newest alembic revision ce4757b9dde8 adds the app_settings table and follows f2a4d1c9e8b7, making the revision history a single line ending at that head.",
+      "evidence": [
+        {
+          "resource": "repo://backend/migrations/versions/ce4757b9dde8_add_app_settings_table_for_github_cache.py#L14-L14",
+          "version": "repo-lines-v1:sha256:7180d67add59d129e3889088e2227ca6b51b01146d1bd14927aff9e84d82162a:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNzE4MGQ2N2FkZDU5ZDEyOWUzODg5MDg4ZTIyMjdjYTZiNTFiMDExNDZkMWJkMTQ5MjdhZmY5ZTg0ZDgyMTYyYSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNzE4MGQ2N2FkZDU5ZDEyOWUzODg5MDg4ZTIyMjdjYTZiNTFiMDExNDZkMWJkMTQ5MjdhZmY5ZTg0ZDgyMTYyYSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTM0YTkzOWQ4NTc5MWMzNzdlNWQzNzQ3Y2RjZDQyYmU0ZjFlOGZkMDUyYzdmMDJjYzc5YzQzMjI4ZGQ5ZDdiOSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMmY4YjA5YTc1NGIxYTcxNWM2ZDllMTE4YTFmNjljOTYyYzc1OTA1MTI3MmE5M2IzMmZlYWVmZjM0MDg4ZTc0YyJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_ca7cf56cf1f248fa8cd28ff58a414454",
+      "statement": "The content-hash migration is idempotent: it adds the sha256 column and its index only when they are missing, and creates the index outside the batch block because creating an index inside a batch makes alembic rebuild the table, which trips over a column create_all already added.",
+      "evidence": [
+        {
+          "resource": "repo://backend/migrations/versions/d3f1a7c25b90_add_image_content_hash.py#L27-L43",
+          "version": "repo-lines-v1:sha256:fb779295ddbdcf999a1075799a9079996665ad1f82d2d4cb7a8569ec86773cd1:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY1NDJjMzY2ZDAyZTAxYWUzZWZmNTkzNzg2OTQ4MDg3MTNiM2U4NDIxYTcwZTI1Mzg0YTMyNWUxNGFjM2E3MjkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVkYTA4ZDE2N2RiMDQ0MWRkMDkxYjU0MGNjYmVhMDE5MzBjOGY4ZmNkOGQ1MTg5ZjA0ODIxM2JhNmNiODhiOTciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE3OWIzYTkzNmFmZDdkMTYyZmI3ZjcyOTRjZGI1ZDMzOTgyNGJmODFmYTQwYTY2YTU1MzViNjMzODY0MWI3ZGUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjRkYjhiZmFhNjMwY2I4MDYwMGExZDBkNjhlMWY4N2IwZTNhYWI0OTQ3MWY0ZGJlZWIwMWJiZGU1Njc4ZWVmYTIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_7cc32a053a4a4773a546120dc05cd902",
+      "statement": "The migration environment takes its engine from the running Flask app's migrate extension, so migrations target the same database file as the app.",
+      "evidence": [
+        {
+          "resource": "repo://backend/migrations/env.py#L18-L24",
+          "version": "repo-lines-v1:sha256:1d4803aae98a16b8705c23a068f3ea9fa5c034e244cd75309197aab9d55bb321:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNTQ3MThkNWUzNDgxNmFjNmU4MTc1NTk1ZTQ3ZjE4MzE2YTMyZjgxMTBmNTY4NTNjOGU1N2RmYjJiMmY1MDc4YSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMTMyZWViNjNhOTczOTgxMDJmMzhlNmE0MzVhMzJmMDY5Y2RiMGQzMmQ4Y2ZiMDYxOTFiNzIwZGJhNDQ5YTE1ZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNzhmYTBmY2M2MGQ2MmRkODYxMjZhZGE3NzViMmVlOThmMTUzZjY1MzdjMDJlZjJjOWI4NjA5NjhhNzQ1M2EzMiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMmFlNDM1YWVkMjI2MzQ2YjBjMmVhMjk3ODJiNTJkZjE4YTZkZDE0MWMxMzVjZmQxOGYyMTE2YjYyMzA0YWE1MyJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_fb8484b908c7431eb9d1d9299a0cc7c9",
+      "statement": "Image.sha256 is a nullable, indexed content hash used to spot the same artwork uploaded twice, and stays null for rows that predate the column.",
+      "evidence": [
+        {
+          "resource": "repo://backend/models.py#L20-L27",
+          "version": "repo-lines-v1:sha256:9ba5756f16505f11e04e5fe9fd2f4e47583d438d521713506dfcc9c31c7c99a9:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMzQ3MWQ1YzgwZGRiZDNiMjMzMDYzOWExZjAzNGYzYmFiMDY2YTc5MDRlMDY1MDY2ZDQzYmMxZDgzMmJmMDY1MiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiODI1ZTVhYzI1OTg3Nzg4YzY5Y2NkMmJhNGMxZjE1YzE2ZTMxZjJkYTczNzM3ZWVkNzUyN2E3YTEzZmQ0YTEyMyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiM2JhNGI1MWM2ZDViMmRlYjc2OWJhNjVhNGI2ZDY0ZjAwMmMyZWVhMjg3YmYyMThhYmNhMjg5MDFjZWNjNzJlNCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiODBhMjMyNjk4OWI0NDgzYjgxYTQ4MWZlMGEyNWE2ZWMxMzIwMTYxZjM1ZTUzZDIxY2M5NmVmMWUxODlkODEyZiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_54586b8cbb8c4f70b27e5c1db670e705",
+      "statement": "Deleting an Album deletes its Image rows because the relationship cascades with delete-orphan, while Image.album_id is nullable so an image may belong to no album.",
+      "evidence": [
+        {
+          "resource": "repo://backend/models.py#L15-L23",
+          "version": "repo-lines-v1:sha256:c11644887bf671f63d7eca3437077967c3df3fae77a11eba1d346102bdbdc670:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNWYyYjc0NThlYzFjMzE4YWFhZTYzYzA0ZmUzOWU2NjliNzFiNGE5NDAzMDU4YTMyOWU5ZjI4ODU2YjhkZTIxYSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiM2ZmOTNmMmRkNDkzYjg3NTM2ZGQzZjkwOWIwNzcyZWIyYTk1Mjg4ZDliMDY4ZmVhMjAyZjExMWQ0OWRhNGVkMCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYTBmMWZjZDQ0YzNmZWU4ZWNiMTc5YjY0ZmY5ODM2NTQ0M2ZiN2Y5MjdmYmMzM2M2NGZhOWQ2MDdiNzc4ODY0ZSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYTdjNTNkMGRmMGE4NGJmMjk4YmYwN2MzZDQ2NTY5NzMyM2IwOWMxOGU1ZGYyOGVhZTMzZjc4MTlkMjljNDlkOCJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_c3b261db26834bc397c37149cfee8bf6",
+      "statement": "Removing a TV removes its UploadedImage history at both the ORM level and the database level, since tv_id has ondelete CASCADE and the TV relationship cascades.",
+      "evidence": [
+        {
+          "resource": "repo://backend/models.py#L51-L67",
+          "version": "repo-lines-v1:sha256:a084eb0432b07505e328a36f22f36d2a8cb96090893678b3999853d778054225:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg0OTc0YmNjNGVjYjI2YjhiODMxYjRhNTRhMDgxNjFjMjI2M2U0NzJmZjExMjc5ODY0ZTFlMGQ2NmVhZWE5Y2UiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU5MmNlZTIzY2JhZjRiMDMyZWJkMjJiNzRmZjZlNWQxZGVlMmI1OTFkODMzNzczNDhhMzUwMDUzMDc3ZDNhMTAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImJlYjhmYTUzNDUzMTJmMzczNzM1ODc3NzVhMGJjOTVkYjRkNzdjNGU1ZjMxYTc2ZmU4ODJmYzc4ZTIwMGY1NTQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI0MTU2YjE2MWFjNWFjOWFkMDAwM2QyY2QxMTVmNzE3MzNhNzU3MDQ0YTg0ZWU1YzlmMjdkNzIwNzFhMjI1NzMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_1a272d2ccfd04bae80a3d14c8710fc8c",
+      "statement": "All slideshow state is stored on the TV row: enabled flag, album, interval in minutes, last run time and last content id; default_matte, one_slot_mode and delete_other_images_on_upload are likewise per-TV columns.",
+      "evidence": [
+        {
+          "resource": "repo://backend/models.py#L29-L49",
+          "version": "repo-lines-v1:sha256:076e52b652d0d3e8914b23de111569bcc64f10d80044269c3c1d99cc5d6fed9f:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjEyZTJkZTA0MDA5ODExNGM5M2M1NTc5OTg1OWJhMTA3ZmI5NjU5NjUxYThhZjdiNzc1M2Q5OTMwOTQ5ZTAwZDQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc5NjUyNTlkYmQ2ZDFlZjEwY2ZmMzVkNzVmODViYTI5OGY2ZjM1NDI1MDg1OGVkYmE2YTNiMTAwYjgyNzU1MDMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZiY2NjMTBjZmQ1ZTE5Y2VmZmYyYzdlNmMwNzU2OTA1OTVhYWMzNDQ4OWYwMGQ2N2YwYThjYTY1OGZlNzNjYTMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjNmYjY1ZDc4ZDE1YjMzYzE1MTFkNDNiZWQ0NTkyOTdmZTFlNjMxNGU3MjIwMTEwN2I1NDkwNDk5OWY2MTM4MjkifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_ad948265a90843e1bc8cbe17317d721d",
+      "statement": "ProviderConfig.as_dict includes api_key in the dictionary it returns.",
+      "evidence": [
+        {
+          "resource": "repo://backend/models.py#L69-L86",
+          "version": "repo-lines-v1:sha256:b76b8e41f3f50cfb5bd0e44c10ca2cb98f19a7b83347099b6db24630f716ba79:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU3YzNjNjRlMWI4MmYwMDNlZTVlNTg5MzdhYTQzZDQ0ZDUzNmU5NmUxYWUzMTE4OGQxNzM2YzRiMDIyMDM5NjYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjgyNTFiZmFiY2ZiNmQ4OWZkOWY0ZTNiN2JjNGExNzRmZDkwYzk5ODE4NmU0ZmRlMmM4ZmEzNGU2ZDVjMjkzYWEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjIwMzFiY2RlMzkyMzg2NzFjNzQwYmJiODIyYWUxZjZkZTdkMWExMTllZjg5YzJhZjg3YTQwOTBmMzRhY2NkOTIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_c81c0c2c77f04388a348c43c79098e35",
+      "statement": "When the app runs frozen the migrations directory is taken from sys._MEIPASS, and the --upgrade-db flag runs alembic upgrade inside an app context before the server starts.",
+      "evidence": [
+        {
+          "resource": "repo://backend/app.py#L1490-L1496",
+          "version": "repo-lines-v1:sha256:041f00c0cb849381dd1ecec8114498e9dad53af260ef9f010f078ed7cf41ba48:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNTExODFiMmNlZGU4OTA1NGNjYjRhYmY1ZDcwNDZhMGQ2YmEwMWI1MzgxZjFhOTg2Mzc4NWRmMjBjODY1ZTc1YiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOGM5MDE3NTM0OWU3ZGY3OTMyMWQ1NmYwMDc1OWJmNGI2ZDE2ODA4NGI5Njc2MGExMWQ5ZGIyOTczYWE5ZDdjZiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMWE0YzhhOTkzYTZjNzRmMDk5MWQ1YTU1NDhkZDY5ODA3NmMzNzkyNDg0N2VhYmYwNGY3NDk0ZTM3N2U4MTNkZSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNzc3Nzg5ZTU3M2QzOWU2MzNiNDhhODU2OGQ4MzkyY2QyNWQ5ZGJjZTQ5NmFjNjA5YTM5NDAwZGJhMDBlZTQxNiJ9"
+        },
+        {
+          "resource": "repo://backend/app.py#L80-L83",
+          "version": "repo-lines-v1:sha256:36a4c128d3521273fbadd574bb102d818b9524b25f28bda5f623369eeb13d280:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYWQ1ZDc2MmYwNjkzMjE2MjRmMGJmNWY5MDNkMmE3ZWIzNWMwYWMxNzQxNDU3ZjQzOGEzNWUzMTZhZmZmODc4NSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZGY3YmM4YzZiNTc4YzAyNDdmNTBkOTZkMzgwZWJiNTUzZjk2MDg2OGU2YmJmMzgxMjkxMWEwM2RhZjgwOTdmMSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYWViYWQ5MGY2NGQwZDVhZDU4ZjliNGIyYjQwNGQzM2FkMTM4NGQ1YjFmZjEyMzNmNzQyMmIwYWJlNjhmOGY3OSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYjIzNWRjMzU0MTU2MjAxN2M2MzA5ZTM4YmEwOGRhN2M5YTFjYTk1YTZhZjZmMjI1ZWU0MmUwOTMzYmNmZTM5MCJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_d05c84c42a304e8e85e7ca1a02a58a56",
+      "statement": "Deleting an Image also deletes the UploadedImage rows that reference it, because the image relationship's backref cascades with delete-orphan; without this, deleting an album holding an image already sent to a TV failed with an IntegrityError on the non-nullable image_id.",
+      "evidence": [
+        {
+          "resource": "repo://backend/models.py#L58-L70",
+          "version": "repo-lines-v1:sha256:0590b5bc809474545f0b2637eff2ce531dd03549511f11ec9bef62321565599c:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVmMWE0OGM5MjUzZWQzOWZmMjEzNmIzNjBhNDZhNDhlZmFmNjNkMTYyODdlMzJhNTc2OGM2YjRjMzVkY2Q5NTIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU5MmNlZTIzY2JhZjRiMDMyZWJkMjJiNzRmZjZlNWQxZGVlMmI1OTFkODMzNzczNDhhMzUwMDUzMDc3ZDNhMTAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjNmODQ1ZTQzY2M5Y2Q4NDVhZWEzNTQ2NmY4MGZlOGM5MmFkYTJlNGVhZWVhZDY0N2NkZDg2YWNlZDQ1ZGY1NmMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI0MTU2YjE2MWFjNWFjOWFkMDAwM2QyY2QxMTVmNzE3MzNhNzU3MDQ0YTg0ZWU1YzlmMjdkNzIwNzFhMjI1NzMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_6d1fc012e9fe4d6a871d8f1136e93de2",
+      "statement": "migrations/env.py calls fileConfig with disable_existing_loggers=False so that stamping a fresh database at import time inside the server process does not switch off the app's already-created utils.* loggers.",
+      "evidence": [
+        {
+          "resource": "repo://backend/migrations/env.py#L12-L18",
+          "version": "repo-lines-v1:sha256:64f8bf706a408f87b3c909f486e286f447b0da4772534bb65f705ab430d6c5bc:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYTI3N2M2YTg0ZmQ1NzE3YmIxZWVjNGQwNzQ5MWQ5MzBkOWYwOGMxMTgzYjBjYjM5MmMyMTI4Y2RiNzI3NTM5OSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYzRlODg0NTk1MjYyYjQ2YWUyMWRmNmUyZmRjZTQyYTQ0N2YxZGUxMmI0NTg2MTgzNGI3MjE2ZWQ5ODE0MTk4OSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYzFkMTkyZTE4Zjc1Yjk3NDFiMGE2Zjc4MDU3Mzc3MGJhMWQwZDU3ZjU2MjA3YTA3M2NlMTgxNWZlZWI1ODVmNSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNzhmYTBmY2M2MGQ2MmRkODYxMjZhZGE3NzViMmVlOThmMTUzZjY1MzdjMDJlZjJjOWI4NjA5NjhhNzQ1M2EzMiJ9"
+        },
+        {
+          "resource": "repo://backend/tests/test_migrations.py",
+          "version": "repo-file-v1:sha256:26f69f968a1db9dbd82d6305fb2f72b42da1d44fe6d8cf2b49e15f5c536767bb"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.5.1",
+    "at": "2026-09-21T12:08:00.549Z"
+  }
+}

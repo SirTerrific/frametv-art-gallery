@@ -1,0 +1,218 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:3156aee6b9901dbc6e5313f89519b28f86595aeb1f298a1cab712cb89b043a53",
+  "claims": [
+    {
+      "id": "claim_2ded0f1da12b491d81791bf240e3350c",
+      "statement": "Every TV operation goes through _tv_call, which enforces the deadline from outside by running the work on a thread pool and waiting on the future with a timeout, because the samsungtvws library waits on a read without an overall timeout.",
+      "evidence": [
+        {
+          "resource": "repo://backend/tests/test_frame_tv_timeouts.py#L1-L8",
+          "version": "repo-lines-v1:sha256:1e7d4d22c11e021b9ddbfabd8f6b86dca9f6365e8aa93ee8b88c58f44d746946:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYWExYjBjZGE4OWQ0ZDA1ZGEyNjNiZmJhMmU1MGJlYWNhNjFkNTIwYmY1ZjlkOGJiN2FkM2Y5N2Y2NGQ3ODJiNyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDc1ZDQ1ODllOTFjYzhjYjk3NDg4OWRhYjAxZGUxNWRiMTU3NGNhMTBlZWM3MjkwYTEwOWJmNTg4Yzk0ZTAxYiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjAsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMjAyMmQzZmE1MTA0ZmI1MDFiYTRmOTIyYTQ3YjY5Y2U4YzE5ZDA4M2NkM2IyOGRiMzg3Y2FiY2Q4ODg2M2VkZSJ9"
+        },
+        {
+          "resource": "repo://backend/utils/tv_connection.py#L383-L493",
+          "version": "repo-lines-v1:sha256:6f9fc2816dd9c73230b525a746976f7c3a35ee7d70253ff32aa6b0506683358a:eyJzZWxlY3RlZExpbmVDb3VudCI6MTExLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiJjMjM0YjZjMDkzZTAxMTNiZWYzZDgwYTY2M2E1ZTQwOTM2YzJmODI2NmRlN2VmODZjMDAwNzE4ZmFmYjkyODI5IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiIwMTU1MDU1NGRhZWVmOTQyYWQzNjFkZGMwMDYzZGZhY2FjMWMxM2IwNjFkNmQ0YmFmNzc0YmNkNDUyMzliOWUwIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiI2YjE0MmQ5OTBkZWE1ZDFhOTE0NTVjMjc0ZTc0YjM4YjgwMWY4YmQwYjJiOGExNzFhNjA0MGNhNjIwODEwZWM0IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiIxNTllMzQ1Yjc2MWJmZTVkZTc1ZDMxYWQ0NTFhMTMwYTcyZDk3ZWM2YTZjZGI4NmNlYTBhMjY2ZjliZTA4YmZiIn0"
+        }
+      ]
+    },
+    {
+      "id": "claim_760f3aba66034b12aba85fd52a38740a",
+      "statement": "frame_tv.py re-exports the exception classes, session class and helpers from tv_connection and defines a thin _tv_call that supplies the session factory and busy wait then delegates, so the session factory stays patchable in one place.",
+      "evidence": [
+        {
+          "resource": "repo://backend/utils/frame_tv.py#L894-L920",
+          "version": "repo-lines-v1:sha256:0e1bacefd6a67b0e75532ecc87522439ce0839a4f07c7373a0d834a9a7862066:eyJzZWxlY3RlZExpbmVDb3VudCI6MjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMyNWIzZWMwOThhOWIzMGEwODEyYjZiZjk1NjQ3N2I5NzQzYTU5ZjRmYjVkODg2YTVlYzIzYzg4N2NmZTM0YzMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM5MjIwNGM2NWY1MDJkYzE2NDU0YjYyNDA4NTZhOWFiN2FkZTAwM2E4ZTlmODYzMzNlYzBiN2M5ZTQwOTQ5MWQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjljYmE4Njc4MTdkNWE0M2IzMjMzY2Q5ZTIxZDc2YzgxMmQ0MDI5ZTcyN2I2ZDY4NDRmY2Q5YTQwMGFkMjY5ZDYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_16a55f814342465b8f2c88b925269dc4",
+      "statement": "Only one call talks to a given TV at a time: a per-IP thread lock is backed, where fcntl exists, by a per-TV lock file taken with non-blocking flock so it holds across gunicorn worker processes, and a call that cannot get the lock within its wait raises FrameTVUnavailableError.",
+      "evidence": [
+        {
+          "resource": "repo://backend/utils/tv_connection.py#L216-L265",
+          "version": "repo-lines-v1:sha256:0c226e5a2ed6e4c48eb0594d532eadf1e80a5e1850209b2f04fff351fbf612c5:eyJzZWxlY3RlZExpbmVDb3VudCI6NTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM1NDdkMTAyZjBjY2M4Yzg5NDNjMDM1ZjViNTkxNGIwZmE0YzlmMzUxYjNhNDg1ODEyYjE0YmNhMjM0YTBiZmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY0MGI5MjNkMGFhMDc5ODNkNDJjNDRhNjM4NDQ1N2RhMDIxZTQ4YmU0YjgzYjc0Yzc5OTgxMDA1MGM2YzZiZjUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijg1OGQ4MGFlZGRiNjI3ZGUzZTE4MzNjM2UxMGU4NjVkY2ZkNTllZjQ1MmMzYmY2YTEwZGRkYzY1NThlZWVjZjMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBhNTQ2ODBkNGE5MDk4YzUwYTc3NDRjNjU5MDNiNWU5ODMzYjFmMzY1YTg0YmE1MmQyYjRhZjQwNzU0Y2M0MTEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_4694b9092a1a49ea82ed10a2f3be16ad",
+      "statement": "A background call waits for the TV lock only as long as its own deadline, while a deliberate action (skip_when_down false) waits up to the busy wait, 90 seconds by default, so it can queue behind a long read.",
+      "evidence": [
+        {
+          "resource": "repo://backend/utils/tv_connection.py#L395-L395",
+          "version": "repo-lines-v1:sha256:66c9d74e4f58dc941e9f6cb0dd75179e554982db88733cb0a2aa9b6422cc72af:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNjZjOWQ3NGU0ZjU4ZGM5NDFlOWY2Y2IwZGQ3NTE3OWU1NTQ5ODJkYjg4NzMzY2IwYTJhYTliNjQyMmNjNzJhZiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNjZjOWQ3NGU0ZjU4ZGM5NDFlOWY2Y2IwZGQ3NTE3OWU1NTQ5ODJkYjg4NzMzY2IwYTJhYTliNjQyMmNjNzJhZiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZmFkYzM5NTA1NWYzZmQ0YmFlZTY2MjAzZDExNzQ2MTkxNGYzZDY5YjJhNTg3MzM5YTQwMjg5MTEyNzI0NTdhMCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDE4ODczYWE1MmRkZmYxNWIyYjAzODdhYzdjZDgzNTYzNTQ2NGQzYjQzNjBiMjBiMTIzMGU0YjQ1ZDM3MjhiYSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_dd1cf537b34342c29b200111f419d30d",
+      "statement": "Upload, delete, play, brightness, power-off, art mode and matte changes are deliberate calls that pass skip_when_down=False and so ignore the cooldown.",
+      "evidence": [
+        {
+          "resource": "repo://backend/utils/frame_tv.py#L177-L177",
+          "version": "repo-lines-v1:sha256:ca44bde6d55e65fae68f8d55ec66d6f8060a15d1a02bed8e673722b70f426376:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiY2E0NGJkZTZkNTVlNjVmYWU2OGY4ZDU1ZWM2NmQ2ZjgwNjBhMTVkMWEwMmJlZDhlNjczNzIyYjcwZjQyNjM3NiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiY2E0NGJkZTZkNTVlNjVmYWU2OGY4ZDU1ZWM2NmQ2ZjgwNjBhMTVkMWEwMmJlZDhlNjczNzIyYjcwZjQyNjM3NiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTk5NzkxN2UzZWNjOGUwNWE3ZjBkZTA0ZTdkNzc4MmQ2ZDQ3MDUzNzJmMDE1NzQ1OTBlODA1MjBhNmRlMzlkOCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNmRiNTEwMmRjMWVkMDBiMmZiYmQ1OWY5NmUxN2NlODFkMWE1MTNkMGFiYjA5NTQxZGRlOTE1ODA1YjhiYTUyNCJ9"
+        },
+        {
+          "resource": "repo://backend/utils/frame_tv.py#L233-L233",
+          "version": "repo-lines-v1:sha256:850972f888718e294c802cedde36f2841fa4090d5b01455df6e4bab97c576b00:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiODUwOTcyZjg4ODcxOGUyOTRjODAyY2VkZGUzNmYyODQxZmE0MDkwZDViMDE0NTVkZjZlNGJhYjk3YzU3NmIwMCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiODUwOTcyZjg4ODcxOGUyOTRjODAyY2VkZGUzNmYyODQxZmE0MDkwZDViMDE0NTVkZjZlNGJhYjk3YzU3NmIwMCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNzk0Yjg4MTNmZjM5Y2E5ZTdiN2FkY2NlMGNlMmIxYTg0N2NiNTk2NTdhZWNhODA5Y2I2NGU1NzUxNWEzZTdkNCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMzc4M2Y5Yzc5ZGEzYjZhMzI5NDgxODliYjFiMTkwN2NkNzc3YTE3ZTM3ZTM4MjBmNjNmMDQzZTRlNmExNmJhNSJ9"
+        },
+        {
+          "resource": "repo://backend/utils/frame_tv.py#L249-L249",
+          "version": "repo-lines-v1:sha256:e554e600433e20b0d24a8f00e2372c3b55b0ffb412a007432ad9ea05ae897556:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZTU1NGU2MDA0MzNlMjBiMGQyNGE4ZjAwZTIzNzJjM2I1NWIwZmZiNDEyYTAwNzQzMmFkOWVhMDVhZTg5NzU1NiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZTU1NGU2MDA0MzNlMjBiMGQyNGE4ZjAwZTIzNzJjM2I1NWIwZmZiNDEyYTAwNzQzMmFkOWVhMDVhZTg5NzU1NiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMTc2MjY2OGFhNTcyODAxMzFjYjU2ZGE5YWQ5YTA2YWQyYTFhNWMzN2U4MjUxZGJhMzYwMWZhYmJkNTkzZmE4NyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMDg5ZGYzZWE3ZjdhZjY3MjNhNDRiYTMxNjhhM2E4Yzk0OWEzOTZiYzkyZDUyOTY2ODA5MDk0OTNhNmRmZTc3MCJ9"
+        },
+        {
+          "resource": "repo://backend/utils/frame_tv.py#L357-L357",
+          "version": "repo-lines-v1:sha256:f55f4947cc03292d1c9322ca0e4df887bd6c6dfae0c8e4515c07df93d1f5beb4:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZjU1ZjQ5NDdjYzAzMjkyZDFjOTMyMmNhMGU0ZGY4ODdiZDZjNmRmYWUwYzhlNDUxNWMwN2RmOTNkMWY1YmViNCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZjU1ZjQ5NDdjYzAzMjkyZDFjOTMyMmNhMGU0ZGY4ODdiZDZjNmRmYWUwYzhlNDUxNWMwN2RmOTNkMWY1YmViNCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNjY0YjM3ODNjOGM5OTVkNWJmZWIxODE2ZmZmZGI0ZGY2ZmUzMDEyOWNiYTc4OGY2MGUzOWJjNTUxNTA5MzQ2ZCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMWVjYTgwNzU4OTNhYmU3NDhkZTY4NTdjNmYyMDBhZjA5ZDQ0MTlmMDU4MDNhZWY5NWRmMTFkYmE2ZDY5MDQ0YSJ9"
+        },
+        {
+          "resource": "repo://backend/utils/frame_tv.py#L371-L371",
+          "version": "repo-lines-v1:sha256:e554e600433e20b0d24a8f00e2372c3b55b0ffb412a007432ad9ea05ae897556:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZTU1NGU2MDA0MzNlMjBiMGQyNGE4ZjAwZTIzNzJjM2I1NWIwZmZiNDEyYTAwNzQzMmFkOWVhMDVhZTg5NzU1NiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZTU1NGU2MDA0MzNlMjBiMGQyNGE4ZjAwZTIzNzJjM2I1NWIwZmZiNDEyYTAwNzQzMmFkOWVhMDVhZTg5NzU1NiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMDI0MzQ3YzIxZWRiOTUwMjU1NTI2M2UyOGRiMGRjNjZhM2IwNzZiZTIwMTA2ZmI1MTBlYTU1MjViODE5NWU0YyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOTFmYjEwYjRkNWMxYWFlZDgzZGMwMmZhZjJjMWUzMTVlYTIyY2JmZjQzYTZlZmNlOTUzMWY5MTc3NGQwNjZhNCJ9"
+        },
+        {
+          "resource": "repo://backend/utils/frame_tv.py#L416-L416",
+          "version": "repo-lines-v1:sha256:ae518a100bd16e5ad1c6194083bb26d66e3814a59c860e2eb12282dcd2c87c3a:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYWU1MThhMTAwYmQxNmU1YWQxYzYxOTQwODNiYjI2ZDY2ZTM4MTRhNTljODYwZTJlYjEyMjgyZGNkMmM4N2MzYSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYWU1MThhMTAwYmQxNmU1YWQxYzYxOTQwODNiYjI2ZDY2ZTM4MTRhNTljODYwZTJlYjEyMjgyZGNkMmM4N2MzYSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZGVhODhmMGJjY2RjMzdhZTMxNGQxODgzNWVlOGM2MjQ0ZDRjMmVmMDBiNjc4ZGQxYjdmODE4MDdjYWMzMjQxOCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiY2FhMzg2NmNhMjMyZGRjNjJkZWE4YmQ0M2JiMzkwNDBkZDg1NDZlYTRlYjgzOTAyZWU4YmFmOWE0NzI3Y2ZjNiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_ac84dfed0ede4d3aaba455628207bdf9",
+      "statement": "A failed call touches a marker file under instance/tv_down and a background call is refused immediately with FrameTVUnavailableError while that file is younger than the cooldown, 30 seconds by default; a success deletes the marker, and the file makes the cooldown shared between worker processes.",
+      "evidence": [
+        {
+          "resource": "repo://backend/utils/tv_connection.py#L189-L213",
+          "version": "repo-lines-v1:sha256:f6dcf4de1d390e1e48c1472cc35316986016d480c7a51a229551355c62b9bb63:eyJzZWxlY3RlZExpbmVDb3VudCI6MjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBiMjRiYmVmNjc4OWY5Njg0ODVlY2M1ZDNjZmQxNTQxMjgxYWU2OWE5MzA0MDhkMjYwODQzOWEyZDdmZmVjNTAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZlOGQ3NmU2NmJiNzhhZmIzYTE2NTZlN2ZhZjE0NTU2YWM5M2RkYmExOGQ3NzVjNDNmYmI4NzEzOTFlOTJiYjQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImY0MGIxNTg0YjQzZTQzYTc5YzEzM2U0MTMzYmFmMzI2YzAwN2ZkNjQ5MGU2M2NmMWFmMTQ5N2JiY2I0ZWFkZGQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY2MjQwNWZlZjc2ZWMxMjU2NjVhMWFiZDE3MDU3YTIyMTUxZGJjZjI2OTlkMjUzZjQ4YmUzZjBlYmNkMTljYjEifQ"
+        },
+        {
+          "resource": "repo://backend/utils/tv_connection.py#L390-L394",
+          "version": "repo-lines-v1:sha256:90e3c9455107b1f57f26db519c597e69f345276b41b290a3c98e5cdd9e8ca61b:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYWVhMTdiZTdiMjhlMTRiMzljMWYyN2FmZmFiZTIyZDc3OTJiY2EyMzI5MThlNWYwMWNiOWY3MmZkMWU0MDAwZiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMmE5ZjhjMmJjN2ExNDFhMDIyYWYzZmViOGFiNTAwOGVjMjU3NTdlZjI0YWNkMDQ5ZjUwODlhNzRiN2M5YWU4MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYmQ1YTQxOTQyNGJmZTFmZWUzYWNmY2U0NGY3NjM5ODc1ZGNhMGQ1ZTBmZjU0MDIwOTEyYTEyZTUzM2YyN2IzOCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMGU5MmVkOTZhNGIxZTZiNzJjZjkzNGIwMzRmODU5OWU0NWRlN2Y3Yjg4NjcwMTI5YTIzNDFkODk2NGIyMDQ2ZCJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_671a04fe3b834462b2df58a5e9edda39",
+      "statement": "The module wraps the websocket module used by samsungtvws so each connection is recorded against its opening thread and its reads are counted and reported as progress, which lets an abandoned call's socket be closed from another thread and lets reset_connections close stale connections before a new call.",
+      "evidence": [
+        {
+          "resource": "repo://backend/utils/tv_connection.py#L268-L281",
+          "version": "repo-lines-v1:sha256:339bedbdedaae45b6f4e83ab75bea761fc8c44c3ebb502fba45b13a335bbab81:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjUxYThjNzFlMTBmMTg0NDNmZjZkZTBjMTcwZGE5OGVmYTAxMzVlZTRhZDcwOWE4MjM1YTBiNzMyZDdkNmIxZGUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBmZTdhMzk5ZDE3ZWU5N2Q5ZDY0MWQ4NzZmMjk3NjYxZDI1ZjJjZWZhMzI1YmRhZjdkMjRlYmY3NTUyOWIwM2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE1NWNmZTk0ZmJkM2M4NzZkYjJhYjA4Y2NlYjY1OTVmZDFkZjEwYzAzOWEyZmJhOGYyYmIyMDcxNzk3MTdlZjQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImVjNGU0NjI1NTIyNDZlYTMzYjY0M2NlYzJjZTViMjAzNTdmODVhZjEzZmVmMDU3NzQ4ZTBjMTYzYmJmNWM4YWEifQ"
+        },
+        {
+          "resource": "repo://backend/utils/tv_connection.py#L486-L486",
+          "version": "repo-lines-v1:sha256:5714f7fee653276895973def8b3d769fab45c0a54fc41c20d44d03bd3131f3ea:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNTcxNGY3ZmVlNjUzMjc2ODk1OTczZGVmOGIzZDc2OWZhYjQ1YzBhNTRmYzQxYzIwZDQ0ZDAzYmQzMTMxZjNlYSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNTcxNGY3ZmVlNjUzMjc2ODk1OTczZGVmOGIzZDc2OWZhYjQ1YzBhNTRmYzQxYzIwZDQ0ZDAzYmQzMTMxZjNlYSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMzllOTM1MmY2ZWFjYzhkZWI4MTc4YzkyNjQwNGUzNmZhMDI0OGYzMDBhNjVhMGY5ZDgyNmI4MTVlYjBhN2NmZSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
+        },
+        {
+          "resource": "repo://backend/utils/tv_connection.py#L79-L140",
+          "version": "repo-lines-v1:sha256:c69ca707b27ff55f1a61bbee37bf75149b869baa1425006e536ed94c9fcc4c7a:eyJzZWxlY3RlZExpbmVDb3VudCI6NjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBkZGE4MzAwMzA1MTdlNzQ1NGRjNGI2NTliODJmMmY2MjBkMTM4NzNmOWQwZDc1YWE1YWZkY2U1NTM1ZTc4NGYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjczZjk1M2JiNGI2YWIyNzM3MzBlZTIxN2ZiYWJjNGY5ZmNhN2NlNjBlZWRjYmVjNzkzNjg0MTQ5YWFhYjM3YjciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjAwNTAxNzNjNThiZWUxYTkxMzU4OTVlNWY0YjQ4OTBmZDU0NDBiYWE5MGRiNGI5MGM2MTg2NjE1MGZiN2U2MTciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImRjN2Y5NDc5NGMyZjNhYjNjNTg0MmFiMmY5YzFmZWI2ODJiNTVmY2VlMGZkMGEyOWU5YTQyN2EyYzhjMzg1MzYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_820b92c37b6542ee8326a4b5a6664f1c",
+      "statement": "The stall watchdog is a daemon thread that checks once a second how long since a frame arrived and closes the session when the limit is exceeded; it is enabled for the gallery listing and thumbnail fetches, and defaults to 25 seconds.",
+      "evidence": [
+        {
+          "resource": "repo://backend/utils/frame_tv.py#L31-L31",
+          "version": "repo-lines-v1:sha256:51cc21552e46f4e959a2728ff0ff72908267de0be9323171ff8b1530507d2a56:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNTFjYzIxNTUyZTQ2ZjRlOTU5YTI3MjhmZjBmZjcyOTA4MjY3ZGUwYmU5MzIzMTcxZmY4YjE1MzA1MDdkMmE1NiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNTFjYzIxNTUyZTQ2ZjRlOTU5YTI3MjhmZjBmZjcyOTA4MjY3ZGUwYmU5MzIzMTcxZmY4YjE1MzA1MDdkMmE1NiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYWFhNWQwZTY1ZDE0OTQzYjlkYzhjNTY5Zjg1OGM1ZmVhYTkyNjg2MjVjN2U4ZTA0ZjQzMTEyYzk0ZjMxNTgwNyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZDEwZWE5NzE5Y2M5YjdiODRiNjFhNjkyZGE1Zjk0OTcxMmY0MjlhNTUwNGE2NzAzZGU1OTM0ZTQxNTdkNzUwNSJ9"
+        },
+        {
+          "resource": "repo://backend/utils/frame_tv.py#L709-L709",
+          "version": "repo-lines-v1:sha256:d021a5b5b970bb61e1867336c8392aec4b64757b0fc3d7845e8afd83167739c2:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZDAyMWE1YjViOTcwYmI2MWUxODY3MzM2YzgzOTJhZWM0YjY0NzU3YjBmYzNkNzg0NWU4YWZkODMxNjc3MzljMiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZDAyMWE1YjViOTcwYmI2MWUxODY3MzM2YzgzOTJhZWM0YjY0NzU3YjBmYzNkNzg0NWU4YWZkODMxNjc3MzljMiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYTNjMzFjYmM0YTUwNjJkNGU1ZDQwMjBkNWJmMTJkY2NiNzU0ZWQ0OTllMDZjZjUxNzAxNWVlYzhlMWU1M2VkYyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiODgzN2NlOTA1NDNmODQ5MWI0ODkwZmI1NzNlOGNlZjk0MTA0ZTkyMmQxNWE1YzM0ZjU2OTIyZjY2OTIyYTU3YiJ9"
+        },
+        {
+          "resource": "repo://backend/utils/frame_tv.py#L777-L777",
+          "version": "repo-lines-v1:sha256:cd921a452e51d5208d056b57b6111915287773c60fd9c9eee34a608f25d8ec29:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiY2Q5MjFhNDUyZTUxZDUyMDhkMDU2YjU3YjYxMTE5MTUyODc3NzNjNjBmZDljOWVlZTM0YTYwOGYyNWQ4ZWMyOSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiY2Q5MjFhNDUyZTUxZDUyMDhkMDU2YjU3YjYxMTE5MTUyODc3NzNjNjBmZDljOWVlZTM0YTYwOGYyNWQ4ZWMyOSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMjZlNWEzOGJlMmNkYWE5YzY1ZDIxZDFmMzg3NWRlNDU5NTBlY2M4YmQ3OTI4OGQ0MmMxYjM3MzQ5ZjA0NGQyZiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOWFjOTQwYWEyYjcxMmQ0MTQ2ZDBmZjY5MjRmZjQ3NmNhM2M2ZjVhNmQzZmU4NGEwZDIyMWViM2FhYTk3ZjIyZSJ9"
+        },
+        {
+          "resource": "repo://backend/utils/tv_connection.py#L426-L439",
+          "version": "repo-lines-v1:sha256:f487aee669ee45c74f09f91131ea799c5870b33454394019ea3c340f9f383ae8:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhkNDgyY2UzNThjYzBhMGE1NDBhNWU3YWVkMDkyZTYwNTA0YWM5ZTE2ZDc5NmE4MjE4YmFhNDU3N2NiZmM2YjAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc1MzNmM2U3YjQ4Mzc4NTQ2Nzc1YjI1MWNmNWI2NGI1OWE0ZGNjZjY0MGY5ODVmNjk5MmMxY2IwMzM3MmMyYWMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijc3ZTZmM2ZiNzI1MDUxMWU2ZmY0MjM1MDk2ZWZiZTRjNTRjZTAzZTc5MDQxOTdhY2E5Zjk3NzkxNjBiYzVhOTYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjJiNGIzYWRmYzg5MzZmMjFjNThkMTUxMWM5NzFhYjU3YjlhMTdiYjNkZjhmNDY3ODRiNzhkYmJhMjBiODQyZGEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_8db2372f169a43f3a853f2ff971cac4d",
+      "statement": "After every call, successful or not, _tv_call hands any newer token found on the session's channels to a registered observer, and app.py registers _remember_tv_token which stores it on the TV's row.",
+      "evidence": [
+        {
+          "resource": "repo://backend/app.py#L186-L207",
+          "version": "repo-lines-v1:sha256:423bc658809bfc043b6373aae25aa533dc6e7601326b400727d5aedb9dfb34bb:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMwNjlmYzVlZGYyZDU3ZTNiNDVlZDYxZjM1MTc4MjQ4ODVkNDI5MjVhMDcyYWU2ZGM4NmY5YTdkMDdiYTQ2OTMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFiZmFjMTU2MDUzMzBlZmZlODA1ZjFkZTc5ZGUzZDVmMzMyNjEyZWRmZjUzOGIyMWNlMDExYzc3OGE3YTE0ZjEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijg4OWQ1MGYwZmZhNzIxYjAwMTUwNDlhOGVmMzFjNjE1OGQ1ZjU3MzVlYmM3OWExYzkyMWMzYTkwODRlNGZmZjEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijc0NDk5YTJiNTM3YmNhNzVjZTJkM2UzNjVjMTZhNDJiMWFhMDI2YTJkOWU4ZmFhZWNiNDBkNGMyY2NkY2VmYjcifQ"
+        },
+        {
+          "resource": "repo://backend/utils/tv_connection.py#L333-L338",
+          "version": "repo-lines-v1:sha256:63303a92fe0c67e79e71cf6bef624c7274204bcc342662c5f198dd24d4995153:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYzJiMjg4ZDc2NWU4ZmY4ZGE3NThkY2EyMmU2NWE0YzE5YmUyNjdiMTRkNTcxM2Y5ZWJjMjQ4ZmI2Y2ZkY2RjYyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOWVjOTQ5NTBmYjBjYTc1NWFhN2I5Y2VkODY4ZmEzN2RmYTIzM2I3OTk5NzIzMzQ2OGQ2NjRmNjNkNjE5MDk5YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZDZiMTNmYWFlYmZlNjNlZTY4YzE0YzEwNDRlYjE0YzM5NmM3YzkyNjVlNjJiZjQ0ZDZlM2U4MDkxZGViODNhYSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNzVjNmNiMmIzZWJmNzAzNGY0NjNmN2UyZDIzMzhlYjYzNzM0ODY5NGJhMTVjNDJkZGYyZDBjOWE1ODBhNTUxNCJ9"
+        },
+        {
+          "resource": "repo://backend/utils/tv_connection.py#L416-L424",
+          "version": "repo-lines-v1:sha256:2c4a3a54a307cde1e408f34ab1f0ca7dcb8b62784e07e297d45d84adb0f0e00d:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMzBlZDhjMjExMDc5NTlmYThiZTRkNTJhOTNiM2I2ZDRlYzQ4N2FjZTJjZDUxNjk2NTc0ZDM4ZjM0NjM4MmMyMiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiN2MzMjhkZWU3ZTY2ZmEwNGZiZWVkODUxNDRhYzc1YTliY2RiMDU1NTdiYzBmYzU2MTMwMTliYWFmMGI3ZjQ3ZiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMzMxMzgzYzExZDMwZGIyNTk2NDhhNjZhNjg5YWUxMDJkZmYzYTMxZTk0Nzk0YWFmNmFlMTQ3NDJmYzNjY2QyYyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNjdlYTI1YzBmMzMyZWZmMGRlZGNmYjBjYTg0MDRkMmU4MjAxMjQ5ZDU2ZTAwZDdhNWI5YjllMGYwZjY2Y2M4MiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_857a99e70c5f44349cccbef389111fb1",
+      "statement": "Errors that the TV itself reports are re-raised unchanged and do not put the TV in cooldown; only connection-class errors mark the TV down and are converted to FrameTVConnectionError or FrameTVTimeoutError.",
+      "evidence": [
+        {
+          "resource": "repo://backend/utils/tv_connection.py#L371-L380",
+          "version": "repo-lines-v1:sha256:c9fd6cccdcc1e59589583898d137dfa3f2a63fe5b16ec7197bf15f92a1202ba8:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI1NTNiM2MyMGUxYzBhNzU2ZTE3YjZiYzU3ZDNkNzIxNTYxMzM5ZDJhNzk0YTQyYjYyYzI3ZTFjOGExOGM0YzUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImYxYThlNzM5MmNjOGY5MWMyYWU3NmY1MDM2MGMyMWQ1YjIyMmRjNDUwMDFlOWQyZDIxMDRmNGE5ZTNjOTVlZDEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhiOTc0ZGE0MDg2MzJhNGFhN2UyYWU4MGI4NjAzOTFhM2RjZDgyMTFjNzllY2FkN2NhOGU5NTEyOGIwMDE4MzIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQ2NjU2ODVhODBjNmU4OGUxZTEwYjZmYWMyYzQ1YzJmYWE4YWQ2OThhODgzOTE4NTQ2ZWNmZDk4NmQ0NzMwYjcifQ"
+        },
+        {
+          "resource": "repo://backend/utils/tv_connection.py#L473-L479",
+          "version": "repo-lines-v1:sha256:27b244dfe454097882d9b1ae23c67e7999a71a05abc4df8d4156a37fba590d11:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZTEyMDRjMzYzY2IwMjI1MzFmMjkxMDliNWNjODQwYjRkY2QwYTJjMWZmODBkYzZlODg1Y2IzNDkzMjAzNzE2NSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMTM0MjI1YmRiM2MxYTc5MTE1NjY4YzIwZWU4MjliMWViNDhmNjkwOGZiNDI5NDA3YmZhOGRiZjJhMzQ0MjU3OCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZmYzZTUzOWUxODVhZWRhYjI5NGY4YWYwOWE2NzMwNjA4Y2I1Nzk2ZmVhY2NhNmQxZjYwN2NmYzQ0YzE5ODEzMCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMTUwNjBhOTllOWFlZmFhNjQ5NWVkOTM4ZmJhYWFlMzkzNmFjYTg5ODlkODhlZWUwZmUwMGVmZTEyYWQ3NDE3ZSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_73799f25e77b42af8ec406355b9892bd",
+      "statement": "FrameTVTimeoutError and FrameTVUnavailableError are both subclasses of FrameTVConnectionError, which subclasses FrameTVError.",
+      "evidence": [
+        {
+          "resource": "repo://backend/utils/tv_connection.py#L63-L76",
+          "version": "repo-lines-v1:sha256:334b4e10c73d65846ed3afcb0f1ffc321fb1a6076ab245f41f92552ecc2a81dc:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU2NDg1NWY0OWM0Y2MwOTdiNzA0ZTBhNDIzMjk5YTMzYWExMDFjNzViNDk4NTEwNDFkYWI5ZDk2NjI5NmFhOTEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM5OGNhYTk1N2VmODczMDU4ZmJjMTNlNDZlYWVlMDJhN2I4MDljZTMyMWNhZTNhNmY5MTBiMTAzNTIwYjdkZmEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA5OTU0MmQzMTQyYzFkNGZkYjI0NzIzNjgyNjZkNzA0ZjE4Y2Y3M2M2ZTNhMDg1MDJhOTUwMmRkNTM1YzVlNGMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImJkOWM1NTQ5MTIxNTU1YjIwMWJhOGQ5MDFmYWExMmYwZTk1NGY5Zjk1ZDgyMzIyZDEyZGQyM2Y2MGYzNDE0NWIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_a5e1d3b191014cef9f663a8218e325dd",
+      "statement": "The TV timeouts are environment variables read once at import with defaults of call deadline 20, upload deadline 120, busy wait 90, socket timeout 8, pairing timeout 45, cooldown 30 and 8 parallel calls per process, and an invalid value is logged and replaced by the default.",
+      "evidence": [
+        {
+          "resource": "repo://backend/utils/tv_connection.py#L351-L353",
+          "version": "repo-lines-v1:sha256:002b068ff8e6e673d00fdd5331284b795d7dd3f149af08f7f57cfd5cd9c7b3e3:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZDI0YzNmZmQyZDMyOGJlNDdlNWNiOTQ3ZGQwYTUxN2VkYjUwNjNiOTg4MTg4ZDg5ZWQ2ZGY3NzA0MGZmYjU5NyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOWIzOWUwMjJlMGQ4NTQxMjAwMDNkNzkwYzI4Yjc1OTYyZWRkMzAzNzU2ZDUxMzMzZGY3NDVjZmI4NmVhMTFjZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOWYwYTgyNDVkMTU4ODQ1NzVkZTk1ZGY4ZGI0NmFkZGYzY2I1MGRlOTFiNjBkNjg0YTcxZjAzYmUxMzgwZDM0YyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZDYxOTBjZWE3ODQyNDlmNTlhMWRkMDllYzJjMzM4NjFmY2Y3Yzk2Y2I1YmRlNDg1NDQ0ZGQwYzA2Y2M1NTdjZCJ9"
+        },
+        {
+          "resource": "repo://backend/utils/tv_connection.py#L46-L60",
+          "version": "repo-lines-v1:sha256:575a26f837ed586221238b6cb89f0c7777407cf35d15974735a036e396da10d3:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZmOWNhYzAyYmQ3OTkwN2Y5Nzk0MmE0ZmMzMDcyNzBhMjhjNjI2Y2Q5NWY5ODc3YmY1MmUxOWY3Mjg5NTJhZTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjcxZjBkOTI4N2YwMzY2ODI4OTI4YjNjOGY5MmQyOWYxOTY2ZTUzYWYzNDU0ZmRiYTcxMTBhYjkyMDRmYjVmOTciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQ4MDg4OWIzMmIyNjg4OTkwN2VmNTg3MWEyNTllMmE5MTdmZjQ3ZGQ5MjFjMjhmZGJmZTAzZDg5ZTBlMjUzMzUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImFlNzVlZjRkN2JmODUyYjI2NGZhZTQ3NzUzMDczYjNmMTZhMzlhYjEzNTllOWU0YThlNzE0NzAwMzI1MWQ0MmMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_7f9e608abba74a208e4b80e4156f301b",
+      "statement": "Several deadline defaults are declared in both tv_connection.py and frame_tv.py, reading the same environment variables, so a default changed in the code must be changed in both places.",
+      "evidence": [
+        {
+          "resource": "repo://backend/utils/frame_tv.py#L24-L26",
+          "version": "repo-lines-v1:sha256:935dc144cbc2e80800a87ed916edc5c2ddd797313edd4ebcc43acb3282bf7570:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZGRlNjA5NjMwYWM3ZGI5NDQ0MjRlNzcxMjNjM2NlMjBiYzJmOWViMTQ1YWY1ZGU2ZGJmNDIxZjU0M2I0NzMyZiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNzFmMGQ5Mjg3ZjAzNjY4Mjg5MjhiM2M4ZjkyZDI5ZjE5NjZlNTNhZjM0NTRmZGJhNzExMGFiOTIwNGZiNWY5NyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiODdlZjJlYzEyMzlhOGI1ZTlmMDA2M2IxNTEwMzI1MmNkMTFhMTJkMmU2ZjBkNDg2MzQ2OWRmMjlkYTBlYTBkOSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYzI3YWU0NjQ4YWQ5N2M2OGIzZTEwNmJhNTZmNjVlMjQ0OGQyOTNmZWJmZjdmM2IzN2JiNDgyN2E1YzYyZDQwOCJ9"
+        },
+        {
+          "resource": "repo://backend/utils/tv_connection.py#L56-L60",
+          "version": "repo-lines-v1:sha256:a814eb63feac2a26b43b068b02a7cdf04a1ac46dd54b8ee8185b2b8b44ad11f1:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYWQxNjRlMjYwYmU5MzQ3MDlkNjY1NTlhMzVjNTY3YzRjYTM3ZjhiZjE3OGVkMjkzZDM4Y2E0NDcwZDFjY2ZhOSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNzFmMGQ5Mjg3ZjAzNjY4Mjg5MjhiM2M4ZjkyZDI5ZjE5NjZlNTNhZjM0NTRmZGJhNzExMGFiOTIwNGZiNWY5NyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYjUzOGI0NDU0ZmYzOWJiODI2OGQyODMxOTYzZTQ1YjFkYjEyNDI0MjgyNmY4NWU2MWE1NTcwZTExMjljNmQ1MCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYWU3NWVmNGQ3YmY4NTJiMjY0ZmFlNDc3NTMwNzNiM2YxNmEzOWFiMTM1OWU5ZTRhOGU3MTQ3MDAzMjUxZDQyYyJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_63e8efa887554e06b35d17f12d7f358e",
+      "statement": "On a timeout _tv_call reads the traffic description and frame count before closing the session, and when no frame arrived it starts a daemon thread to log the TV's own state so the error is not delayed.",
+      "evidence": [
+        {
+          "resource": "repo://backend/utils/tv_connection.py#L447-L482",
+          "version": "repo-lines-v1:sha256:57d6ce7f3fb9be118aebe792dd96010ff570f77128f9690a0b943112b05241b6:eyJzZWxlY3RlZExpbmVDb3VudCI6MzYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNkY2IzODQ5NmYwOWVmYjg4MmUyMTgxYWI1ZWUxZGYyOTRjM2ZjZWU5YjNmNWI4NWUzMjEyOGZiNzJjOWU2ZWMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJjZWVlNzEyMTJjZTViZThmMzNjNWJjYTJmMmI2YTBhMGI2MDU5NmY1MzM3NzY3NjQ1ZWFmZjFkOGQ4YjRkODgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImY3YTRjODkzZWJjMDg4ZTQyNWJhYTI2MWZkZjMyZDczMzVhMDY5OWFlYjRlYTA5YWVkMjY2NzA5YTE4ZWZmYzkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImIzNWI3MzNhNzExMTBkMzEwZDM0ZGNmOTM5ZjJlZjAxOTU3NWI4NTQ5ZDY1ZWMyYjU4OGZiZGM3OTliOTlkY2QifQ"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.5.1",
+    "at": "2026-09-21T12:08:00.549Z"
+  }
+}

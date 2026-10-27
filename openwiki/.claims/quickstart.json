@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:b5d547969a8a840d1e5232c53bdc524f918ab84a1b19646304b215ba58d63477",
+  "claims": [
+    {
+      "id": "claim_bea1c9fdd990438697890ef4b2fc63fe",
+      "statement": "The project is described as an independent, self-hosted gallery manager for Samsung Frame TVs that lets a person manage a personal gallery of images and artworks on the TV.",
+      "evidence": [
+        {
+          "resource": "repo://README.md#L21-L21",
+          "version": "repo-lines-v1:sha256:3ed0e6683c590e2685aa3574d9a2d59a6268c8811d3f1596aae2e1dd19e28fcc:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiM2VkMGU2NjgzYzU5MGUyNjg1YWEzNTc0ZDlhMmQ1OWE2MjY4Yzg4MTFkM2YxNTk2YWFlMmUxZGQxOWUyOGZjYyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiM2VkMGU2NjgzYzU5MGUyNjg1YWEzNTc0ZDlhMmQ1OWE2MjY4Yzg4MTFkM2YxNTk2YWFlMmUxZGQxOWUyOGZjYyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZjg3NDg5MTIyMjkzOTdiZGZiZWJkYWUzM2YwNWM4NTAyMzQzZmNjMGQwYjRlOTRlM2ZiZTllNDAxNzc5YTg1ZiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOGIwMjM5ODViYmY0ODRmOWFkMmMzODFlZmViN2I0NGQwYWE3YzkxMWQyZWQ3ZjkwYjkzZmMxYjM0ODQ0YjZlMSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_35dccaf6672148768a441e9d5c4aaca4",
+      "statement": "Run directly, the backend serves on all interfaces on the port named by BACKEND_PORT, defaulting to 5000.",
+      "evidence": [
+        {
+          "resource": "repo://backend/app.py#L1502-L1502",
+          "version": "repo-lines-v1:sha256:c8be4f3637efe486c0aec6b42bcb8a054d6149824e97b68b8b703608d39d133e:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYzhiZTRmMzYzN2VmZTQ4NmMwYWVjNmI0MmJjYjhhMDU0ZDYxNDk4MjRlOTdiNjhiOGI3MDM2MDhkMzlkMTMzZSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYzhiZTRmMzYzN2VmZTQ4NmMwYWVjNmI0MmJjYjhhMDU0ZDYxNDk4MjRlOTdiNjhiOGI3MDM2MDhkMzlkMTMzZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNDI3MjAyOWE5ZjhjMmIzODcxYzhhMzNlN2ZmZDc4YjExMWE3ZTgxNTRlMTM5Y2M0Yzk1Y2Q0Zjk1YTBjMWZlZiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
+        },
+        {
+          "resource": "repo://backend/app.py#L87-L87",
+          "version": "repo-lines-v1:sha256:988ff3bc0c11b3ca96a50824b76e805e2e45f9d323426ea18948ebda403315bb:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOTg4ZmYzYmMwYzExYjNjYTk2YTUwODI0Yjc2ZTgwNWUyZTQ1ZjlkMzIzNDI2ZWExODk0OGViZGE0MDMzMTViYiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOTg4ZmYzYmMwYzExYjNjYTk2YTUwODI0Yjc2ZTgwNWUyZTQ1ZjlkMzIzNDI2ZWExODk0OGViZGE0MDMzMTViYiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYjIzNWRjMzU0MTU2MjAxN2M2MzA5ZTM4YmEwOGRhN2M5YTFjYTk1YTZhZjZmMjI1ZWU0MmUwOTMzYmNmZTM5MCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMDEwMDZmYzdjNzRmODM3OTQyZDZlZGRhNDk0NmI5OTYxNzUyZjI1OGYzYmUwM2I0OTk5MzUyYmNlMTM5MzI4YyJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_7a106b41d4d64f389ac71bdb0a3ede9d",
+      "statement": "The frontend development server is started with pnpm run dev, which runs react-router dev with the host option.",
+      "evidence": [
+        {
+          "resource": "repo://CONTRIBUTING.md#L13-L16",
+          "version": "repo-lines-v1:sha256:4aeee0a83f08c1f1632e81d798441c05b2e533002455af45a7a3340031a0ca6d:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiODNlNDIzYTU2NjEwNWE4NjE0M2YzMDQyYWNkNjNmOTgxZjhiZjU5ZDkxYWJkNmY4ZDU2NmM5N2VmYTk2MjMxYiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiODAwMTg5MmNiNGE3NzJiMGNmNDhiZWU5NTRmYTU0Njc4YzkwZWMwZTQzZDgyODU4ODZmNjE0NmQ3ZjFlMzkzYiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNWUxMWMxM2M1ZTg1NDk3NGEyMzJiYzU2MzU4NzcyZGIzNTc2YTFkMDdmMjlhMzE5MDZjODdlYjI5MjIyOTdjMiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiN2E4NGFiY2RjMmJiNWZiYmIzMjA1ZmM0NDZlNzA5OGRjZGE0OGE5YTRlOGQwNjYwNTU4Mjg2ZDM5MmY5NTYwOSJ9"
+        },
+        {
+          "resource": "repo://frontend/package.json#L11-L11",
+          "version": "repo-lines-v1:sha256:fec57e2fdf75125abedbb29ed2061e006193dbcada8c4b19e3f99ef4126f710c:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZmVjNTdlMmZkZjc1MTI1YWJlZGJiMjllZDIwNjFlMDA2MTkzZGJjYWRhOGM0YjE5ZTNmOTllZjQxMjZmNzEwYyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZmVjNTdlMmZkZjc1MTI1YWJlZGJiMjllZDIwNjFlMDA2MTkzZGJjYWRhOGM0YjE5ZTNmOTllZjQxMjZmNzEwYyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNTdiM2NjZmI4ODkzNjE5ZTUwZTRmZjk5MzFhYWZiYThhMmY0ODRhZmJmOTUxMmMwNzY0NTNkMmFkMmMxOWNkOSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMzAzYWE1YmM5MzczMzc3NDI4Mjk3MjUzNmM5NTljNDhiZjlhYmY3Nzk5NmU0MWNkNzcyMDVkM2QxYTE3YWE4OSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_a3bbc5303ada4809a539d540694039c8",
+      "statement": "Contributions are asked to follow Conventional Commits and use feature or fix branch prefixes.",
+      "evidence": [
+        {
+          "resource": "repo://CONTRIBUTING.md#L33-L35",
+          "version": "repo-lines-v1:sha256:8eae134a21c21107483cb87afae1162ecaea6f61620686b522ee9eb2e6441079:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZWMxZmU5MGFmMmE5ZjAxM2RhYTMxYWM5MDZjNTM2NjU0ZjZiZGE4MDZhNTE5YjAxODE3ODE0MTQzYTg4MzRkNSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMTY3ZDQ0YzU2MmE5ZGY1MzE2MjZiNjQwOTJkMjlhYjUxZjg5ZWNkOWUwMWIxYjgyOGVkY2IwMDYzMGJjNDBjMiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTc1ZWMwZjg5ZjRlYmJiOThjOGI1MDJjMmQ1N2YxNTdiM2MxZjk0YmM2YTE5NjViNWIwZTVhNGE3N2M3NjUyNCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.5.1",
+    "at": "2026-09-21T02:31:07.302Z"
+  }
+}

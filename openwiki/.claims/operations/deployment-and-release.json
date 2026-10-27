@@ -1,0 +1,182 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:a16aa95ebe91ae83887652bb24a5a6ccb39c8e6c9bb5c5c37e2808b69d7fceea",
+  "claims": [
+    {
+      "id": "claim_091d99b3d34346868c72b0273b6a331f",
+      "statement": "The Dockerfile must be built from the repository root because the app serves the frontend build from one level above itself and pyproject reads the README at the root, neither being reachable from a build context narrowed to backend/.",
+      "evidence": [
+        {
+          "resource": "repo://backend/Dockerfile#L1-L3",
+          "version": "repo-lines-v1:sha256:f382ccc248f2a7c5132bf0b201806eed90f04f88280797c2896ecab8b52fcf15:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOWIyMDYwNDhhNDVjMzNkODYwMzNkNWZjMjg1NmI3YTI3ZjM5MWY2Y2E3ZWIyNjBjM2FiYzAyMDRlOGYzNjljMSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZjk4YzVjZjUxZjA5MWYzY2E3MGIzMjU4OTM1ODI3NDE5NjIxYjgwMDVkOGJkM2M2YTFjMzhlMTk4N2JmM2RhOCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjAsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZWJjYWYwZDA3M2FiN2UyYWUwYzU1NzIzYWVkMzc1Y2IyMzE1MzZmNDMzNjg4MzljNTc5YWQ0OWM1MzU1YjM4NCJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_0d0613979a37440fb7555fe5228d099e",
+      "statement": "The runtime image copies the backend code and a prebuilt frontend/build directory to /frontend/build, so the frontend is built by the workflow before the image, not inside the Dockerfile.",
+      "evidence": [
+        {
+          "resource": "repo://.github/workflows/build_image.yaml#L61-L61",
+          "version": "repo-lines-v1:sha256:504b044abdaed9cfba71ae36b7e284692dd1ef1701ddd3db08ce09433388f7d4:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNTA0YjA0NGFiZGFlZDljZmJhNzFhZTM2YjdlMjg0NjkyZGQxZWYxNzAxZGRkM2RiMDhjZTA5NDMzMzg4ZjdkNCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNTA0YjA0NGFiZGFlZDljZmJhNzFhZTM2YjdlMjg0NjkyZGQxZWYxNzAxZGRkM2RiMDhjZTA5NDMzMzg4ZjdkNCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMTRiOWU2NmRjYzFmZmIyZWQ5OWI3ZDAwNmUxZDI0ZjBhOWRiMjI5NzZmNzJjZjlhMjYzYmYxZmZlNDlmMDg1YiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZDAxMjA3NDQ5YzQxYzQ5ZTJhOTcxMTNhMGQwZjNkMzg1ZmM2ZjZlNGQ5OGZkZWQwY2M2ZDhjMTRhMDM4ZGQ2MSJ9"
+        },
+        {
+          "resource": "repo://backend/Dockerfile#L24-L35",
+          "version": "repo-lines-v1:sha256:e8dea219d342d454ef3c3f84deea268d8f49e565b66584f6206a005d72720754:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk1OGNkYTBiYjNjMTg2MjZiZmNiOWEwMjY2NzE3NGU5ZDdmYWI2Y2M0NjVlNDI0NWNhOGU3ZmNkZjNiMzdjM2MiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI0ZWYxNGI1MjkyMzU3NGY2ZGJkMmUyZDgyMTFkM2Q0ZDFlMDk4ZWQzOTE2YmIzOTgwMGY0YThhNDZmOTVjZDYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjdiYzEzMjlhMGVmYTAwZjlkYThmY2IyMWFiMmFmMTUyNTE5YWYzODEzNGQ0NjJkMmY2NWUxZDI3MDljZDc0MzkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjUyNGZhMWNkYjMxZDEwZTQ1N2I4NjBlMWI3ZGVkZTUyYjQ5NWI5NTUyMTAyYjMwOTkzY2U5YTM2ZTYxMmM2NjMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_385f464f78c94a9cace36c4b05aa0287",
+      "statement": "The image sets PORT to 8000 and records its version in FRAME_TV_VERSION from the APP_VERSION build argument.",
+      "evidence": [
+        {
+          "resource": "repo://backend/Dockerfile#L39-L45",
+          "version": "repo-lines-v1:sha256:3e385eab41e3986c2130fc6b25a94dd2be8355e67165f9433d5b1e73f24b040d:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYTgzY2QxMGE4OThkYjViZDc2ODAyMDQ3OTBkMGU3NmU4NDk4NzJlYjMxODdhYjVjZGVjOWU5MTc5ZWJkMTFjMyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMTVhYmNiODIzYTVmZTY1YWNlMzc1Y2NhMGYzMjk1OGMyMjEwY2RhMTM4NzE4MzYxYTI1OTVlMzg1YjI5NzQ1OSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNTI0ZmExY2RiMzFkMTBlNDU3Yjg2MGUxYjdkZWRlNTJiNDk1Yjk1NTIxMDJiMzA5OTNjZTlhMzZlNjEyYzY2MyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOTdiNTE3MmVmMTI4ZWZkMDllZTdmZTIyOWNkZWJjZjAyYzBjYzcxNDU2NDY3ODJkYzcyMzA4ZTI1N2QzYWRhNCJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_19e4b65bfe6047f1a5bd98de30162fd2",
+      "statement": "The container starts through an entrypoint that migrates the database, then runs gunicorn with four workers by default and a 180 second timeout kept above the upload deadline, so one unresponsive TV cannot freeze the app and a slow upload is not killed by gunicorn.",
+      "evidence": [
+        {
+          "resource": "repo://backend/Dockerfile#L51-L56",
+          "version": "repo-lines-v1:sha256:3a85538385f3a722e22ecc39c20dd2e5fbb90daa9f6858956f65b80892c9dd22:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMmFjNTZhNjQ4NjMwMjdiYmIxZWUyMmE2ZmY5ZTFhYmE2ZTlkMGRiZDZmODQwN2RiZmEzNzA4MjE2N2Y3YmJmOCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZjMxMmY2MWEwNzcxNjZmMzIwNDZiMGE5YmE0NGUxM2U0OWZkM2E4ZGY5ZmNkM2U3YTNmMjk1OTQ1OWI0NDZhZCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiY2Y5MGI1ODVlYWIxMWQ1NmFmZGFkYjhiZTU2Njc5MzBkOGQzYjhmNWIxNzU5ZmJjMDlmYTZkMDkyYjQ0OTZjNyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_31e24bc18dc94df78d997135b63a9cb1",
+      "statement": "The compose file mounts one named volume at /data with FRAME_TV_DATA set to /data, so uploads, database and caches survive an image update.",
+      "evidence": [
+        {
+          "resource": "repo://backend/docker-compose.yml#L20-L22",
+          "version": "repo-lines-v1:sha256:1d8ac62d3757e64af947cfcda140f0e543e15d51a9c92a050874be96d1d26ddb:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMmU2OGM5NjcwYWM0OGIzM2U0YzJlYmMxYzE1NTEyMjNmMDA3OTdmNWI3ODBmZWNjMjVjM2UwZjJjNzlhMmNjMSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDIyNzUxOTdjZDRjOWYzMTMyOWI2MzFkODY3MmQyN2IxMzBiNmU1YzUyYTNkMzljNjU0ODA3Y2M2MWFiZDdkNyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTFiMWM0OTUxZTA4YTgzYmEzNzBiNmFjODA0ZThiN2QzOWM4MDk2OTIyNGFkY2NmMDQ0NTJmY2FlZjFmMmU3MCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMWNmZTAxMTIwZDU0MTNjODJiZjA2OTNmNmNjOTJkODAxNDljZWU5ODIwOTdhMjJhYTEzNTk3OTQ2NTc5Y2ZmNCJ9"
+        },
+        {
+          "resource": "repo://backend/docker-compose.yml#L3-L7",
+          "version": "repo-lines-v1:sha256:31b2e27ce4a5538f74caae1265b538c3f96c41514009154280f7559c5c3ef746:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMWE3OWVkZDc5YWI2ZTc5MzFmNDJmODVjY2VkZTI2N2M0MWQ0OTM2YTE3NzVhMGU4ZmU1Yjc2ZmQ1ZTgzNzI5NCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMWJhYTQzYjNjNjNmMzVjMDRiM2NhYjk5YTM3NjRhNmMxNWFhZDMwMWJiY2E1YWQ0MjI1OGMzYTdhOWJkZTYxMSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjIsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZDM2MzZjZDY1ZGVkMThkMDg1ZjE1NDJmZGRkMTg3NDAzNDRjZjdkMzVhZWQzYmZlM2UxOTk2NjBlNTc1ZGZkZCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMmNlMDc3ZWQxOGY1NWJjYmEwM2YyYzFmNzk3ODBiZmEyZjgxMTI2ZWNhM2RjMzk0MTkwOTM2MTRiNjgyNmQ3ZSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_27cd24e0eecf4c5694152584dce33e8c",
+      "statement": "The compose file uses the host network by default because Wake-on-LAN is a UDP broadcast that never leaves Docker's bridge, and automatic TV discovery probes the container's own /24 over HTTP, which on the bridge is Docker's subnet rather than the LAN; on the bridge a ports mapping is used and TVs are added by address.",
+      "evidence": [
+        {
+          "resource": "repo://backend/docker-compose.yml#L9-L18",
+          "version": "repo-lines-v1:sha256:b177daec65369b2f3e7042a85dbd45c2b762056fbdecff086d956cdb626e308b:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE0OTljMmI2ODM4ODk5ZmM1YzQzOTNkZTY1NzEzNWE4Y2EwZTA3YWEzOTU4N2NiYjdlNDU3OWZjMDc5MGEzMGQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE5NzU2ZjQwNThjNWViYTgyNjUzYWE1YzI1ZmU2ZGU1ZDBmNWEwYjVhZWE3NDYzMGZkNTliY2M1ZjFjNWQ4YTUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZjZTJjYTQyZmE5NmZmN2Y5ZTE2OTY4ZGM5NzUwYTUzM2U4MGQxMDVmOGY3NzFkODdlOTNkMTI3NDM5NGM2MDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjFhYjBkYzg4YjVmMTYxYTQxNmYzMjFhNjU5NTQyYjAyOTIwZmQ1Y2UwNDk0MjA3MjAzOGY3ZGVmMGY2MTBhMDUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_41644ad6c42d4b69aa4faa41ee723b6e",
+      "statement": "The compose file ships SECRET_KEY=supersecretkey as a placeholder, and the app falls back to its own built-in default secret when the variable is unset.",
+      "evidence": [
+        {
+          "resource": "repo://backend/app.py#L103-L103",
+          "version": "repo-lines-v1:sha256:e4748a4dd36f3b304a48445db110d3b7528d08ae10c2145df8c6b1e27f7e7c06:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZTQ3NDhhNGRkMzZmM2IzMDRhNDg0NDVkYjExMGQzYjc1MjhkMDhhZTEwYzIxNDVkZjhjNmIxZTI3ZjdlN2MwNiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZTQ3NDhhNGRkMzZmM2IzMDRhNDg0NDVkYjExMGQzYjc1MjhkMDhhZTEwYzIxNDVkZjhjNmIxZTI3ZjdlN2MwNiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNjEzZDk5ZDAxZTJiM2Q5Y2EyMGI4YmY2MWJiZTFiYWYxMDk5MjhjNmYzMzg4YjRiZjA2ZmQ3YjBiNzUyNDRjOSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMGNkNWQ3YTFlY2E3YzYzNWZlYTIwMDcwMTg2ZDEzZjdlZDdkNDM2ZjgyYmM5NzRjMGMwNTZmMDQ2MWM5N2ZiNSJ9"
+        },
+        {
+          "resource": "repo://backend/docker-compose.yml#L21-L21",
+          "version": "repo-lines-v1:sha256:746937cd10e62ac10a651567096c6891f44772ceee97aa92b3feb9a6c88c8621:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNzQ2OTM3Y2QxMGU2MmFjMTBhNjUxNTY3MDk2YzY4OTFmNDQ3NzJjZWVlOTdhYTkyYjNmZWI5YTZjODhjODYyMSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNzQ2OTM3Y2QxMGU2MmFjMTBhNjUxNTY3MDk2YzY4OTFmNDQ3NzJjZWVlOTdhYTkyYjNmZWI5YTZjODhjODYyMSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNGYwNTJlN2YzOTVkMWIwOWVhZDUwODkzODk4NTQwM2NhMzlkODMwOWRmNDEyZTI5MDUwZTdhNjhmZWMyZjA4MyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiN2RjNzI2NTYwNGRmZTQ2ZmQ5YmU3YTVhNDNlYzhhOTA2YmZjYzBhYzBhOWJjNDhjMDEzMGY1NzRmMTc0OGUyMiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_b3ef4c20c5bc4391902f2dfdd40cbcf0",
+      "statement": "On every push to main the release workflow runs release-please with the simple release type, and when a release is created it explicitly calls the image build workflow with the new tag, because a release created with the workflow token does not trigger other workflows.",
+      "evidence": [
+        {
+          "resource": "repo://.github/workflows/release.yaml#L17-L37",
+          "version": "repo-lines-v1:sha256:2824e782a8b9faeeec7935b4b04d95429fb0f458cbf5d49cf98b2669bde0eb0a:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY0Yzg0MzIxOTNiZmJmNWE0YjZhNGVkMGZmODdjYjNkNWZiMWQ0MzRjMjNjZGMwNTc0MzQzMjE5NTc3Y2JmMmYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM1NDI1YjdmYjYwN2NhZGE2Njc3ZjNjZWE1MDg0Njc4MWY1MGNkZTk2ZTQzNzdjMGM0YjgxMGI0MzMwMjE4OWUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUwN2UzZWJlZDY0MzIxZTU3N2RlNzlmYWZmYWI2ZjQ1YWZjNTliZjNiYmE1MDY5NDNhMWM0YTI3ZjQxZWNkMDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_a21c88301836411fa13285abf7f517dd",
+      "statement": "The image workflow pushes a multi-architecture image (linux/amd64 and linux/arm64) to GitHub Container Registry using the repository root as build context.",
+      "evidence": [
+        {
+          "resource": "repo://.github/workflows/build_image.yaml#L100-L105",
+          "version": "repo-lines-v1:sha256:d037937554466238e7a0891334007076566d60d1f33c91546059f002947d6c74:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMzAzNzE1ZjAxMGUzNzgyMWEzZmE3NTg5YWYwM2U1ODE4NmRlODlhMWJmYWQwNDhkYTdjODUxYmYwNmYyZWM2YSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYmVhOTA5MmVmYzQ4MTk2ZTQ4MzU4Mzc4OTIzYzFhNDU1MWJhNjRhNDIyZDk4M2VlNTVkZjVhNGI3N2FmNGJlMSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOTllYTI2NTExOTVlM2M5ZmZmMDIxZGI1N2QzYjcxNmUzZGY0ZThhYTJlMjJkNDMyOWNhOGZmOGMyYTQxYWI1NyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOWY2YzIxOWY1MjY1ODg5YjI0NTBiNDAwMjFiNjBmYzhhMWJhMGNlMTE0MmYxZDFkYzZhMTgxYmMyMDRmNWM0OSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_f4feb35b8d0f4dbf8e8a5b0253875c56",
+      "statement": "The image is tagged latest and with the version only when a version is known from the workflow input or release tag; a manual run naming no version publishes the short commit tag only, so it cannot claim to be latest.",
+      "evidence": [
+        {
+          "resource": "repo://.github/workflows/build_image.yaml#L33-L33",
+          "version": "repo-lines-v1:sha256:d180bc984dd23ab68800cc452938b445359d793ee334e4c3a51251243d48cd7d:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZDE4MGJjOTg0ZGQyM2FiNjg4MDBjYzQ1MjkzOGI0NDUzNTlkNzkzZWUzMzRlNGMzYTUxMjUxMjQzZDQ4Y2Q3ZCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZDE4MGJjOTg0ZGQyM2FiNjg4MDBjYzQ1MjkzOGI0NDUzNTlkNzkzZWUzMzRlNGMzYTUxMjUxMjQzZDQ4Y2Q3ZCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiM2M3NjMxODNkZjQ4NWQwYjIxZWYwYWRkZWZlOGE0Y2FhZmYzMTJjNmU3ZWJmNTM1NzU5MTgwYzFkYWQ1NmMzNyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNTIzYzU5MGE3YWQ1ODIyZGQ0MGQxOGNiMjIzOWExMTY1YjJjODkzYmMzNmI0MjRjYzBmZDU5YjhhM2IzNWJmMiJ9"
+        },
+        {
+          "resource": "repo://.github/workflows/build_image.yaml#L90-L94",
+          "version": "repo-lines-v1:sha256:ff78e8dae971df11edfa4c91c0b8e27f9cd5a0d30fb424536d37797ada88eb7c:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYjMwY2NkMjU2N2YzN2ZiMGQyNjQ5YjBiYjQ1MTQzNjNmMDk0YTJjNjhlM2NiYWI2ZmU3ZmRlY2ZkZDAyNTEzYSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDk4MDcwMjQ1MzVhOGNhZjY2ZTk2M2YxMjY1MjgxMzk3YzZhN2I5NDI3MzQ4OWVkZDkwOGQ0MDQwMDkyNGY1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNjcxYzIyOGM2ZTgxNTE1YzI5Y2E4MTQ4MGRkNDYxMTU3MTJjZjI4NzZlNWU4NThhZGFiOTA5ODcxNzAyMzMxOCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNjhhMzdmOTkyZTk2MTA2MzQ0YTE3Y2QzOTIwYzg3OTg2NWQ5ZTVkYzQ2MjQ4Nzc0N2I5MWRlMDdiMWI3ZDgwZiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_aa67fcf4d7fa4301b3c6f2ca558eaa15",
+      "statement": "CI runs on pushes to main and on pull requests, with the backend job running pytest on Python 3.13 and the frontend job running pnpm install with a frozen lockfile, typecheck and build; both jobs are skipped for pull requests from release-please branches.",
+      "evidence": [
+        {
+          "resource": "repo://.github/workflows/ci.yaml#L10-L61",
+          "version": "repo-lines-v1:sha256:21717b7dc616ed16720ce576dc48e447db48bc5d6dcbea6a4e2176d2e58a5244:eyJzZWxlY3RlZExpbmVDb3VudCI6NTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI1NGQ0MTMzYmJmYTBiZTRkZmJhNDI5YjA5ODRjNzIzZTIxNDI0ZDMzNDdmYWYxYWNmNTJiZmE5NTY0NzQ5YzUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjUwNGIwNDRhYmRhZWQ5Y2ZiYTcxYWUzNmI3ZTI4NDY5MmRkMWVmMTcwMWRkZDNkYjA4Y2UwOTQzMzM4OGY3ZDQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjgwY2NhOGNiNmNkZWIwYzgwYjI1OTdlOTMzNTNjNGQwODI1ZTNmZDNkNmU2N2JmZGU5ZWIxMGUyYzA3ZmM2MjAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://.github/workflows/ci.yaml#L14-L14",
+          "version": "repo-lines-v1:sha256:80051b4f87d9dcad1f74ce456b7c0c3a13290cac41a7fc31912c05b1b2169875:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiODAwNTFiNGY4N2Q5ZGNhZDFmNzRjZTQ1NmI3YzBjM2ExMzI5MGNhYzQxYTdmYzMxOTEyYzA1YjFiMjE2OTg3NSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiODAwNTFiNGY4N2Q5ZGNhZDFmNzRjZTQ1NmI3YzBjM2ExMzI5MGNhYzQxYTdmYzMxOTEyYzA1YjFiMjE2OTg3NSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYzI0YmEyNDFhNWJkZjRlMjI5MTE4NzQ5NWJhNDY2ZmJjZTU3NjdjMjA5NDJiMzE3NDY1ODBiZDhiODQ5MzQ1YyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYjM2MTlmMThjYzRhNjdmMDdkNDU5MDY3NWZjOWQyZmJkOThiOTY4ZmMxMGU2OTY3NDczNjNiNmI5NTVhMDNlMCJ9"
+        },
+        {
+          "resource": "repo://.github/workflows/ci.yaml#L33-L33",
+          "version": "repo-lines-v1:sha256:80051b4f87d9dcad1f74ce456b7c0c3a13290cac41a7fc31912c05b1b2169875:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiODAwNTFiNGY4N2Q5ZGNhZDFmNzRjZTQ1NmI3YzBjM2ExMzI5MGNhYzQxYTdmYzMxOTEyYzA1YjFiMjE2OTg3NSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiODAwNTFiNGY4N2Q5ZGNhZDFmNzRjZTQ1NmI3YzBjM2ExMzI5MGNhYzQxYTdmYzMxOTEyYzA1YjFiMjE2OTg3NSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiN2E3YjIwY2NhMDZmYzlhYWZjNzJhMjkwNDIwMDAyNWExNzIxODMzNzU2ZDBhZThhOGFiYTU5YzBiNGJlZTgzNyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOGIzY2Y4NzQ0MzhjMDY4OTk1NGYyZTliZWI2NmNlYTdlNmI3MDFjODRhYjk0ZDBjMzY0ZjE0YmVkNjJiNWExZCJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_afe817d921f6477abdd6440ef22ca464",
+      "statement": "Desktop builds run on release publication or manually across Windows, Linux and macOS runners, freezing the backend with PyInstaller, building the frontend against http://127.0.0.1:5543, and packaging with electron-builder without publishing.",
+      "evidence": [
+        {
+          "resource": "repo://.github/workflows/build_desktop_app.yaml#L3-L17",
+          "version": "repo-lines-v1:sha256:6acc5e2cc415e797634b36f99afeb48563dd1028e751ef0c93354ab6d57af786:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM3OWZmYjI5NWM1ZjNjZjZiYmI4NTY3MWZlNDMxY2JjODE2OTI2ZWIwODc2MjdlMjU3MGRiMGUxMGU0ZjQ1YTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI1MGE2MDZkZWQyMDhhNzcwMWFmZTU5ZTg2MjQzYWQ4M2EyMjg0MjlmNTMzMjk4MDNlZGU1MDBlOGY2Y2M5ODUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjoyLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjMwNzE1ODg4ZTcxMDNlYzU3OTQzMmQ0MWU0YWNiYTRiNjc3MjYyZjM2MzM3OWRkZjIwYmNhYjM2M2U4ODU0OGMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjJlOThhMzQ3M2U2NTE0NGY2NTQzNmJlODZkNGIxZjkyNjNjOGMxZjUxYTM1NTM5ZWMxOTU0MWQ4ODc0MTJmMzYifQ"
+        },
+        {
+          "resource": "repo://.github/workflows/build_desktop_app.yaml#L71-L90",
+          "version": "repo-lines-v1:sha256:a8f733cddba92f62d23a59a97778e54ad6d13966133c84fc215f2b92400065b7:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZjNWI3NzIyZDJhMmU1ZDRlODNmMGY0Y2IxOWFhYTNjZGNhOTRhYmJlZDg5N2Q0N2IwMDQyNWI0NzljNjk0ZmMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRlYmViODQ0YjFjOTM4OGFiZWNjYzI2NWY3YTEwZTFlZjc0ZmZjODI4NzczYzNlZTI0MTQyNzViYTZmMTc2OWEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjI5OWZlOTFkOWIwMjZlZjIxYWViMDNkMzgyNjQ3YzIwOTcwOGNlMDZlYzc0YzNiY2FhNmJmY2RiMzFkMjg3MWEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjNmNWE0YmUyMmVhNzc5OTE0OGNjMTllMmQwZDc4YjBmNmY0YTg0NTA0YTk1YmU1NDBkMmQzN2M0NWYxNWRjMDQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_a8fd935a4905412f8eb4bd96c108e47b",
+      "statement": "Desktop installers are attached to the GitHub release by a final job that runs only when the workflow was triggered by a release event.",
+      "evidence": [
+        {
+          "resource": "repo://.github/workflows/build_desktop_app.yaml#L104-L127",
+          "version": "repo-lines-v1:sha256:bb658e9c775e1dbecfac74cf688435b409d220ae285cfccc6cf245baa6779e95:eyJzZWxlY3RlZExpbmVDb3VudCI6MjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ1YjYxYmE1MTM5ZjE5OWU2MmQwYzMyY2I3ZjFjOTU3ZmMwNmJkOTQ4MTZjN2VkMzAwMzQ0YWRkZDdlNmNlMDciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImMwNTEyYmMwZTgyNmQ4ZDc1YzQ2MmYzMzNkZTk2MWYyYWIzZTgwOTQ2NmY0YjFkZDA1NWQyODllYWZkNDU0YWUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZlYmZiOWFiNzI2NTE0NjAyODU5NmQ4YzMwODcwMWE4YTU0YzY3MjcyNTQ5OTUwZTdhZGQyYTljM2I5YWEzNGMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_3a161be219b94b14859a8c4480f213f5",
+      "statement": "The Electron configuration bundles the frozen backend as an extra resource and targets NSIS on Windows, DMG on macOS and AppImage on Linux, and the PyInstaller spec bundles the migrations folder.",
+      "evidence": [
+        {
+          "resource": "repo://backend/flask_backend.spec#L9-L9",
+          "version": "repo-lines-v1:sha256:097ead0730235fd75c8daed63bb637e3c364551023164416972d141a0afb34e2:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMDk3ZWFkMDczMDIzNWZkNzVjOGRhZWQ2M2JiNjM3ZTNjMzY0NTUxMDIzMTY0NDE2OTcyZDE0MWEwYWZiMzRlMiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDk3ZWFkMDczMDIzNWZkNzVjOGRhZWQ2M2JiNjM3ZTNjMzY0NTUxMDIzMTY0NDE2OTcyZDE0MWEwYWZiMzRlMiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNWFmMjFjMDE5YzMzY2EyM2ZjYTgzMjhmODkxNWM2YWQxMTEyYTY3MTNkMzI4MmNlOTZmNGZkZTU0YjM3N2IxNCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNzRiMmU5YTlhMDMwZmFhMzJkOGQyYmI5NjM5MTM3OGUyZmM3NzVmZjBkZDQ0NmFhZWI5ZTcyNjc3MDc0Yjc5NCJ9"
+        },
+        {
+          "resource": "repo://frontend/package.json#L57-L84",
+          "version": "repo-lines-v1:sha256:6684902648d0a0e78a91d34dc9c563f8528b44a9e52329e71c311b2be8e69e71:eyJzZWxlY3RlZExpbmVDb3VudCI6MjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJhYTNhMWZlZjVjMjc2OGJhYmRjMGY0MjY4Nzk0Y2NkZjE0OGM3MDA5ZGJmN2QwNmJlYzg2YjliNzAxZmQ4NjIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjcxMzQ1MTgwMTA1YjBjNjZhNzdkYWQ1MWJiMzc5MDFhMzczMmM5NjU0YmE0ZGUzOTgxZjgxZTE4MTc1MjQ4YmYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImY1MTYzYzVmY2EzZGQ5OTcxOTgxNWJhOTE4MWEwNzEyMDgzZDQ3NzZkM2RhZWMxZGQ4MGE2YzVkMmUzMTRjNDQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUyMmZhYTUzNWJkMmVhM2Q1MmU3NDFlZDQ1NDQzNWI3ZmU0OWU4MzU4NmU5NDNkOThkODJiYmZiMjRkMWY1YzUifQ"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.7.2",
+    "at": "2026-10-27T18:55:06.371Z"
+  }
+}

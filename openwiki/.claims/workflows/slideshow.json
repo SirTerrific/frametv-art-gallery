@@ -1,0 +1,150 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:cc2b8e54211bf706f0bfc08228c2d0762968e5a550c20f791158129fdea972a0",
+  "claims": [
+    {
+      "id": "claim_74fae2036f2a4f27abe68c470503ba0c",
+      "statement": "The slideshow never uploads anything: it only moves a TV to an image already on it with a single select_image call, choosing the entry after the last one shown from the upload records of the chosen album for that TV in the order they were sent, and wrapping around.",
+      "evidence": [
+        {
+          "resource": "repo://backend/utils/slideshow.py#L1-L10",
+          "version": "repo-lines-v1:sha256:02be120a9913c435875d49c8fd508c6fe0da97277e18ba316aa0d01af25224f4:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ0NDEyMzMwYTk5NjkzYzc2MThjN2E2NjYzMzA1MmUzYmZjOThjZGVmMDQ1ZGU3NmE4ODkyZWY1NWNhYTFiYTEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ3NWQ0NTg5ZTkxY2M4Y2I5NzQ4ODlkYWIwMWRlMTVkYjE1NzRjYTEwZWVjNzI5MGExMDliZjU4OGM5NGUwMWIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU2OTRmYTAxY2UxZDQwMGYxNjA5YTI1MTcyYTVhMjZiN2E0MTNhNjkzMGVlNmUyZWQyYTAyYmRhMTcyY2UyMDkifQ"
+        },
+        {
+          "resource": "repo://backend/utils/slideshow.py#L122-L132",
+          "version": "repo-lines-v1:sha256:f9823cbd0512f9f1e4a0671c1cbc5cc5d18e880682c5e49063c384f7743fa520:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdmNWIwNjg4MGNlYTc4NzQ0NDBlOWU2ZWU0N2ZhOTk0Mzg2NTg3OTE2NmVmMWU1M2ZjMDVjYzE4ZmZjNmZkNDAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNhYWM4MTlhNTliMjRjMmNhMDU5N2IxZWMwYzkwY2M1NzY3ODQ5Mzg2YTM4ODNhZmEzYTg0YjMxMTkxZmI1NTciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjkyMjkwNDBiNDdjMmEzODQ4Y2U2ZDU3Y2I5MGE0MzI5YmQ4ZGZmNzEzNzdlMmIwZTc1MjY2NDdlMTdhMzVlNTciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImVlZDNhMTE5NDJmYzk5NGJmNmM1Nzc2MTlkMGRhNTYxMGQ0YzU2NTljMjMwMjM1MWUwY2NhYjZjOWYyNzcxM2MifQ"
+        },
+        {
+          "resource": "repo://backend/utils/slideshow.py#L60-L67",
+          "version": "repo-lines-v1:sha256:bed94b8ad2ddc3593aafe2c432bd12761084cfacd00f82207566d115fc39b676:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNDBjOWM3MzVmNWZkMThkZDFkMDZkMzhjZjkyM2MzYTM0OGIxOWUxYjcxYzI5ZDhlNDg3ZTA4OGJmMTE3YTkyMCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMGQ3YWQyMzM1NTdmYjg5YWQyNjVhZmU2M2UzM2NhZTRhYTIzZmRhOTkyNTEwNzdlODFmZWNkM2IxMzM0ODU2NyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiODNkN2NkZDk2MTMzZTljYTYzYjMwM2RiNTAxNTg2NWNlMTI2YmEyOWYwZDI4N2Q4Mzk0ODQwMTdhZjEwMzJiMCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiODFjOTgwNzJlY2FiODE2NjE5ZGRhMWU5ZTA4YWNkYjFiOWNhOGQzYmUxMDExMmVhZDgwODk0MzVjOWNkZmQ5MSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_c0953f70e694442fbe06e90b2d6a7036",
+      "statement": "When the album has no images on the TV the loop logs that the album must be sent first and records the attempt time so the empty album is not retried every tick.",
+      "evidence": [
+        {
+          "resource": "repo://backend/utils/slideshow.py#L133-L140",
+          "version": "repo-lines-v1:sha256:26115a008a979bc9de3265cadf9f6fc650f902e399a754c9186bdd6623c1c715:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZGNlNmQ3YmVmMDI0Njk4Y2Y0NTYzZDI5ZjFjZTcwOGVjNzZjNzViYzk1NWMyOTEzOGQwYWI1NjljMGQ0YjAyOCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZmE5NmIzN2U3ZDQ1MTJmOTkyNzJhZDg2MzQzNjNkMGI0MDBhMWM4YzQxYTgzYjJhZGUwODFiZDc3ZGE3MmY4MCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMmNjOWRiNTZiMTcxYTc2MjI3OTAwNjJiZTEzZWM1ZmI0MDcxOGJhMzMyZjdmNjQxYThjNzgyNmFmMTVjZDY1OCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMGFhM2YwMjVlMDIyNmZhMTk4MzQxOWZiMDI5NmE2NDlhOTRiMjlkMzljMzA5OWJjYjcxMGZjN2NkZjg0YzQxZiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_4586af0947094d07bc3b904e3672dd02",
+      "statement": "Slideshow settings are validated by PATCH /api/tvs/<ip>: the album must exist, the interval must be a whole number of at least one minute, and the slideshow cannot be enabled without both an album and an interval.",
+      "evidence": [
+        {
+          "resource": "repo://backend/app.py#L941-L972",
+          "version": "repo-lines-v1:sha256:376c3348adae30d4898f04a9ab43c0968dce31fc73f90e0e696c58a06a95a68f:eyJzZWxlY3RlZExpbmVDb3VudCI6MzIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU4OGFiZTA1Njg2YTk3NTJlZGVhNTk3OTc2Y2VmNjA0NjlkMTNkNzBmNzgyNTIxZTY0YTA4MTBmOGVlYTNmNzYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMTcxOWE4NDExNDk0MjBmMTNjZGEyODA4NTE5NWJhYTYyNjY0YmIxMGI4MTBiZTZiYTFlN2MyNzA4ZGQ3YjgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjBjMjAxMTE2ZmQ1N2E0MDE5ZGFkYjVkM2QxYTAwMmU2ZmM1ZmFjYjczODgzNWVjMjk0Yzg1NTQ0YThmMDkwOTQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjEyMjY4MjcyOGJiYWU0NDBlNTBlYTY5ODMxMGFmMzk1YTIxNTNhNGVmOGFkMzY5NTIzYTc3N2M2ZTBiOTc5MWMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_7f162d3556fb4c289adefca509ff1221",
+      "statement": "A single worker runs the slideshow loop because each process tries at start-up to take an exclusive non-blocking flock on a lock file, the winner keeps the handle open so the lock is released if it dies, and the others log that another worker runs it and do nothing.",
+      "evidence": [
+        {
+          "resource": "repo://backend/app.py#L158-L158",
+          "version": "repo-lines-v1:sha256:cf40c8c27074834eb79b505392d8a9db400bed08807be26f8e4747714450699f:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiY2Y0MGM4YzI3MDc0ODM0ZWI3OWI1MDUzOTJkOGE5ZGI0MDBiZWQwODgwN2JlMjZmOGU0NzQ3NzE0NDUwNjk5ZiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiY2Y0MGM4YzI3MDc0ODM0ZWI3OWI1MDUzOTJkOGE5ZGI0MDBiZWQwODgwN2JlMjZmOGU0NzQ3NzE0NDUwNjk5ZiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYWQ4ZTZmNmZiZTUzYmRkMmJkMzVhZGI4MjE4ZGVjOGFmMDM2M2FmOGI4MjY1M2JiYjI4MGRhNzg1NWIxOTQzZSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNzhkNmNjM2UyY2EzNjRkY2M3NjBiY2ExZDAwYjlkM2E4MTQyMTljOTBjYWY1ZDE5MmY3NzdhMzFkM2JmNTE4MSJ9"
+        },
+        {
+          "resource": "repo://backend/utils/slideshow.py#L1-L6",
+          "version": "repo-lines-v1:sha256:ea56222341a33eef98902cfd5281f4280bdd8a7c4d918357f31e646edc363156:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZDQ0MTIzMzBhOTk2OTNjNzYxOGM3YTY2NjMzMDUyZTNiZmM5OGNkZWYwNDVkZTc2YTg4OTJlZjU1Y2FhMWJhMSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZjdlZWFiNWM1YWY5ZjcwYjUyODM1Zjc3Y2JkODcxMjM0N2FjYjUyMTc5Y2U5MjM2MDY2NWRmZmQ5YzI0Nzk1NyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjAsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiODVkODFkNzViYzcxN2QxN2JhODViOGY2ZTY4NWYzN2NiZmNlYTcwYzY1ODU3YWJiMDYyMzgyNjllNjE0M2UwYSJ9"
+        },
+        {
+          "resource": "repo://backend/utils/slideshow.py#L106-L110",
+          "version": "repo-lines-v1:sha256:c90a5bd03b8f26194d23bc982f6cb4388e9c1960b79fd58e085e13f407ce406f:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiM2YxYzM5MTljZThkNWI1YjM1MWYyNzE4MWMwZTlmODQwOGMzOTc4M2RhYTU0YzMxN2Y2MDE0ZmUwMzMxN2YyNCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNmQ4ZWM0ZTg0Mjg5NWFiZmYxMjRhOGRjODk3NTQ1N2M1MmM4MGYzYWNmMGQ4ZmU3ODhkYWQwODNhNmRiMDZjOSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZWU2OTg4NWJlMDFiZjZlMjQzOWM5ZGVjNWNhNzIzYTYxYTAzYmEyMjU1ZDM0MWIzMzQ4ZGRjNjFkZjM1NjdkMiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMGYyYjQ2M2E1MjZhMTk1MTQ4N2Q0OTUxNGY5MWQxY2IyYTdjOTkwMzRlMWEwMWM3ZDI4ODM1NDI3Nzg4MTY3MCJ9"
+        },
+        {
+          "resource": "repo://backend/utils/slideshow.py#L32-L48",
+          "version": "repo-lines-v1:sha256:24eb8412cd229733deb979e43010bc90c3656e2cdf278e00b4475e62b77920ab:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE4NDEzNjU2OGE5NDY3NTU3MzNiMGIwYTFiOTNhMWE0OWVhYjk0Mzc5MWM0ODM3ZmMzNzRlNTgzMTlhZDhlNzgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjllYzk0OTUwZmIwY2E3NTVhYTdiOWNlZDg2OGZhMzdkZmEyMzNiNzk5OTcyMzM0NjhkNjY0ZjYzZDYxOTA5OWIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjExZTZiMzE1ZGRiNDgwNDA1MmY1YmQ0ZjBjOTUyNGU5ZjIwYjQ5ZThiM2Q4YmFhYzAxZDIzNjA0OTEwYTNhMWIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUxZjM2YWI0YTA4ZGNjNTY4ZDY3Y2NkMTU2ZmYxOWFiMDE1ZWJkMDkxYmQzOTg3YjE1NGExNDdlOGQ2NDRkMzkifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_47994702649e4caf9677da54bec6284e",
+      "statement": "The lock is claimed only once at start-up, so a worker that lost the election does not retry, and without fcntl there is no arbitration and the process becomes the owner.",
+      "evidence": [
+        {
+          "resource": "repo://backend/utils/slideshow.py#L32-L41",
+          "version": "repo-lines-v1:sha256:61ee19ec48eeda3e381e00f27da36cc52765584512640fd97a2c558ea5027788:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE4NDEzNjU2OGE5NDY3NTU3MzNiMGIwYTFiOTNhMWE0OWVhYjk0Mzc5MWM0ODM3ZmMzNzRlNTgzMTlhZDhlNzgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhlNzA0YmRkN2NjMjg1NmUxOGJjZGY3MzA5OGFhMmE4YWUzOTEzNDk2OTM5ZDVmZmI2NDI5OWFkODViOGY5YjMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjExZTZiMzE1ZGRiNDgwNDA1MmY1YmQ0ZjBjOTUyNGU5ZjIwYjQ5ZThiM2Q4YmFhYzAxZDIzNjA0OTEwYTNhMWIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjMyMjg3MmUzMzdhZDYzOTY4OWVlOGIxMjJmYjM5YWJjNjVlMzNiOTg1NWYxNjI5YmY4YWM2MmIyNmMwYWVkZWMifQ"
+        },
+        {
+          "resource": "repo://backend/utils/slideshow.py#L98-L110",
+          "version": "repo-lines-v1:sha256:77fedc5c674a0726f9706ad51c1a5c235d1a69124b4eff5e4d5e1015e5a9082c:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjUxYjcwZjJjZDlhMjc4Y2U5ZTVlODI2ZGQzNDM2OTVmZmMwYzdmNWE0YzRiN2NhYjMyNDhhNTk1NzZkNTc0YjAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZkOGVjNGU4NDI4OTVhYmZmMTI0YThkYzg5NzU0NTdjNTJjODBmM2FjZjBkOGZlNzg4ZGFkMDgzYTZkYjA2YzkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjlkNGM3NmNkYTFmN2ViZjJkZmQ2Mzc1Yjc4OGMzOWQzMjVkY2VmNTYwNjNjMDhhNDc2Nzg2MDQ1N2YzZTg5MjEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBmMmI0NjNhNTI2YTE5NTE0ODdkNDk1MTRmOTFkMWNiMmE3Yzk5MDM0ZTFhMDFjN2QyODgzNTQyNzc4ODE2NzAifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_1d82d64591c94f98bf5a876c2dac90c9",
+      "statement": "The slideshow start returns immediately when the FLASK_RUN_FROM_CLI variable is set so that flask db upgrade does not run the loop against tables a migration is altering.",
+      "evidence": [
+        {
+          "resource": "repo://backend/utils/slideshow.py#L100-L104",
+          "version": "repo-lines-v1:sha256:1aa30ba11883ed282ac16c43607341b41cf96d82776269bf9557ec06a5b02402:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNDI1NGNiMzc2MDNhYTI0Njc5NjBiMWQ2MDA4OTJlMDNlZmNkNWM4YmU5YzMxNjAwZDk2ZGMzNTVjOTc3MGNjNSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNmQ4ZWM0ZTg0Mjg5NWFiZmYxMjRhOGRjODk3NTQ1N2M1MmM4MGYzYWNmMGQ4ZmU3ODhkYWQwODNhNmRiMDZjOSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiM2JlODhmZWMyM2M2Yjc1MjcxNTg4MDFkODhiMjI2YmY2MGVkYzI4ODk2ODQ5NmFmMGQ5MTQ1ODRjOGE1NjdjNyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYzQyYTkzMjBjOGEwMjQ0ODdlYTkwNjdhODcxZDBkZGU0ZTIyMjcwYWFiMDhiMjBlZjk2YTY1ZjM2NGI0NmI1OSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_6af67bf26f944956b6494646e9e3436e",
+      "statement": "The slideshow thread wakes every 30 seconds and rotates each enabled TV that is due, meaning it has an album and a positive interval and either never ran or last ran at least one interval ago, logging and continuing on any exception.",
+      "evidence": [
+        {
+          "resource": "repo://backend/utils/slideshow.py#L161-L176",
+          "version": "repo-lines-v1:sha256:34102d8ac05b9c27ddfa779397d5b0d09df44f0871e2e93e14a3aa21b03db30c:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI2ZjY0M2ZlZGQ1ZWQ4MjlkZTVkZGNjOThkNWUwMzYyMjQ5YmExODY3YTM2MDk3MmNlMzIyZmM4ZDAzOWUzMTEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBlYWIxYjUzN2FlYTg1NDQ3ZjE1YTYxZWM1NmVkYmFmYjdjZDA0MmY1OWVlMjk5ZGQ2NzYwN2Q3MTI0ZDcyYTYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk0OWMyMDI2OWU2MDliZTkwMDI4MDg3M2YzMjIxMWU4MmU3YTgyYjM3MWQwMjdiNTc0NzJmNzU5ZjUyNDA1MjUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjVhZTA0NjVlOTU1NjE5YTA3MjFlYjliZDNlMGI1Yjg2NzQ2OTkzYzc5NDM1MGJmNDY0ZjU1N2IwNjRkZjhmZjQifQ"
+        },
+        {
+          "resource": "repo://backend/utils/slideshow.py#L27-L29",
+          "version": "repo-lines-v1:sha256:9855bf30955d439f626eb7662793b9fd85623c3413cc5d2285ae1a09dd4c4562:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNmEwMGFmODMwNjQyM2VhMjM0NjljZDY4NzVmZTk5NmVlMmM2YTVmNDBiNzI3ZDliZDAwZmEwY2ZmMmY3MDkzZCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMGRjOGExMTJjNzc0NjhhY2Q0ZjYwMzM5MmQ4MTZmYzc2YjM3NjRkMDllMDg0MjI4YjlkYmYzZWZkNmE5ZmIyMSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNzFjNDgyMjdjMTEwZGE3YzFjOTM3NjkzN2FjNGI3NjkzYzhmMGQ3OTQxMTgzNjEyYjkyYzkyNWQwNDdjYTYwYSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiN2Q1ZTUyZjRkZjBiMzhmOWQwNTk5MWE5MWZhZDMyZTBjYjY0YmIxYzY5MThjZTNjMmUwMjJkZGNhOWE3MmM0OSJ9"
+        },
+        {
+          "resource": "repo://backend/utils/slideshow.py#L51-L57",
+          "version": "repo-lines-v1:sha256:bed0edd6af3ed22f79200a81f954a5827b42502f3dd2b2034721f1f08164dbcb:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZjJmNzFkZWIyMmE5YTNkNDFmMTFkZTRlODIyMWU1M2VkZjQ0MDdkMDNiZTViNmZkZDhiMTE5NDI4ZTFmZmI1MCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDZkMTZjYmM4N2YwZDE1MGE2Yjc0NWQwMWQ3MzEyZGIxM2Y1MmZlYWQ4NjQ3ODdkZmUwNzhiZGQ1OTU5YTZiZiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNjQwY2I1MWY0ZjU0NDg0OTgwN2FiYTBjZDA3ODVjMzc2Zjc0MmE2NGYyNDYxMTY3OTg2YWY4NGE4OThhY2NjOCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZDVkYTc2YjcyYjZmMGQ3MjhmYWE1NWFhMTE0YjNlYzA2MzBjYzI2Y2NhNDNlZGFlYTA5MjcxYWM1YTNmMzcwYiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_3258042483c84c7595c37e786fbcca1d",
+      "statement": "Before rotating, the loop reads the TV's art-mode state and rotates only if the TV is showing art, treats a TV whose state cannot be read as in use, and records nothing when it skips so the rotation resumes on the next tick.",
+      "evidence": [
+        {
+          "resource": "repo://backend/utils/slideshow.py#L114-L120",
+          "version": "repo-lines-v1:sha256:71018770064ad0bc0e954e5e09cc6311fd04906420a33d973e6e14e7a8ab9034:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZThkOWZhMTJiODdiOGE5ZDFlYmU5MjA4YjQyMTZjNzU0OGQyNGU0NDkzOGM0MDhiNjM1ZWQ0OWZjNGRkMjI1OCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZmE5NmIzN2U3ZDQ1MTJmOTkyNzJhZDg2MzQzNjNkMGI0MDBhMWM4YzQxYTgzYjJhZGUwODFiZDc3ZGE3MmY4MCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMGYyYjQ2M2E1MjZhMTk1MTQ4N2Q0OTUxNGY5MWQxY2IyYTdjOTkwMzRlMWEwMWM3ZDI4ODM1NDI3Nzg4MTY3MCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMTNjNTE3N2MxNWY1MzY2YzUwOWU0M2NiODQzMzU4NjA3OTg4MjEzMDFhYWMxZWY4NGI5YTlkNWU0MTRlMGFhNiJ9"
+        },
+        {
+          "resource": "repo://backend/utils/slideshow.py#L70-L81",
+          "version": "repo-lines-v1:sha256:fe39d3913515572613bc5dcee7640066ecacac39bd2bd10732c3c9f21d8bf5d3:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVmNDEzOWY4MmFkMzU2ZTM1YzkzOTBjNWEyNTE4YTU0ODk3NTZmYzUzNDdiMTIzY2Y3ZjI4ODkxYjNhMjU0NzAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEzZTY3Zjc2YTIyODdiYjZiNmFkYjAxNTA1NWRmZjA4OWMwNjY4ZmFlMmE1Y2ZjOThmY2JmYTIzZWYyYjQyODAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjdiY2RiYzY1NDdhYTkzNTJhYzk5ZjFmNTgyNmU3Y2M4NDhiNDdkNDc5MDc5NzgwYTdkOGNhNjdhNzAwNWQwOTciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjFkYTllM2UwYjhlZDVhNzhlZjZlNWE1OThmN2E4MDFmNjQ5Mzk1YTg5NTFkM2RhYjY0ZWYxN2E2ZTFlYjIzZWUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_611c2672b8b54306ba2a771cc250ab76",
+      "statement": "When the TV refuses an image because it no longer holds that content id, the record is deleted and the loop moves on, while an unreachable TV is logged quietly and retried next tick with nothing recorded; only a successful rotation stores the content id and time.",
+      "evidence": [
+        {
+          "resource": "repo://backend/utils/slideshow.py#L144-L159",
+          "version": "repo-lines-v1:sha256:bed846f830d73af0a39d3159915fcbc8f2309a252b1208a7a9e0eec65f40241f:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI2NTJmMmVhNDI0OWQ3NmNkMjMzNjRiYWJjOTEyMzE3ZWI4YWNiYWE0YjA1MWMyMjRhZTRmMDFkYTViZmRmN2MiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRlNjg3OGJlM2Q2MDkxYmNlNjU3MGVmNWY0NzNlNjU2OWFiOGYwNmIxNjhiMTQ3MzJlNzQyZTdiYmNmYTViZTgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjBhYTNmMDI1ZTAyMjZmYTE5ODM0MTlmYjAyOTZhNjQ5YTk0YjI5ZDM5YzMwOTliY2I3MTBmYzdjZGY4NGM0MWYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjFjZmMxMWQ1NzQ5ZTRlOGZkMGZhMzg5NzNiM2MxOTlhOGFjYWJiZGQ1YjViYzBhYWJiYzY3ZTE3ZWRlNjJjYTcifQ"
+        },
+        {
+          "resource": "repo://backend/utils/slideshow.py#L84-L95",
+          "version": "repo-lines-v1:sha256:65bdb899d17202e7619e9644ed5a4cba389d52bd8def4b15d7f1e66f767de4a0:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU0NzAzNjBmYjQ1NmRjZjQwYWQ4OWZiODc4NzU4OGE5NjEwMTc5NmIwZDhjYzkxNjFlNTY1NjliNTkzNjExNWEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJkMGUwNDQzZmVmYjZjYTAxM2Q0ZjI5OGJiNTRmZjIwNThkZmVjODk1YTc3NDhhYjAzYjlhZTNmNWFiMjNiMDMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjZkYzVhZjBlNDMzNDc2MDZkNTIwY2M5ZWU5NzliMjI0YjUxMjhmYzM4NWVhMzk1ZWUyNjJmMDdlZDljMWZjMzciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjgwMTE0MGM1ZWE4MjlmZDEzMjQ5ZTY2MWFmZTliMzIwOTdiN2JjMzJiNjhiMjU5ZGQ1OWQ5MmY4OGE0YzRhNTkifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_abe53ac814584909bbd56ec036def6f4",
+      "statement": "The slideshow loop is not started when FRAME_TV_SLIDESHOW is set to 0, false or no.",
+      "evidence": [
+        {
+          "resource": "repo://backend/app.py#L157-L170",
+          "version": "repo-lines-v1:sha256:15d4e9500a637c847941e3cfaaddd4307c3b8a4ea6eb7355c479fd4906d7219c:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE0MzQ5YTM2NmUxN2RmMTUxYTNhMmMxYWRlYmIwMGYxYjIyM2RkMGM5YjYwYmJhYWIzMWM2NTUxZDZkYTE1ODAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM5MjIwNGM2NWY1MDJkYzE2NDU0YjYyNDA4NTZhOWFiN2FkZTAwM2E4ZTlmODYzMzNlYzBiN2M5ZTQwOTQ5MWQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjBiMGI5M2Y1NGUwMTZmNzI5NjdiZDIzOTE4ZmY4Yzk3NjM3ZWViMzE2Yzk0NjMyNTU0YmQ3NmU0YTUzODZkZmYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjVhMWRlOTM2M2YwZDcyZWMzYmY2MjM1N2NjZGVhMWY0NWE0NzVmNzBmOGQzOWIyZGFkY2JjZDVmZGMxMTVjYjUifQ"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.5.1",
+    "at": "2026-09-21T02:31:07.302Z"
+  }
+}

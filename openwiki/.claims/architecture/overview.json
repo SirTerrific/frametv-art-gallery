@@ -1,0 +1,156 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:c16290aca02a07ba7ccad807370024e004010db079f65f08f8bf211faa94d136",
+  "claims": [
+    {
+      "id": "claim_712a71ed6c2f42f79921ae3213882d4d",
+      "statement": "The frontend is built as a static single-page app with server-side rendering and prerendering both disabled, and Flask points its static folder at frontend/build/client.",
+      "evidence": [
+        {
+          "resource": "repo://backend/app.py#L102-L102",
+          "version": "repo-lines-v1:sha256:6bfd55fbd623e47c8baf91a1e6878cf0906f6919e95de8dc9a22a5697b46e4c1:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNmJmZDU1ZmJkNjIzZTQ3YzhiYWY5MWExZTY4NzhjZjA5MDZmNjkxOWU5NWRlOGRjOWEyMmE1Njk3YjQ2ZTRjMSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNmJmZDU1ZmJkNjIzZTQ3YzhiYWY5MWExZTY4NzhjZjA5MDZmNjkxOWU5NWRlOGRjOWEyMmE1Njk3YjQ2ZTRjMSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOGI0ZTE5NWM0YmIxZTQ3MzIyNWE4NDM1ZTBjNjZkMTZhNDNjMDM1NDEwOTcwYTRjYjk1OTdmMGRlMjMyZjA1OCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZGRkOWMxZTBmMjAzNDY1N2JlMmE2NzYzYmJkZmY4MGQ3Yzk5MDNjMWY0MDVmMDMxOWEzZDc2YTE4NDkzYjQxMSJ9"
+        },
+        {
+          "resource": "repo://frontend/react-router.config.ts#L5-L7",
+          "version": "repo-lines-v1:sha256:58e402854d7736b06b55016be780e2d0349c739da5cfa8501847d9d89e07755d:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYzYwODI2ZDY2MjYzMzM5YzExYWFkYWEyNWJkMzhmNTA3MzQwMjQ5OTY1MGEwMWE0NDRmNTAyYmY5ZWU4MTNlZiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiM2MxN2FmY2RlYTAyOTBlOTllOGU3YWRhNmJlZDk5M2NjNDliYTFjYTg3Y2JjNGQxMzBkMWUxODEyYWY4MTBjOSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZGExYjE4Yzc1OTcwZWZhYzg2NWQ4YzdmY2YyNjdlN2U3OWJiNDYzNmM4MmI2ZmQ4NzUwZDEyYjYyZmFkYzI5OCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjEsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMWE1YjA2YTExODRiZTlmOTBhMGQyNTNlODcxNzczMmY0Zjk3OTFkNTdlMmZlOTI4MGQ2ZDRlNWRkMjY1OWNjNyJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_363a793db49b4443ad1db3ae9a35f857",
+      "statement": "Flask serves the frontend through a catch-all route registered last: a request for an existing file returns that file and any other path returns index.html so client-side routing can handle it.",
+      "evidence": [
+        {
+          "resource": "repo://backend/app.py#L1527-L1538",
+          "version": "repo-lines-v1:sha256:3338ca9dd890682fe4ac0c1a40088e73c002a7f57ddb4e940a9b060c0e7f87c8:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE5ZDcxYzhiNzE1NzhmZjg4MWI0OTEwNGUzYWU4YzAyZTQ0YTgwNDZlZGI2ZTU0NTdjODFhOTJkOGM3YWM2MzEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjEyNGE0ZjE3OTU0OGQzNmMyOTU5ZDFkYWUxMmE2MzY5NGQzMGFmM2Y2NmFhYjkzYTEzOWNmZmQ1N2JiNDRhNzAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjljZDk1NDU2MTkxYTE4NTI3Y2JjZmRkMWU3NmIzMmRmMjY3OTkyYzZjZTI0MjE1NjkxMTZhNjcwOTBmZGE1MDIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjhhMjlmOWMyNGVmOTczOWQzZGJmNzQwZjdmMDgxNGYwODMwNzE2NTQwMDQyMjUxMzRkYTI0M2IyOTczODUxMTQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_1d06cb16b0354570abd3f2a4a951fc0f",
+      "statement": "The backend allows cross-origin requests from any origin on /api/*, and an after_request hook sets Access-Control-Allow-Origin to * on every response and adds X-Content-Type-Options, X-Frame-Options DENY and a referrer policy.",
+      "evidence": [
+        {
+          "resource": "repo://backend/app.py#L107-L125",
+          "version": "repo-lines-v1:sha256:1325547e957e16d14a1e1456ded1e8eaf1f913902a41b58393bc0e9c03efa3d2:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNjNzhiMjJmMzY3NjY2YmFmOGE3ZTQ1NmE5NGMzMDExNTg2MWVlYTA0N2I1MDkxMThhMjdiYWQ1ZjQyN2IyOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA1MWNjNWRkYzNlZDQ5MTQzZTc2OWY1YTIxNTVhM2I1MmFlMWVmZWY0MGZlZWZiNjA3NTU4ZTdiOGYxNWQwMTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjBjZDVkN2ExZWNhN2M2MzVmZWEyMDA3MDE4NmQxM2Y3ZWQ3ZDQzNmY4MmJjOTc0YzBjMDU2ZjA0NjFjOTdmYjUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBmNWZkOWMwMTk4NmFmYjUyYWE0MDE2N2ZmMmZiMWNkYTc3MjJlMmE3YjFiNjQ5OTY1NDFhNjI4MzU5YWMzY2UifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_42f61721718e458bba1f8a3e38b1a569",
+      "statement": "The application implements no authentication or authorisation and is documented as intended for private local networks only.",
+      "evidence": [
+        {
+          "resource": "repo://README.md#L30-L34",
+          "version": "repo-lines-v1:sha256:06f103cf2654699dfde535c1ba5c33942a7bb9ec9ccbe5502a12c97ecb104a44:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYmZiY2E2ODI1MWNjMGU5Y2Y2YmFhODk1MmFhYzJiY2QxODA3NjAxNDNkMDFlNDlmZDM0OWNlODRmYmQ2ODVhOSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNzM1MWIyYzU2ZDhlMDc4YzA5ZDNjODE2NmI1ZjExMDY1MjhjNWY5MDRhMDFiMzk2MTdlMWM2NDE3Nzg5NjRiYyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMjQ0MmIzZGZkMDE1OWQwNDIzOTUzMzQ0Nzg1ZjEwY2RmMGY5MTJiZjBmOGY1Mzc4MDcwZTY2MDczNTEwZDkzYSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYTE1MTEwZTg0Njc5NGU2MDcxMjZhNWRhYmVjOWFlYjU1NGQ5NGQ2ODkwNjJiZGNhY2VkNTMxZmM4ZjIxNzI3YSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_721cc7d4ec8942c9a65958067e4368a3",
+      "statement": "Each frontend API client builds its base URL from VITE_API_URL and falls back to the page origin or a relative path, so when Flask serves the frontend no setting is needed; the desktop build sets VITE_API_URL to http://127.0.0.1:5543 at build time.",
+      "evidence": [
+        {
+          "resource": "repo://.github/workflows/build_desktop_app.yaml#L76-L76",
+          "version": "repo-lines-v1:sha256:691ded5a60d6c18c976b13886f25b0385ec9789befaaef28e69264ac93aabf84:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNjkxZGVkNWE2MGQ2YzE4Yzk3NmIxMzg4NmYyNWIwMzg1ZWM5Nzg5YmVmYWFlZjI4ZTY5MjY0YWM5M2FhYmY4NCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNjkxZGVkNWE2MGQ2YzE4Yzk3NmIxMzg4NmYyNWIwMzg1ZWM5Nzg5YmVmYWFlZjI4ZTY5MjY0YWM5M2FhYmY4NCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZjQ5MWYyMTA1MGVlNDczN2IwZDAxMmE0ZmVhYWEyZWY1ZDBmOGZhM2E1NjBlNDA2NTRkZmExYWJlMzVhYWIyMCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNjFlMmExZGFiNjJkY2UzYzdlMTdlMjVmMmEzNGE1ZmQ5YjUzM2Y1ZGEzNGY5YTNkOThhNjFkYWRhODRjODQ5OSJ9"
+        },
+        {
+          "resource": "repo://frontend/app/utils/galleryApi.ts#L3-L4",
+          "version": "repo-lines-v1:sha256:8b5e5196fa18b7b0b56f4bf77eb534250d62ee1e31724ba7eea476b090398ab9:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMTc1YzYyYTE5NDg3NzYwZTQxMGM0NjMzMTE3YjMyY2YyYzQxNzE2MWM3ZTgyYjJjMDVmNGM3MjVlOWJkZTk2OSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNmUxMDY4NTFlMjk0MDJmNjViNGNkZGFlNWY5M2FjYjhkMjJhMWJjZDhmYTMwOGUxOTRmN2YzMzVjZDBlMjNiNiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjIsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYjI0ODRkNWQzMTg2NGY1MmE4NjBiOTk3MGJhNjQzNDM2YTMwYzY1ZTlhM2JmNTQ1ZTJkYWRjY2IxMzE1ODM3NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZmM0NTg5Zjg0ZDllOTY2MTQ2N2RmNzMxYTBlNmViNjk5OGFmNTRmZGRmYWYyN2FmNzcwZWI2OWIwOTRhNjMwNyJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_bef9a7618e1040ed9bca6c24c4102db9",
+      "statement": "The data directory is named by FRAME_TV_DATA (default data); the backend creates uploads and instance folders under it, with the SQLite database at instance/frametv.db.",
+      "evidence": [
+        {
+          "resource": "repo://backend/app.py#L79-L98",
+          "version": "repo-lines-v1:sha256:2490f4b56f5a2b6f160a42ccc8bba981eadc899128d46d356fc8b096d9ccb9dd:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI3YWY5NzA1OTc2MTc0ODRjODYyYWE5NTE0MTRlNjFhNDViZGM4Y2Y1MjExNDc4MjFhM2UyZTVjNDhlNmE5NjgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2NmJhNDkwYWRiOWZmNjdjY2QzOWFmZGZkODk0N2MwNWM3NWQ4OTEzYmIxOWQ3ZDJiOGFlM2I4NGZjNjNiYWIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijg1NzRlY2RkNTI0ZGRlY2Q4NjllOWYxOWY3ZTA5MTkxMGM4ODVlZDc0MDZlMjEzYThlNWNjMTAzZjBmOTE5ZmEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjhiNGUxOTVjNGJiMWU0NzMyMjVhODQzNWUwYzY2ZDE2YTQzYzAzNTQxMDk3MGE0Y2I5NTk3ZjBkZTIzMmYwNTgifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_06d923f37fbb45bc876370996893dfd5",
+      "statement": "TV preview thumbnails are cached on disk under instance/tv_thumbnails in the data directory.",
+      "evidence": [
+        {
+          "resource": "repo://backend/utils/frame_tv.py#L54-L59",
+          "version": "repo-lines-v1:sha256:f321d51f6ef55d0d34036d365f3e87e2221817946c5abbca5bf47dc03aaa5d54:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYjAyNTczZjBkYThlMmExNzE2NjI4ZjU1YjgyYTlhNTZhN2RiOGM3M2QwNjEyMTJmOTVjNDNmZTQ5ZTQ2MWU5MiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMzE0YmVkMzIxODhhZjAzZTdlZjE3NTcxZDRiMDI3NDg5OGYwNjRlNmZjNjVhNDM1ZDBhNjMwNWU5YWNmM2I2ZiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNjNjN2FjOTRmZmQ1Njg1N2U5MmRkNGRmZWZiNzA2ZmQwNTNiM2M1YTQ4Njg1ODc0YzcyYmFjN2NiMzA5NDgxMSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZWVmMWNiM2IwNmVjN2RiYTY2MGMyY2NlNDdkOWEwZWJhNmI1MDc5OTQyM2UzMjcwNzI0NTdlMThiYWViYzQ5NCJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_dfcd5e531f134baf8c7612492c418b38",
+      "statement": "The backend registers two blueprints, media_provider_routes and provider_config_routes, in addition to its own routes.",
+      "evidence": [
+        {
+          "resource": "repo://backend/app.py#L134-L135",
+          "version": "repo-lines-v1:sha256:d8886f8f280157e853e0adacb5a244322e43c1ddc81096056e7f8d315d3445ed:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMmZkZmMzZmZmYTc4M2YyNjQ2ZWQ4NWJmZjJlNjY5ZGEyMTczNjM4ZTBhOTg1ZDgyZDQ0OGE5NWQxZDk0MjgyZSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMzhiMmVjODhjM2YxZWJkZDAzYWJiMzk5MjFlODAyMDRjNjAyOWYwYTAyNmM3ZDhmNDJlM2MzNzU1NmE3OWY0YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYjFmZGYxNzZiN2UxMzI1ZWY1NmJiZWMzNTEzYTU0NGNiMGYxZDdmYjIxMTI0ZDg2YzdlMWY4NDFiYTE1ZDFlNSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiY2E2MGMxMWE4MjQ0MTIxODZlOGUxODlhOWVmNzI4ZjRmZGM1YjkzNmZiNWQ4NDNhMTNkYzUxYzljYTRlOGYzYiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_a25baad405be4b48bc74ca57d403d946",
+      "statement": "TV requests are split across two layers: utils/frame_tv.py decides what to ask a TV and utils/tv_connection.py decides how to ask it safely; the route handlers import the former, including probe_tv and diagnose_tv for the read-only diagnostics route.",
+      "evidence": [
+        {
+          "resource": "repo://backend/app.py#L1460-L1461",
+          "version": "repo-lines-v1:sha256:857856f189d8401fa41fa4d8ce79ed772beb2423a6d52b1e103680d0def3a728:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNjFhMmYxYWEzZjViMjI4ZGFhZDIzNDZhMTQ3ZDM0OTIxZTBlZjhiYzk2NzA3YjBmNjVlZTcxY2Q3YTQzZGQ5NCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNjE2MzNmMTVkYzhiMmRhNDIyYWJkNjZlYzA3Y2EzNTQyMmIyMjY0NDg4MTY4MjUzYjQ5NzM2YTU2OWM0Y2YxZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiODMyYjA4OWExNmIyZWVjNmRjNzMxODdlNGIzZTAzOTdmYmZhZGVmYTAwMGUxOWMyN2I2MjYxMTRiZjk3NDc2YSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNGViMzEwYzE5ZTJlM2FlNDI1ZDM0MWIxMDU0YzRhOTE1M2NhYmFkZDNjZmVmOWY5YmQyZTUzNzIxZmY3YmZlMCJ9"
+        },
+        {
+          "resource": "repo://backend/app.py#L46-L69",
+          "version": "repo-lines-v1:sha256:b58d33b54357657bee6554235e910a73123f1ff0f6884a2165b46e3d70b0bff7:eyJzZWxlY3RlZExpbmVDb3VudCI6MjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA2YjkzYjEwNTAwYmZjOGNjNDI1MzQyM2NlNzA2NDE0YmYzM2I5NzQwODVjM2MxNjRmZTA1YmZkOWEzNzI3OWYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjliMzllMDIyZTBkODU0MTIwMDAzZDc5MGMyOGI3NTk2MmVkZDMwMzc1NmQ1MTMzM2RmNzQ1Y2ZiODZlYTExY2UiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjgyNzY4NWFmOTFiZTRkYzEyZjU0MDFlYzk0NTA2YjZlNjZiMmU4MjZjNWM3NDlmNDNiMTgxYjQ3MGVhODBiOWEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY0MjliZGU4ZjUxMzI0Zjc4MzZhNjMwMTlhNTg1MzU3YzQ0YzJlYjgyODM1MWJlZTc0NmNjNzdhZThjYzFhYzIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_32795a2fce4c4f54bc0917e09ce45751",
+      "statement": "The slideshow loop is started at import time unless FRAME_TV_SLIDESHOW is set to 0, false or no.",
+      "evidence": [
+        {
+          "resource": "repo://backend/app.py#L159-L172",
+          "version": "repo-lines-v1:sha256:15d4e9500a637c847941e3cfaaddd4307c3b8a4ea6eb7355c479fd4906d7219c:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE0MzQ5YTM2NmUxN2RmMTUxYTNhMmMxYWRlYmIwMGYxYjIyM2RkMGM5YjYwYmJhYWIzMWM2NTUxZDZkYTE1ODAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM5MjIwNGM2NWY1MDJkYzE2NDU0YjYyNDA4NTZhOWFiN2FkZTAwM2E4ZTlmODYzMzNlYzBiN2M5ZTQwOTQ5MWQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjBiMGI5M2Y1NGUwMTZmNzI5NjdiZDIzOTE4ZmY4Yzk3NjM3ZWViMzE2Yzk0NjMyNTU0YmQ3NmU0YTUzODZkZmYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjVhMWRlOTM2M2YwZDcyZWMzYmY2MjM1N2NjZGVhMWY0NWE0NzVmNzBmOGQzOWIyZGFkY2JjZDVmZGMxMTVjYjUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_898709c2f69b4ecdad57ff62e8de7adf",
+      "statement": "The packaged Electron shell starts the frozen Flask backend as a child process with --upgrade-db on port 5543, with its data in Electron's userData/data directory passed through FRAME_TV_DATA and BACKEND_PORT.",
+      "evidence": [
+        {
+          "resource": "repo://frontend/main.js#L64-L91",
+          "version": "repo-lines-v1:sha256:d415e2fd13a323d7568ea4140df2eb2f1c00530cbaaf638c6b6c59bb3f048321:eyJzZWxlY3RlZExpbmVDb3VudCI6MjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdlYjcwMjU3NTkzZGEwNmY2ODJhM2RkZGE1NGE5ZDI2MGQ0ZmM1MTRmNjQ1MjM3ZjVjYTc0YjA4ZjhkYTYxYTYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhhM2EyMDUxNDc4ZjQwYTkwMDM4MmY0ZjU2MzM5NTlhMjgzZmQzMzJmMWQ1ZGEyYjBjZGY3MjZmZjYwMDk2ODYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijc0YTU4ZjIyMjk0YjRkZWIzN2Y0YzdjOTFmZjYwZmU0NTUzN2I3MDM1NWJjMDdjMTFkY2RmYjU0MmMwNTUzMTQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU1ZTU0NmM4NTI1OWNiYzMzMTk3MTFiOWJiZTg1OGVkYWM4NGEzZDZiM2EyZTgxN2JhZDFiNTY5N2RjZGY4NjgifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_e55cdf596de543429f4f2cf8597e9cb2",
+      "statement": "The packaged Electron shell serves the built frontend from a small static HTTP server on 127.0.0.1:5174 and loads that address in its window, whereas in development it loads the Vite dev server at http://localhost:5173.",
+      "evidence": [
+        {
+          "resource": "repo://frontend/main.js#L13-L14",
+          "version": "repo-lines-v1:sha256:63782443a8ceb91668adf2b94ffed05422173afc15b0af1b1e7714c16b8d7ccc:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMjVlMGY3ODIxOGE5YzA2Mzg1ODNlN2EzMmI4ZDM5ZTQyZjgyYzE3ZDliYTc0ZDFmZjQ2YjNiZjMzMWQ2YWM5MCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMzkyNjE2NmQ5MjZjYjU4YmQ5NTljYmNhOGU0MmJiODllZTY4ZGFiNTJiMDBkYWQyMDBlMTViMzE1MGNhMDg1NyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYzRkNDJkYzU0ODJlMTc0N2RkOGI1OGQ0MGFkODZlMWU0ZGRmZmIxMzZhMDQ0NWVlZDkzYWYwNjVkMDc1ZDlkOCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNjJlNDVjZGUyMmJiMjNmNzE0MjMyMWY5OWQ4MzE2MWJjMDc5OWVjMjQ0ODNlODQ3MmUwYTIzMTg1Y2RiZDgwOCJ9"
+        },
+        {
+          "resource": "repo://frontend/main.js#L254-L283",
+          "version": "repo-lines-v1:sha256:814161cccb6c32278861d4999db07a142105106fc1c59d960bc1c8131d80bac8:eyJzZWxlY3RlZExpbmVDb3VudCI6MzAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI1MjM0MjFkYTFhODhkNjYwNjhmM2M5MTMwMjIwZDkxNThmYzM2ZmQwYjk1OTYzNWZkZDk0MTk4YWQ2NDAwZjIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImUyMmZhYTUzNWJkMmVhM2Q1MmU3NDFlZDQ1NDQzNWI3ZmU0OWU4MzU4NmU5NDNkOThkODJiYmZiMjRkMWY1YzUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQzNzExN2IwNDhiYzAzMWU4YzEzOTE5MWRmNmNkOGIwMzcwMzFhYWEwNjhhYTY0OWYxZDI4MmJkMzU2ZGViNzkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjVhYjk5NDIxYTk5MGFhYmY5MmM2YTZmNTNhZTUxZWExZDY1NTBjZDY5NzQ4M2FlYzMxOTU1MWE5NmI4NTIxNTQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_b8486511aaa84d348845e52afbd0ef8b",
+      "statement": "If the backend process exits with a non-zero code while the Electron app is not quitting, the shell shows the captured stderr to the user.",
+      "evidence": [
+        {
+          "resource": "repo://frontend/main.js#L115-L130",
+          "version": "repo-lines-v1:sha256:57a674447cfba774c15ce66ea56619f4d624ece819513cff9d834cc46a1a1499:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc2YzY4MGUxMzk4MjRiMmFhNjg0MjBhNTZhODIyMzFlYjU0M2U3ODkwMzJlZjkyZWYyZmZjYzQ1OGQwYzA3ODUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImYwOGI2OWIxMjMxZTc1MDMzNWQ5ZGQxZjc5ZDc4NmVjOGQzMjEzZTQ2MDRmMzRhMGExMmRjZTRjMDM0ZTBlYTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjYwNWRkMDQ0OTk5ZTRkNDY3NTA2ODdjNjE1NDA0NDQyZWZjYWQ2NGZjZjZhZjE1ODg0MTdjOGI3NDU5N2ViOTciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImEyMzQ2MzhkMGVkYTI3OGM0MmNhZjk0Y2E2ZWNhMzhmYmIwYzc4OGQxZTJmNDA2NTcxZWI2NjZkM2JiNmU0MGEifQ"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.7.2",
+    "at": "2026-10-27T18:55:06.371Z"
+  }
+}

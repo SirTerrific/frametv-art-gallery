@@ -1,0 +1,110 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:f3deea2934bebdcfb52bfa013980562015d2e4e011284ff6a73b32630a1213c0",
+  "claims": [
+    {
+      "id": "claim_b8c0133ca7284b6a8b687cb2de37abba",
+      "statement": "The frontend declares five routes (home, gallery, tv-gallery, settings and /album/:albumId), all nested inside one shared layout.",
+      "evidence": [
+        {
+          "resource": "repo://frontend/app/routes.ts#L3-L11",
+          "version": "repo-lines-v1:sha256:227e6848ec176cd7761bf93fd33259a60b272c6169a70e6a6f6a57ec83c9452f:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZTMyMmQ2NGI3YTM0ZTM0MTdjNWJhZWY3YWI1NGFiZjAyOGIwNGJjMWM5NGQ2NjJhNjAzNWFjMWYwNDM3MTg4MiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOTcwNjRmNGE1ODE0NWU5YjBjNzMyNGI2Nzc1NGFkZDA2YzRiOWY0MzBjZWExMjJkZDU0Y2M1MjdhYjQ2Yzg4ZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjIsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZGZlYTY0YmNlMTRiMzg2OThmMzhjOGI5YzBkOWZiNDkyNjZlNWM5MDQ0NjdmM2MxMGNhYTEwYTk5NTE2NzczMSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_5678209cf42e4ff69b2f029ab69eb0c7",
+      "statement": "The shared layout renders a Header, the routed page and a BottomTabs bar; the header carries one connection light per TV.",
+      "evidence": [
+        {
+          "resource": "repo://frontend/app/components/header.tsx#L53-L53",
+          "version": "repo-lines-v1:sha256:a00d52b4505d8e1918dbe0b849ad51eccf57d69e3ff06d3b76de751a8b39210a:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYTAwZDUyYjQ1MDVkOGUxOTE4ZGJlMGI4NDlhZDUxZWNjZjU3ZDY5ZTNmZjA2ZDNiNzZkZTc1MWE4YjM5MjEwYSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYTAwZDUyYjQ1MDVkOGUxOTE4ZGJlMGI4NDlhZDUxZWNjZjU3ZDY5ZTNmZjA2ZDNiNzZkZTc1MWE4YjM5MjEwYSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYjg0MzZhODU0ZDQwY2UyZWM0NTU5YTk1MDVhZDZmMjdlNjFkMmUyNTM4ZWY4ZTllNzYzMjJiZThhYzAyMmY1MSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMjhkOGI2ZTViNmIxN2IwN2I5Njk3MTgwOGI4YTY1OGJhZGMyNGEyMzUyZjk5ZGFjYTdlYWI0OGUwYmU5MjMxNyJ9"
+        },
+        {
+          "resource": "repo://frontend/app/routes/_layout.tsx#L5-L17",
+          "version": "repo-lines-v1:sha256:beb3758498bf4f20e9c09d248d6bc26685d43b7145a16ff99592de399f621715:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM2Zjg1MjdiZjIxZGNmMjc4YjA3ZjZlMTkxNTdlNTI2YzM2NGUyM2Q3ZjhkMmIwYzQxYTdhM2I5ZDVlOGE4NmUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImUyMmZhYTUzNWJkMmVhM2Q1MmU3NDFlZDQ1NDQzNWI3ZmU0OWU4MzU4NmU5NDNkOThkODJiYmZiMjRkMWY1YzUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE1YjMyYmExNGJmZGE2ODc0NThmNmQ1ZjlmY2NiNjBmZmMyODViNTk5ZjVjZWJiZGQ0MTRhZmU5ODEwNWIzNGMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_70bd83d64b37438f81639706e4b7591d",
+      "statement": "The root component wraps the app in a next-themes provider that follows the system theme, mounts a toast container, and shows a loading screen as the hydration fallback.",
+      "evidence": [
+        {
+          "resource": "repo://frontend/app/root.tsx#L41-L46",
+          "version": "repo-lines-v1:sha256:b701944f79363ee97e384668c339df38fa1889988ded8a757bc9e4a632a5f800:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMDA3MzA2YzU1YzNkNzU0NmRhOGY1Y2VkOTEyNzhmNzE3N2M5MjEyNzM3NmIyYzcyNjE0ZGJmOWRjMWM0NzE3NCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYWI2ZmVhZjIwNmU0MmU5Nzk0ZjAzMDI1Nzk3OTZmZmM4NTA2Zjc4OGIxNjc0NGE2ODQxYmMyMDE5MzcxOGYxMCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiY2U2NjM4M2I5NThjNGNlMTAwN2MyZDlmOGM2MjhjNWZkYTJmYjE1NmZmMDQ4NjJmMTFkNjA4NmJkYWI0OTJlMiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYjYwMTU4NzRmNDY1NzUyZGU2MWQ4NzkwZGIwNTc5YTQwNjZjNjBhNTFlOWZmZjBmZTdkOWI0ZTBlNzg0YmExMyJ9"
+        },
+        {
+          "resource": "repo://frontend/app/root.tsx#L52-L54",
+          "version": "repo-lines-v1:sha256:2d6e9e395b873c8ed5ee52be0542c5bb5972d73242bde49cb5a7c6fea2e30458:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNDZjNTRlNjIzMjk4NDhiYjYxNWUzMGM2N2ViMTRhYWU3ODllNTlmYTFlMTU5MzE0OTNiYzYwNmMyZThlMTI4NiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZTIyZmFhNTM1YmQyZWEzZDUyZTc0MWVkNDU0NDM1YjdmZTQ5ZTgzNTg2ZTk0M2Q5OGQ4MmJiZmIyNGQxZjVjNSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOTVjNzllNmRmYjg0OGIzNmFjM2M4OWEzMGZmNmRmYzQxMmZiZmI1OWM1MTIxNjBkODI0ZTIwMjA0ZGNjZDY1OSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOGY2Y2MyNTY0ZjEzODBlNzBlZTNiZTZmYWU0YjU0MDM0MDBhN2E0YzdlYWIzYjgxZjdlYzE4ODBlYWRmZDNlZSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_843aa8e0e3824325bcb1fcbafb6e5224",
+      "statement": "Pages reach the backend only through four API client modules (galleryApi, tvApi, providerApi, appApi), and tvApi defines a TVError class that carries the HTTP status, plus tvReachability, tvDiagnostics and TV_ART_ERROR_HELP for the diagnostics.",
+      "evidence": [
+        {
+          "resource": "repo://frontend/app/utils/appApi.ts#L12-L12",
+          "version": "repo-lines-v1:sha256:fab4ca966bf8c25b1de71f7b5a8692d91998235df1f416115fde893157e01802:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZmFiNGNhOTY2YmY4YzI1YjFkZTcxZjdiNWE4NjkyZDkxOTk4MjM1ZGYxZjQxNjExNWZkZTg5MzE1N2UwMTgwMiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZmFiNGNhOTY2YmY4YzI1YjFkZTcxZjdiNWE4NjkyZDkxOTk4MjM1ZGYxZjQxNjExNWZkZTg5MzE1N2UwMTgwMiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNDJjNTU0ZTgzMGQ4NDdlNzg4MWYyN2M5ODhjNDFiZDJkODg5MjlhYzg1NmM1ZjU2MDhhMTBlNTUyNzE3YjI5ZiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYTllNTQzNDQxYTAzYWQ0MmJmYmUwYjM1ZTlhNTkxYzRlYmUzNTgwYjA4MDk3Y2ZmM2NiNTU1YmI0NTczMWJjZSJ9"
+        },
+        {
+          "resource": "repo://frontend/app/utils/providerApi.ts#L15-L37",
+          "version": "repo-lines-v1:sha256:0c14a7745913b4d8055358955f77ec234074a2e118224ca185fe47456dfa10f7:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdiM2FhYWYwZDk4MzQwZWMzMjk5MGY4ZjU4NTM4YzM2MjZkMWY2NDhmMzhkOWYyYTI2MjQyNjY4ZTcyOWVmZDMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4NjIwNTZkNzM4MmVlNTdkNjkxZDA2ZDE3OWVlYTM2OWMwNjcyNTdjNGFiOTkxNGUxN2I3ZWYzMWJlNTJmNjAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk0ZjQ0ZWJlMWVjMDA2MmYwNzkxMDYzMmQ0ODZhNDIzODEzMWIzNDM0YTVjNzE4MDM4NDI0MzUwYzFjNGQzNGIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjUwOGZhNzkyYjFlZjRjODYzZDc1MmY4MDY2YTgzOTE1MzgwYzFjYzExNTczM2I4NGM1YzYxZWExNzA3ZWM5Y2EifQ"
+        },
+        {
+          "resource": "repo://frontend/app/utils/tvApi.ts#L263-L269",
+          "version": "repo-lines-v1:sha256:3cf44020c73d73a9c55138d5871c632f2f3ae6fd7c1060610c39efd8f168299c:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMmRjMGE5NzgwOWViMmJiNjk3ZWIyMzQzM2M0NjdhYzQzZGUxMTAyZTZkM2YwZTIxNWUyOWM1NDM4NzU0YmYzYyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMWUwMDU4MDIzNGI0OTVjMjFkNzExYTM2NWUwODI1OTU3MWExNTA1ZjhmNDEzNGY2MGFlMDMzYjlhZmU4NzNjZiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNTZhOGM5ZTBmODBiZjdiMThkMTFiOTQ5NDhmNTIxMzYzMGU5MGRhZGE0OWQxMDdjZjgyODM4YzRkOTc2NGUyYyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMDQ4YjNiMmE4NDE3M2ZiZjc5Yzc1MzY5NjhmNTAzMzlhZTY5YmM5OWRiMGY2ZWMzMTQ1YjBmNzNkZjU0NjljNyJ9"
+        },
+        {
+          "resource": "repo://frontend/app/utils/tvApi.ts#L44-L54",
+          "version": "repo-lines-v1:sha256:0e1a12a74df06e723aad78f42f4e763fd63ccad487ecadbe745d0a9771d4f17e:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImMxZThjMGMxN2QxZmNjNjMyMjIzZjM3MTE5YTYxMDdkMGZhNjc5MTE5ZjFiNDE0YzdhOTBiNmZhODk1M2ZlMDkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImUyMmZhYTUzNWJkMmVhM2Q1MmU3NDFlZDQ1NDQzNWI3ZmU0OWU4MzU4NmU5NDNkOThkODJiYmZiMjRkMWY1YzUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjI2ZjA1NmM5MGFiOTM4MjNkMGZhYzg3OWRhN2FjYmE2MGFjNGIwNGQyYWNlMjY1ZmMwYWJkMjcyNmFlYjVkNTkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjNmNmU3NWRhODRhMDg2MDQzNGZjZmQwMTk5ZDE2ZWNjOGMzYzM2ZTY3OTkzMzFjMTlmZWQxYmRkNDkyMTVkZTMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_a128eb4195c048a89a14deef33b90213",
+      "statement": "fetchAppStatus caches the /api/status answer in localStorage for six hours and returns the cached value unless a refresh is forced; cache read or write failures are ignored and fall back to the network.",
+      "evidence": [
+        {
+          "resource": "repo://frontend/app/utils/appApi.ts#L12-L64",
+          "version": "repo-lines-v1:sha256:06059399670087edd0e869e6fa2fdeedb3ab6bbdce6fffd30f24dca70d69539f:eyJzZWxlY3RlZExpbmVDb3VudCI6NTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZhYjRjYTk2NmJmOGMyNWIxZGU3MWY3YjVhODY5MmQ5MTk5ODIzNWRmMWY0MTYxMTVmZGU4OTMxNTdlMDE4MDIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImUyMmZhYTUzNWJkMmVhM2Q1MmU3NDFlZDQ1NDQzNWI3ZmU0OWU4MzU4NmU5NDNkOThkODJiYmZiMjRkMWY1YzUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQyYzU1NGU4MzBkODQ3ZTc4ODFmMjdjOTg4YzQxYmQyZDg4OTI5YWM4NTZjNWY1NjA4YTEwZTU1MjcxN2IyOWYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_6ec7ed36b09c45fd975b1f59a99d74ea",
+      "statement": "The local gallery page reloads images and albums together whenever the search text or sort order changes, debouncing by 250 ms when a search term is present and running immediately otherwise.",
+      "evidence": [
+        {
+          "resource": "repo://frontend/app/routes/gallery.tsx#L61-L98",
+          "version": "repo-lines-v1:sha256:f8acd35c451200a9986c984c5f48bd675d46a70c4f16a8b0ed4c1518a72d9a7e:eyJzZWxlY3RlZExpbmVDb3VudCI6MzgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU4ZDhkZGIzMmYzYTllNjZkNWM5NjU0NTNmOTZmNTkwNmZhNTY3NmVhNGQwZjMxOGM1ZDMxMmYyN2Q0NzNiYTgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc0OWFkMzJkN2Y4MDNkOTcxZWRlNzliNmJjMjcwZTAzYzE5NjEyZjNjZDQwYjFlYTRkZWRiOWQ0YzU2ZmY5MGYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjFkYWRlMzlkOThlZTZiNTdmNjY5M2JjNTVhNmFjODBhYmMyMzQ4YWRjNWZiYTk3MjM0NGEzZWMxNWNlNDk0YzkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY4Zjc3NzI3YjNlYTliMzg3ODVjODExYzI2N2E0MjgyYTJmZTVlNGRjNzgxYTc0Yjc5NTA3NTc3NTQ2YzExMDIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_4fa1a5afe5fa4f5fae242b50fae94b49",
+      "statement": "matte.ts holds the matte styles, colours, swatch and padding tables and the functions that combine and split the single matte token the backend stores.",
+      "evidence": [
+        {
+          "resource": "repo://frontend/app/utils/matte.ts#L5-L49",
+          "version": "repo-lines-v1:sha256:b413da3bef805547b88e003734b80229d98befca82fd42ed82d4e0f9f681b6f4:eyJzZWxlY3RlZExpbmVDb3VudCI6NDUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQzYjg2MDc5NmQ1OTVhNDUxNjg3MzdhMDcwMDVlNmEzZDdiMmI2YzZiNDFkMmQ1MzZjYzRmODQ0N2EwMmNhNDkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImMzZTFjMTg4NmUzODExZjA4MzQyNDgwNGFjY2Q3NWRmZTI5ZTU1YWE3YzFjMDA3NjI0NWY5ZjllOGQ5NzM3MmQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA4NWM1ZDEwMzcwYTljMTk4ZWI4OTg5ODY1MTI4Yzc2MjZjZGJhN2QyNGViZTliYmZlNjIyMGQ5NjdhYWI5ZDAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoyLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjZlZmFhMGExMDY5OGQzY2RiOWQwNDQwNzgzZTExZWFiODY1MjJkMjcwNDU0NzY5ZmM0N2VlNzlmYmRkN2MzMmQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_b976bf976c6f429f9fd7c0e3561d9e34",
+      "statement": "The CI frontend job installs with a frozen lockfile using pnpm, then runs the typecheck and build scripts.",
+      "evidence": [
+        {
+          "resource": "repo://.github/workflows/ci.yaml#L55-L61",
+          "version": "repo-lines-v1:sha256:76002c89cdb37a80d76edbb7ef7574bcbff5f6e0a5ecc062bce77c90dc400b73:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYjg4ZDE0ZTNiODNiZTBiOTJiMDQ4NWQyODE0MGMyNmU5ZTdiYWUzZmNmN2E5YzQ0ZmRlY2MwOTU3MDg1NDBiNyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNTA0YjA0NGFiZGFlZDljZmJhNzFhZTM2YjdlMjg0NjkyZGQxZWYxNzAxZGRkM2RiMDhjZTA5NDMzMzg4ZjdkNCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTM3MWJmNTk0MDA4MDYwZjk5MjdjMmJjMzg4NWYxNTljODM1NGVjNjJkNDAxYmIxY2I3OGU5MzBiNWQ2M2IxYSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.7.2",
+    "at": "2026-10-27T18:55:06.371Z"
+  }
+}
