@@ -84,6 +84,6 @@ class ProviderConfig(db.Model):
             'provider': self.provider,
             'host': self.host,
             'port': self.port,
-            'api_key': self.api_key,
+            'has_api_key': bool(self.api_key),
             'enabled': self.enabled,
         }

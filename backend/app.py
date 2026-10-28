@@ -6,7 +6,7 @@ import shutil
 import sqlite3
 import tempfile
 import zipfile
-from flask import Flask, render_template, request, redirect, url_for, flash, send_file, send_from_directory, jsonify, Response
+from flask import Flask, request, send_file, send_from_directory, jsonify, Response
 import os
 from werkzeug.utils import secure_filename
 from pathlib import Path
@@ -21,15 +21,9 @@ from const import CONNECTION_NAME
 from typing import Tuple, Optional
 from datetime import datetime
 from flask_migrate import Migrate
-import importlib
-from media_provider_routes import media_provider_routes
+from media_provider_routes import media_provider_routes, get_media_provider
 from provider_config_routes import provider_config_routes
 import requests
-
-try:
-    from PIL import Image as PILImage
-except ImportError:
-    PILImage = None
 
 # Load environment variables from .env if present
 try:
@@ -100,24 +94,20 @@ THUMBNAIL_DIR = Path(INSTANCE_FOLDER).joinpath('thumbnails')
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 
 app = Flask(__name__, static_folder="../frontend/build/client")
-app.secret_key = os.environ.get('SECRET_KEY', 'frameartsecretkey')
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = int(os.environ.get('MAX_UPLOAD_SIZE_BYTES', str(20 * 1024 * 1024)))
 
-# allow cross-origin requests from the dev server or any other origin when
-# talking to the API directly.  This is useful during front-end development when the frontend runs on a different port/host.
-try:
+# The app has no login, so no other website may call the API from a browser. Same-origin
+# use (the built frontend) needs no CORS at all. For front-end development on another
+# port, list the allowed origins: CORS_ORIGINS=http://localhost:5173
+_CORS_ORIGINS = [o.strip() for o in os.environ.get('CORS_ORIGINS', '').split(',') if o.strip()]
+if _CORS_ORIGINS:
     from flask_cors import CORS
-    CORS(app, resources={r"/api/*": {"origins": "*"}})
-except ImportError:
-    pass
+    CORS(app, resources={r"/api/*": {"origins": _CORS_ORIGINS}})
 
-# Fallback CORS headers for any route, so front-end dev or production can call /api and /uploads without CORS blocking.
+
 @app.after_request
-def add_cors_headers(response):
-    response.headers.setdefault('Access-Control-Allow-Origin', '*')
-    response.headers.setdefault('Access-Control-Allow-Headers', 'Content-Type,Authorization')
-    response.headers.setdefault('Access-Control-Allow-Methods', 'GET,HEAD,POST,OPTIONS,PUT,PATCH,DELETE')
+def add_security_headers(response):
     # Basic browser hardening headers to reduce XSS and related client-side risks.
     response.headers.setdefault('X-Content-Type-Options', 'nosniff')
     response.headers.setdefault('X-Frame-Options', 'DENY')
@@ -290,27 +280,6 @@ def _guess_image_mimetype(image_bytes: bytes) -> str:
     return 'application/octet-stream'
 
 # --- Media Provider Integration ---
-media_provider = None
-def load_media_provider():
-    global media_provider
-    with app.app_context():
-        config = ProviderConfig.query.filter_by(provider='immich', enabled=True).first()
-        if config and config.api_key and config.host:
-            try:
-                ImmichProvider = importlib.import_module("utils.immich_provider").ImmichProvider
-                port = config.port or 443
-                media_provider = ImmichProvider(config.api_key, config.host, port)
-                app.logger.info("Loaded Immich provider from DB config")
-            except Exception as e:
-                app.logger.exception("Failed to initialize Immich provider")
-        else:
-            media_provider = None
-
-# Load provider at startup
-load_media_provider()
-app.media_provider = media_provider
-
-
 # --- API Endpoints ---
 
 import json
@@ -347,38 +316,40 @@ def backend_status():
         latest_version = None
         changelog = None
         url = f'https://api.github.com/repos/{repo}/releases/latest'
-        
+
+        def remember(version, notes, fetched_at):
+            nonlocal cache_entry
+            if not cache_entry:
+                cache_entry = AppSetting(key='github_version_cache')
+                db.session.add(cache_entry)
+            cache_entry.value = json.dumps({
+                'last_fetched': fetched_at,
+                'latest_version': version,
+                'changelog': notes,
+            })
+            db.session.commit()
+
         try:
             headers = {"User-Agent": f"Flask-FrameTV/{current_version}"}
             response = requests.get(url, headers=headers, timeout=5)
-            
+
             if response.status_code == 200:
                 data = response.json()
                 latest_version = data.get('tag_name', 'unknown')
                 changelog = data.get('body', '')
-                
-                new_cache_content = {
-                    'last_fetched': now.timestamp(),
-                    'latest_version': latest_version,
-                    'changelog': changelog
-                }
-                
-                if not cache_entry:
-                    cache_entry = AppSetting(key='github_version_cache')
-                    db.session.add(cache_entry)
-                
-                cache_entry.value = json.dumps(new_cache_content)
-                db.session.commit()
+                remember(latest_version, changelog, now.timestamp())
             else:
-                app.logger.warning(f"GitHub API responds with status {response.status_code}. Using cached version if available.")
-                latest_version = cache_data.get('latest_version', 'unknown')
-                changelog = cache_data.get('changelog', '')
-                
-        except Exception as e:
-            app.logger.exception("Failed to check for updates against GitHub API")
-            app.logger.warning("Using cached version as fallback.")
+                raise RuntimeError(f"GitHub API responded with status {response.status_code}")
+        except Exception:
+            app.logger.warning("Could not check for updates; using the cached version", exc_info=True)
             latest_version = cache_data.get('latest_version', 'unknown')
             changelog = cache_data.get('changelog', '')
+            # A failed check is remembered too, and retried in 15 minutes, so a slow or
+            # rate-limited GitHub does not stall every status call for 5 seconds.
+            try:
+                remember(latest_version, changelog, now.timestamp() - 86400 + 900)
+            except Exception:
+                db.session.rollback()
 
     update_available = False
     if current_version != 'unknown' and latest_version and latest_version != 'unknown':
@@ -652,7 +623,7 @@ def api_list_albums():
 
 @app.route('/api/albums', methods=['POST'])
 def api_create_album():
-    data = request.get_json()
+    data = request.get_json(silent=True) or {}
     name = data.get('name', '').strip()
     if not name:
         return {'error': 'Album name required'}, 400
@@ -854,7 +825,7 @@ def api_play_uploaded_image():
     Play an image on a TV using the stored content_id, without re-uploading.
     Expects JSON: {"ip": ..., "filename": ...}
     """
-    data = request.get_json()
+    data = request.get_json(silent=True) or {}
     ip = data.get('ip')
     filename = data.get('filename')
     if not ip or not filename:
@@ -928,7 +899,7 @@ def api_update_tv(ip):
     tv = TV.query.filter_by(ip=ip).first()
     if not tv:
         return {'error': 'TV not found'}, 404
-    data = request.get_json() or {}
+    data = request.get_json(silent=True) or {}
     if 'delete_other_images_on_upload' in data:
         tv.delete_other_images_on_upload = bool(data['delete_other_images_on_upload'])
     if 'one_slot_mode' in data:
@@ -987,7 +958,7 @@ def api_discover_tvs():
 
 @app.route('/api/tvs', methods=['POST'])
 def api_add_tv():
-    data = request.get_json()
+    data = request.get_json(silent=True) or {}
     if not data or not data.get('ip'):
         return {'error': 'TV IP required'}, 400
     ip = data['ip']
@@ -1031,7 +1002,7 @@ def api_add_tv():
 
 @app.route('/api/tvs', methods=['DELETE'])
 def api_remove_tv():
-    data = request.get_json()
+    data = request.get_json(silent=True) or {}
     ip = data.get('ip')
     if not ip:
         return {'error': 'TV IP required'}, 400
@@ -1045,7 +1016,7 @@ def api_remove_tv():
 @app.route('/api/tv/send', methods=['POST'])
 def api_send_to_tv():
     """ Upload an image to the TV """
-    data = request.get_json()
+    data = request.get_json(silent=True) or {}
     ip = data.get('ip')
     filename = data.get('filename')
     brightness = data.get('brightness')
@@ -1065,10 +1036,11 @@ def api_send_to_tv():
         os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
         # If the file does not exist locally, try to fetch from media provider
         if not os.path.isfile(art_path) and provider_id:
-            if not hasattr(app, 'media_provider') or not app.media_provider:
+            media_provider = get_media_provider()
+            if not media_provider:
                 return {'error': 'No media provider configured'}, 400
             try:
-                app.media_provider.download_image_by_id_sync(provider_id, art_path)
+                media_provider.download_image_by_id_sync(provider_id, art_path)
             except Exception as e:
                 _log_exception('Failed to fetch image from provider', e)
                 return _error_response('Failed to fetch image from provider', 500)
@@ -1482,47 +1454,6 @@ def api_tv_diagnostics(ip):
         result['art_error'] = 'error'
     return result
 
-@app.route('/tv/<ip>/on', methods=['POST'])
-def tv_power_on(ip):
-    mac = request.form.get('mac')
-    try:
-        power_on(ip, mac)
-        flash(f'TV {ip} powered on')
-    except FrameTVError as e:
-        flash(f'Error: {e}')
-    return redirect(url_for('index'))
-
-@app.route('/tv/<ip>/off', methods=['POST'])
-def tv_power_off(ip):
-    try:
-        power_off(ip)
-        flash(f'TV {ip} powered off')
-    except FrameTVError as e:
-        flash(f'Error: {e}')
-    return redirect(url_for('index'))
-
-@app.route('/tv/<ip>/artmode', methods=['POST'])
-def tv_art_mode(ip):
-    try:
-        enable_art_mode(ip)
-        flash(f'TV {ip} set to art mode')
-    except FrameTVError as e:
-        flash(f'Error: {e}')
-    return redirect(url_for('index'))
-
-@app.route('/tv/<ip>/status')
-def tv_status(ip):
-    try:
-        art_mode = is_art_mode_on(ip)
-        screen_on = is_tv_reachable(ip)
-        return {
-            'art_mode': art_mode,
-            'screen_on': screen_on
-        }
-    except FrameTVError as e:
-        _log_exception('Failed to get TV status', e)
-        return _error_response('Failed to get TV status', 500)
-    
 # Place at the bottom for lowest priority 
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')

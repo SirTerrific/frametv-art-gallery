@@ -18,7 +18,6 @@ services:
     #   - "8000:8000"
 
     environment:
-      - SECRET_KEY=supersecretkey
       - FRAME_TV_DATA=/data
       # On the host network there is no mapping to move the app with, so change the
       # port here if 8000 is taken.
