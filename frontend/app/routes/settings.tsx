@@ -43,6 +43,7 @@ export default function Settings() {
   const [immichHost, setImmichHost] = React.useState("");
   const [immichPort, setImmichPort] = React.useState<number | undefined>(undefined);
   const [immichApiKey, setImmichApiKey] = React.useState("");
+  const [immichHasKey, setImmichHasKey] = React.useState(false);
   const [immichEnabled, setImmichEnabled] = React.useState(false);
   const [providerError, setProviderError] = React.useState("");
   const [providerSaving, setProviderSaving] = React.useState(false);
@@ -67,7 +68,8 @@ export default function Settings() {
       if (immich) {
         setImmichHost(immich.host || "");
         setImmichPort(immich.port);
-        setImmichApiKey(immich.api_key || "");
+        // The server never sends the key back, only whether one is stored.
+        setImmichHasKey(!!immich.has_api_key);
         setImmichEnabled(!!immich.enabled);
       }
     } catch (e: any) {
@@ -249,11 +251,13 @@ export default function Settings() {
       await setProvider('immich', {
         host: immichHost,
         port: immichPort,
-        api_key: immichApiKey,
+        // Left empty, the stored key stays as it is.
+        ...(immichApiKey ? { api_key: immichApiKey } : {}),
         enabled: immichEnabled,
       });
+      setImmichApiKey("");
       await fetchProviders();
-      alert("Successfully saved Immich config - Restart Frame Gallery to apply all changes.");
+      alert("Immich config saved.");
     } catch (e: any) {
       setProviderError(e.message || 'Failed to save Immich config');
     } finally {
@@ -269,6 +273,7 @@ export default function Settings() {
       setImmichHost("");
       setImmichPort(undefined);
       setImmichApiKey("");
+      setImmichHasKey(false);
       setImmichEnabled(false);
       await fetchProviders();
     } catch (e: any) {
@@ -546,11 +551,12 @@ export default function Settings() {
               placeholder="Port (default 443)"
             />
             <Input
-              type="text"
+              type="password"
+              autoComplete="off"
               value={immichApiKey}
               onChange={e => setImmichApiKey(e.target.value)}
-              placeholder="Immich API Key"
-              required={immichEnabled}
+              placeholder={immichHasKey ? "API key saved - type a new one to replace it" : "Immich API Key"}
+              required={immichEnabled && !immichHasKey}
             />
             <label className="flex items-center gap-2">
               <input

@@ -8,7 +8,9 @@ export type ProviderConfig = {
   provider: string;
   host?: string;
   port?: number;
+  // Write-only: the server reports whether a key is stored, never the key itself.
   api_key?: string;
+  has_api_key?: boolean;
   enabled?: boolean;
 };
 

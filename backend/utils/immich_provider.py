@@ -1,4 +1,5 @@
 import asyncio
+import contextlib
 import aiohttp
 import aiofiles
 from typing import List, Dict, Optional
@@ -14,14 +15,15 @@ class ImmichProvider(MediaProvider):
         self.host = host
         self.port = port
 
-    async def _get_client(self):
-        session = aiohttp.ClientSession()
-        return Immich(session, self.api_key, self.host, port=self.port), session
+    @contextlib.asynccontextmanager
+    async def _client(self):
+        """An Immich client whose HTTP session is closed even when a call fails."""
+        async with aiohttp.ClientSession() as session:
+            yield Immich(session, self.api_key, self.host, port=self.port)
 
     async def get_albums(self) -> List[Dict]:
-        immich, session = await self._get_client()
-        albums = await immich.albums.async_get_all_albums()
-        await session.close()
+        async with self._client() as immich:
+            albums = await immich.albums.async_get_all_albums()
         return [
             {
                 "id": album.album_id,
@@ -32,9 +34,8 @@ class ImmichProvider(MediaProvider):
 
     async def download_image_by_id(self, image_id: str, dest_path: str, size: str = "fullsize"):
         """Download an image by Immich asset ID and save to dest_path using aioimmich."""
-        immich, session = await self._get_client()
-        asset_bytes = await immich.assets.async_view_asset(image_id, size=size)
-        await session.close()
+        async with self._client() as immich:
+            asset_bytes = await immich.assets.async_view_asset(image_id, size=size)
         async with aiofiles.open(dest_path, "wb") as f:
             await f.write(asset_bytes)
             logger.info("download complete")
@@ -45,9 +46,8 @@ class ImmichProvider(MediaProvider):
         asyncio.run(self.download_image_by_id(image_id, dest_path, size))
 
     async def get_album_images(self, album_id: str) -> List[Dict]:
-        immich, session = await self._get_client()
-        album = await immich.albums.async_get_album_info(album_id, without_assests=False)
-        await session.close()
+        async with self._client() as immich:
+            album = await immich.albums.async_get_album_info(album_id, without_assests=False)
         return [
             {
             "id": asset.asset_id,
@@ -62,13 +62,10 @@ class ImmichProvider(MediaProvider):
         # Validate size, fallback to 'fullsize' if invalid
         if size not in allowed_sizes:
             size = "fullsize"
-        immich, session = await self._get_client()
-        asset_bytes = await immich.assets.async_view_asset(image_id, size=size)
-        await session.close()
-        return asset_bytes
+        async with self._client() as immich:
+            return await immich.assets.async_view_asset(image_id, size=size)
 
     async def get_image_metadata(self, image_id: str) -> Dict:
-        immich, session = await self._get_client()
-        asset = await immich.assets.async_get_asset(image_id)
-        await session.close()
+        async with self._client() as immich:
+            asset = await immich.assets.async_get_asset(image_id)
         return asset.metadata
