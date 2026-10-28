@@ -1,24 +1,24 @@
 {
   "schemaVersion": 1,
-  "pageVersion": "sha256:0f3725e81b3b0a308977133c616145ea064ac96769460d60b940877836971c68",
+  "pageVersion": "sha256:99b6425289b6908ad0174cf31def622c12f0a9152c299b0fe2b74629a9bdbf26",
   "claims": [
     {
       "id": "claim_9370d54b4a5043e59f95811f3325ff34",
       "statement": "Filenames sent to a TV are reduced to a safe name, must have no directory part and an allowed extension, and must resolve to a path directly inside the uploads folder, otherwise the request fails with a ValueError.",
       "evidence": [
         {
-          "resource": "repo://backend/app.py#L221-L235",
+          "resource": "repo://backend/app.py#L211-L225",
           "version": "repo-lines-v1:sha256:ff13d448bfb917f1fe03d1b705df4834f2978b77528b8883a94c4e0242cc4a98:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI4ZTY5OWM5MzMzNDRkNWI5OGExYjNiMjJkOGEwNzFhYzQ0ZGMyYjE3NzA4ODI0M2ZkZWVkZTYxMmUwOTU5OTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFmN2E0NmFiOWFlYjU3ZTI5NjUxZTExNWM4NTJiOTU0ODc0YjFlMGRmMGVmM2I0Zjc5OTI2OThlNDE2NTBjNDEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjdkZDUwNTFmNzU1MmM3YTYxNjRhY2I5ODU3N2Q3Mjc3M2VkNjBkZGJiNzhhMTdiZmM0NDc0YTlmZDZhOGI2NWEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBhNDBkOWU1MGI5OWFiMGVmZjllY2I5MmUyNjllZWMwZjE3YTNkYTdlMTA2MTE5MDNhOWVjZjgxOTNlOTdjZWEifQ"
         }
       ]
     },
     {
       "id": "claim_51c929c1a22c4960bd3d0edf002fa369",
-      "statement": "If the file is not in the local library but the send request carries a provider_id, the handler downloads the image into the uploads folder first through the configured media provider by id.",
+      "statement": "If the file is not in the local library but the send request carries a provider_id, the handler downloads the image into the uploads folder first through the media provider built from the saved settings; a missing provider gives 400 and a failed download gives 500.",
       "evidence": [
         {
-          "resource": "repo://backend/app.py#L1067-L1074",
-          "version": "repo-lines-v1:sha256:cdef7d0ed7389d0a232bb01cd7935130e90f465fbdfd479a5c58283992656872:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNDcxYWY5NWYzZGVmNTNlMzRlZDI4MjJlNWI3MWRkY2E2ZDMzMjFhMDE4OWI5NDBhOTViYzIwNzA4M2I0M2E2NCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNmU5OWI2ZTUyNDU4YzczZjE3Y2FkYWI4NGI5MThlNjIyZGQ3ZDRhMDU4ODNmYzcxNGZmMGJlZjMwZDUxYzgwNSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNWFkYzJlMzkyNzE0YWMxNzc5NmNmMDU3OTljZjdjYjAyNTZkZTQ5MTUwYzA3OGQxZmZjOWQ0OGRlZjRiZjEyMSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNzc2MmRiZWQ5N2IzMDNhNDQwMGI3YjQ0NDAwNzQwYmM5ZWQwYmE3NDBiZWIwZmRkYTc5ZTc3ZmY2NTg3N2EyOSJ9"
+          "resource": "repo://backend/app.py#L1038-L1046",
+          "version": "repo-lines-v1:sha256:64036b857b5e01b6a6baf6c6023fd39a471d08f6a2cf7a3725d6d82a9d3638dc:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNDcxYWY5NWYzZGVmNTNlMzRlZDI4MjJlNWI3MWRkY2E2ZDMzMjFhMDE4OWI5NDBhOTViYzIwNzA4M2I0M2E2NCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNmU5OWI2ZTUyNDU4YzczZjE3Y2FkYWI4NGI5MThlNjIyZGQ3ZDRhMDU4ODNmYzcxNGZmMGJlZjMwZDUxYzgwNSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNWFkYzJlMzkyNzE0YWMxNzc5NmNmMDU3OTljZjdjYjAyNTZkZTQ5MTUwYzA3OGQxZmZjOWQ0OGRlZjRiZjEyMSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNzc2MmRiZWQ5N2IzMDNhNDQwMGI3YjQ0NDAwNzQwYmM5ZWQwYmE3NDBiZWIwZmRkYTc5ZTc3ZmY2NTg3N2EyOSJ9"
         }
       ]
     },
@@ -27,7 +27,7 @@
       "statement": "The matte used for a send is the one named in the request, otherwise the TV's stored default, otherwise no matte argument is passed at all so upload_artwork's own default of none applies.",
       "evidence": [
         {
-          "resource": "repo://backend/app.py#L1088-L1093",
+          "resource": "repo://backend/app.py#L1060-L1065",
           "version": "repo-lines-v1:sha256:40387a225228a2192c64d2eaefd47d7d86b53489e80cc5cbf537e6c4d75666f4:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiODExZGVlY2I4ZDk5NWZkNDU5YzA1MWM1YTUwNTMzMjgwZjBmZjJiOTYxYjYwNzQ4ZGEyOGU2MzU4ZjkwYTM0ZiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNjZlODE5ZDk0YzEzNWQxNDQwOGQ4OGE4MWQ4Y2Y5ODFiNzg2NWQxYzI1YmRhNDg2OWYxNjRmZThlNzc2MzM3ZiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiY2VjMDhiMWMwNzc2MTQ5OWRjNTI4MWJjNGM2YWZlNGNkNWJkOTY2YmZmZTI3NmNmZWQ2YzNhMzM2NmY3M2RhZCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTI5N2I2ODQwZWE5ODBmYzBlZWQ4OGFkMTg1OWQ1ODEyMGUyZmY1N2FiMDEzZjZhZjZlODk5NWY2NzM1MTA2NiJ9"
         }
       ]
@@ -85,7 +85,7 @@
       "statement": "After a send the handler records the image as uploaded to the TV, updating the stored content id if it was already sent, because the TV assigns a fresh content id on every upload.",
       "evidence": [
         {
-          "resource": "repo://backend/app.py#L1099-L1113",
+          "resource": "repo://backend/app.py#L1071-L1085",
           "version": "repo-lines-v1:sha256:430791f0137cdda0498b0a2f7a877e1a1c52c30f21a03ce5283a5bf77b1b14de:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjIzMWU1MmIzOTQxYTVhNTMzOWUzODc4YWY5NzQyZjk1N2NiNzlmYTEzY2RkZTA0OTAwOGY2OTg2MDU3YjRjMjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg5ODFiMTdhMjdkYzQzNjRmNDMwNGU3YTYyYjRjNmQ3NTI1ZmEzYjgzOGRmYTM0ZWZhYTY2NDRjNTYyNjA0NzkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijg2ZTE3NmMzMGQ0MTlkODA3OTlkNjk0ODBjY2NmZmZkNWE1Mjc4MWE2NzdkYzg0YjQxOTIyOTkxMGEyOGJmYzAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjRjNTAzNDkzNTA2N2QwZTNkYjllYTMwOTBmZjdkZTBhOTBjNmEyZGNlYWVhMDBlNThhN2VlZWRkOTAyZDIxODEifQ"
         }
       ]
@@ -95,7 +95,7 @@
       "statement": "The delete-other-images option deletes every content id except the new one in a batch, falls back to per-image deletes if the firmware rejects the batch treating already missing as success, and keeps all copies if the active id appears more than once; the handler then forgets all other upload records for that TV.",
       "evidence": [
         {
-          "resource": "repo://backend/app.py#L1115-L1117",
+          "resource": "repo://backend/app.py#L1087-L1089",
           "version": "repo-lines-v1:sha256:1e11935dd4c567b7e54ed1c8f95564a1db0bd13cd70a2a3d8b542781e06c1857:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNDQ3MmYzYTRjZTdlMzVmY2UyN2JkMmQ1NmVhMTE1ODY0NTk2ZDQ3NmIzODg5ZmFkMDlmMGE4ZGIzYWZiMzY3MCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYzY1NjljMjA5Y2MwN2MxMzc5MTQ5MTkzY2NhYmE0MmEyNGRhZTA4MGYyNDQyZjYzNjUwMGUwYzkwZmVmNTI0YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZjZhMmE4MzdhY2I0NDkwYzExNDNmOGNkYWU0MTVlZGIxZDg1NDZhMTVjNmJiZjY2NjRmYzM3NGY4Y2QxYmUzOSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMWY2MjdiNDEzYmU2YjhlY2E1NjVlYTNlMWQxYzU4MTJlMzlhMTQ4MTdhYTMwMDM2ZGQ1MzhlM2VkNTBiYTJhMSJ9"
         },
         {
@@ -109,11 +109,11 @@
       "statement": "One-slot mode keeps only one image the app sent: it collects the content ids recorded for the TV before uploading, deletes the older ones afterwards, counts an already-missing answer as cleared, stops on other TV errors, and forgets only the records it cleared, without failing the send.",
       "evidence": [
         {
-          "resource": "repo://backend/app.py#L1080-L1087",
+          "resource": "repo://backend/app.py#L1052-L1059",
           "version": "repo-lines-v1:sha256:0258c35c366155818500814bd89b12821c35a72a4afebbe2419d2855734ea35a:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMjIxYWU0M2EyZTljOTJlOWE3YWU3NmEzNGJjMWQ3NjY0NGNkM2UwNWYxNDI1NDY2MjdjMjdiNjA3ZjJkYzFiMCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYjJjMDdkMWM0OWIwMDhkNTMyOGM0ZjBhYjRjMzJiZWMyZjY4ZjIxMGY4N2RjZWNlMTQzYzFkNGQ5ZWVjYTIyNCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNGZkMDY0ZDRhOGU1MGU4ODMyYjQ1ZjU3MTQxOTdjOGZiZmIzOTE1ODA0ODhmZjMxMWYwYTkyYTRhNmFhNGJjNSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMTg0MWVmNzg0MGM1NmY5MDI0YmE0NGZlZWJiOWJjOGUwYzM1MjA2NTdlMzI5YmY1MTQ1YTk1NDM2NzIzYTdlNSJ9"
         },
         {
-          "resource": "repo://backend/app.py#L1118-L1145",
+          "resource": "repo://backend/app.py#L1090-L1117",
           "version": "repo-lines-v1:sha256:5123ac5687a55b2da5c1fe0f20d0a81e87a955ef762f0c70ee68c15c4f1ad6b7:eyJzZWxlY3RlZExpbmVDb3VudCI6MjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZmNWMyN2UwOThiZjE5NDk0ZTFmMzgxMDQ4MjVlZTYxMWJiN2VhYzE1ZGE3ZWRjMGFiNjA4NjUwNmYyZTMxN2UiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE3ZGQ1OTQ2NGUzZDczMzM2NzA3OGRjNmFkMmYxYTUzYTU5ZmQxNWNmMmI5YjVmMmZjMjBlNTQ0MGJhNDIxN2EiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjFlMTE5MzVkZDRjNTY3YjdlNTRlZDFjOGY5NTU2NGExZGIwYmQxM2NkNzBhMmEzZDhiNTQyNzgxZTA2YzE4NTciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjI4YWFmMWYxZTMxMjhmYWVjMTQ1YTgwZWZmYTlmMzdmMDUwOTM2NzU0YzliOWRmZTQ4YjVlMWU1YWVjNWU2OTcifQ"
         }
       ]
@@ -133,8 +133,8 @@
       "statement": "Playing an already uploaded image looks up the stored content id for the image and TV and selects it, answering 404 if the TV, the image or the upload record is missing.",
       "evidence": [
         {
-          "resource": "repo://backend/app.py#L851-L880",
-          "version": "repo-lines-v1:sha256:b58fd08cb4f8cab85e99d438c386bff0939299383a87bac23e0acbda5ac6fc74:eyJzZWxlY3RlZExpbmVDb3VudCI6MzAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFmNGI2MTM0ZGJjNDNjNDg3ZTUyYzQwNTA1Y2UxNGIyNWU1ZjQ0M2Q3NzU2NzcxYmVjNzA5MDE5Mzg0ZWVjZjAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdlYjcwMjU3NTkzZGEwNmY2ODJhM2RkZGE1NGE5ZDI2MGQ0ZmM1MTRmNjQ1MjM3ZjVjYTc0YjA4ZjhkYTYxYTYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjkyNjMwNWY4NjFlODgxNjRjMGFhZTUwMjQ4Yjc2OTZiMzNmMTRkNDljNTljZWEwZDMxMGY3MjdiYTI3MWUxODQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImE3YjQ0ZDE3NDQzMTYwZTEzNjQ5YzFlYjEyZTQ3NzI1MzBkY2E3NWM1ZmM5M2NhNWYzMGI2NDNmOTM4MTRkMjUifQ"
+          "resource": "repo://backend/app.py#L822-L850",
+          "version": "repo-lines-v1:sha256:3f878cd78d690c0b724e65cff81d4e22489ddbcb3ebd91c75261024ae5177966:eyJzZWxlY3RlZExpbmVDb3VudCI6MjksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFmNGI2MTM0ZGJjNDNjNDg3ZTUyYzQwNTA1Y2UxNGIyNWU1ZjQ0M2Q3NzU2NzcxYmVjNzA5MDE5Mzg0ZWVjZjAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdlYjcwMjU3NTkzZGEwNmY2ODJhM2RkZGE1NGE5ZDI2MGQ0ZmM1MTRmNjQ1MjM3ZjVjYTc0YjA4ZjhkYTYxYTYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjkyNjMwNWY4NjFlODgxNjRjMGFhZTUwMjQ4Yjc2OTZiMzNmMTRkNDljNTljZWEwZDMxMGY3MjdiYTI3MWUxODQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImM4MDRiZmM4MTU2MzYxMDFhYjhmZTFiMTRjM2NlYzhmNWEwZDk1YzhiNTZkZTEyMzNiYzFjYTdkMjlkMDQ4NzQifQ"
         }
       ]
     },
@@ -143,7 +143,7 @@
       "statement": "Every removal path forgets the matching upload records through _forget_uploaded, because a stale record makes the app offer to play something the TV no longer has and the TV answers with error number -10.",
       "evidence": [
         {
-          "resource": "repo://backend/app.py#L248-L264",
+          "resource": "repo://backend/app.py#L238-L254",
           "version": "repo-lines-v1:sha256:bc7bb4e98d9d2b26272c586b7dd8868839f5e9e873545a7ca9ba7545c9222b64:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRmOWE4NzE4NGUzNWE1OTAxYzg5YWE0NGVlM2U3YWUwMTViY2U3YWRhZjc1ODYyMzQ4MmQ1NGQ5NmRkZGJkY2UiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNkMzQ1Yzc3ODgxOGFlMjYyMzkwNjBiZGY5NDU3NTI4NmVmNWY2MmI0NTcwMjZlOGYxMGQzZWU1MzVhZDk1MDEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijc0YWIzZGNhMWI2YWUyMDdmMGZjNGUzNDZmZTFjNzU2MWQ4NTMzMTEzOTcxNzVjMDFhMTEzMzQ4ZDJiNTFiZmQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjlkNGM3NmNkYTFmN2ViZjJkZmQ2Mzc1Yjc4OGMzOWQzMjVkY2VmNTYwNjNjMDhhNDc2Nzg2MDQ1N2YzZTg5MjEifQ"
         }
       ]
@@ -163,7 +163,7 @@
       "statement": "Removing all images from a TV deletes every content id it lists and forgets all its upload records, and if another operation held the TV for the whole wait it answers 503 with tv_busy having deleted nothing.",
       "evidence": [
         {
-          "resource": "repo://backend/app.py#L1172-L1190",
+          "resource": "repo://backend/app.py#L1144-L1162",
           "version": "repo-lines-v1:sha256:d6332511c95837262a4cc7516bb5ed641378c946cc9b21a9734744d4e860a23d:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY4MTYwNWY1YzQyM2M0Njc1NDdiMGIzNzY3YjAxYmRhMGEyZjJmMDI3Nzg2YjRlZmRlMTZlNzA2NjFkODc4ZDkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxNWZmMTgzNGVhNjI2YTIwODhjMGM0Mjc0Yjc2OGNiODA5NGJlOTM3N2I0YTdmZmE1NTk2MTU2MmU1NjM3ZjgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjEzMjYyNTVmNGFjNDAyMWI4YzI3NDNjYjZjMTA2MDI3N2NjYjNhNjk0Yzk5YzViY2NjN2MzY2Q2Nzg3NGVjMTciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjI4ZmYyNmUxMzI4YTNlODcxNTVmNjRlMzk0NWUzZWE0ZjRlZGY5Njc5N2NlMGQyOGNiZGE5ZDQ3YzhkNDUyMGIifQ"
         },
         {
@@ -177,7 +177,7 @@
       "statement": "The send handler answers a TV or HTTP API failure with a generic 500, a TV rejection with 400 TV rejected the request, and anything else with a generic 500, logging the details rather than returning them.",
       "evidence": [
         {
-          "resource": "repo://backend/app.py#L1162-L1170",
+          "resource": "repo://backend/app.py#L1134-L1142",
           "version": "repo-lines-v1:sha256:6ce02c6dd62614c9c9437146efbfa01723c4603269f546068ea84f3b111ec775:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZjgwYTdmMDE2YWZlZTU1MWZmZjg5OGE2ODkwZDIzZThiOGRkZjJmMWVkODdkNTU2OGViNTI3MjNmZjhjOTY1YyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNzIzY2Q3NGI4ODk5YWRmMDRkYjRmN2Y0MWFjNTQzZDk4OWMyYzhiNDNmZTE1NjViMmQzODE4MDlkN2RiNWNjNSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOWViY2VlNmZjMGIwYjg4MWQzOWYyMWM4YzJlMjk0MmE2Y2Q1ZGUwOGYwMzNhMDQ5NGJjZWRlMWQxMTliMWI5YyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiM2UxMTMyZDBiNTA1Zjc3MzY4NTJmNWFjMWM3ZjQwZTI0M2Y3NWZiZWRhNzI4YjVlOTk1NjIxOWI5MDI0NWIzNyJ9"
         }
       ]
@@ -187,7 +187,7 @@
       "statement": "The send endpoint refuses any request carrying provider_url with a 400 before doing anything else, because that field used to make the server fetch an arbitrary address with the provider's API key attached.",
       "evidence": [
         {
-          "resource": "repo://backend/app.py#L1056-L1060",
+          "resource": "repo://backend/app.py#L1027-L1031",
           "version": "repo-lines-v1:sha256:13840c2afe831b43cfa669ed0d6d59b63cdde825095655e047193c82994989f2:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiODcxYTYwMTk4NzQ1NTQxMmZlNzFkMzk2YjdkYjViM2M4NGRmYjE1MDM5ZGVhZDE2ZWZjODRkODViNmQyMDBmYiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYzdkNzNlYzcxNGViMmU3ZjM2MzU3NDU0Y2E0NzliOGQyZmQ3MzBiZjg1NTcxNTZhNzMyNTE0ODYxNDdjNThkYSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZjQwZDJmZDc4NzRjYmZjM2I0MTg3Zjk4MmE4MzA1ZjdjY2VkZTBmYzVlYzQ4NDM3YTU0YTFjNDMyNTUyY2YwZSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNzIzNGM1YjlmMTlhYmQ0MGMxYTI2MjgyZDNiZmEyZjFjZjUyYTZlODRiMmU1NWZlYjMzYWUxMmU3MjgzODkyNCJ9"
         }
       ]
@@ -197,7 +197,7 @@
       "statement": "A failed send returns a code (tv_busy, tv_timeout or tv_unreachable) with a readable message.",
       "evidence": [
         {
-          "resource": "repo://backend/app.py#L1147-L1167",
+          "resource": "repo://backend/app.py#L1119-L1139",
           "version": "repo-lines-v1:sha256:2f1261e946e184857e1e9e4a477cace829f67bdc5ede1d56c1f8c3b4375c7650:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRlOGMyOGFhNTQ4OGM3ZmYxZTQyODY1OTM3MWVkYzE2Yzc0ZDU3Y2IxOGUxZDkwNGU0YTZjNGY4NGNlNjEzYzIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjIyNjQyYWEwNTAxODM5NmU5ZDIzNDIxZjkyNzcyYjZiYzUyMzI3NWNkZDc4MzgyMGRiYTc4MzEyNjljYTk5NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjllYmNlZTZmYzBiMGI4ODFkMzlmMjFjOGMyZTI5NDJhNmNkNWRlMDhmMDMzYTA0OTRiY2VkZTFkMTE5YjFiOWMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM4YWE3YjMyMGVlY2QwNDY3NjE1NzRkZGNjOWRiZTM5YTAyZjEyYWJiNWVmYjZhN2I0NzVhMDcwZjc2YzJkMmQifQ"
         }
       ]
@@ -219,6 +219,6 @@
   ],
   "verification": {
     "by": "openwiki/0.7.2",
-    "at": "2026-10-27T18:55:06.371Z"
+    "at": "2026-10-28T14:34:25.443Z"
   }
 }

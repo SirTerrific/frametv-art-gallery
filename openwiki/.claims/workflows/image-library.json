@@ -1,13 +1,13 @@
 {
   "schemaVersion": 1,
-  "pageVersion": "sha256:442e7402179af204f6217935f6d2c46b8c46ebc7a091198a001ab336426805e1",
+  "pageVersion": "sha256:d2b4d4b5fce0b9d57fb01a8da1b7c164e13e2e0ef6b5efad4c0e6134c3cc50f7",
   "claims": [
     {
       "id": "claim_6e286fe1efef41a29f18922f139c7060",
       "statement": "The image listing reads the uploads folder rather than the database, so a file placed there by hand appears immediately; each file's added time comes from its database row when there is one and from its modification time otherwise, and sorting is newest first unless sort is oldest or name.",
       "evidence": [
         {
-          "resource": "repo://backend/app.py#L398-L437",
+          "resource": "repo://backend/app.py#L371-L410",
           "version": "repo-lines-v1:sha256:96b471511026953ac6ae12ae2a8000db11820f94bb40e5aa49332d2778bacf36:eyJzZWxlY3RlZExpbmVDb3VudCI6NDAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY5Y2MzMDJjZjA0YmU1NmIwMThjY2UzMTJhYWI0YmIyNWZkMDUyNjMzNmEyYTA0ZGYwNTFlOTk5ODVhODQ1NjkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdlYjcwMjU3NTkzZGEwNmY2ODJhM2RkZGE1NGE5ZDI2MGQ0ZmM1MTRmNjQ1MjM3ZjVjYTc0YjA4ZjhkYTYxYTYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjUzNWZkMzQwNjQ5YTQ5M2VmY2QyOWEwYjhjMzM4ZjA2NDA3YmE0MzRiOWFkMjA5MjQ1ZTYwZTYxODdhODVhOTAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjMwMThjYTY5MTI5M2ViODY1Yjc4ZjhjNmM4MTE5NWI2Y2EyNGNjZDNlNGIwZDk1NDkxMGRjYTVjMTQ5MzM0MDkifQ"
         }
       ]
@@ -17,11 +17,11 @@
       "statement": "An upload is hashed with SHA-256 in one megabyte chunks, reuses the existing row when the same filename is uploaded again, and if another still-present file has the same hash under a different name the response reports duplicate_of while the upload still succeeds.",
       "evidence": [
         {
-          "resource": "repo://backend/app.py#L264-L274",
+          "resource": "repo://backend/app.py#L256-L266",
           "version": "repo-lines-v1:sha256:49055d5b68aa9d66d03253ab516830b3695d005e9abffcb0a0d05e195c57cb8c:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdlYjcwMjU3NTkzZGEwNmY2ODJhM2RkZGE1NGE5ZDI2MGQ0ZmM1MTRmNjQ1MjM3ZjVjYTc0YjA4ZjhkYTYxYTYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM3NGUzNDI4ZWFhYjI3ZDBlMmZhODkzNmVmM2UxNzk1NjNjMzY3YWFiZTFmMWExYTY3ZDYwYjZkOTdiYmJmMzEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZjNDdhYWI0MDUyODM1NTgwMmJlYTIxNzUzYjRlOWM4YzkyYTc4MmEyNTYwM2NlYzRhN2U1M2VjZTNjM2E1NTAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImZkM2M2ZDZjOGRjODNjMDRiZmFhYjMwM2E1MGM3ZjRmZTU4MTJmOGZjNzk5Y2JhNWE4MjEzM2Y0YWQ0YjlkNmYifQ"
         },
         {
-          "resource": "repo://backend/app.py#L732-L788",
+          "resource": "repo://backend/app.py#L705-L761",
           "version": "repo-lines-v1:sha256:b93cd920c6965dc320dd361cb15a3c3f45a4378064da99fec3a11ab75f0cd770:eyJzZWxlY3RlZExpbmVDb3VudCI6NTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEwNzI4OTYzNDA1MjBhNjFjMGVlYjI0YTlmMTM4MDgxYWQ5ZDFjODg3MmNjNjY0YjljNjViZWI5MWEzM2IxZjAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdlYjcwMjU3NTkzZGEwNmY2ODJhM2RkZGE1NGE5ZDI2MGQ0ZmM1MTRmNjQ1MjM3ZjVjYTc0YjA4ZjhkYTYxYTYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImFlYTUyZDI3MjMwYjg5Y2ExYjczMjg2NmFmYmUxMzdhOThlNjUxMDAwNDlhNTZiMzI5M2RlZjhkNWZlN2RkYTAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjA3ZGJhNzdiOTRhNjYxNDYzOGE5ZjMxYzI0ZjIzZjM4OGE4NzE5M2ViZjc2N2NlYjE4ZWYwZDM1ZDM1NjZiMGQifQ"
         }
       ]
@@ -31,7 +31,7 @@
       "statement": "Downscaled copies of uploads are generated only for widths 160, 400 and 800, so a crafted query string cannot create unlimited cache entries; any other width serves the original.",
       "evidence": [
         {
-          "resource": "repo://backend/app.py#L879-L900",
+          "resource": "repo://backend/app.py#L852-L873",
           "version": "repo-lines-v1:sha256:39f90b669c0d94da1e58111e537245896f3cdcd29b2af36749ad2311f5600b4a:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRjMmY1NTY3Yzk3N2YzNmVkMTUxZWYxOGZkMTFlODhiNjFjNDc3OThlYzY3NzI1NGE0YmUzMjY4YTc4NThhYTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdlYjcwMjU3NTkzZGEwNmY2ODJhM2RkZGE1NGE5ZDI2MGQ0ZmM1MTRmNjQ1MjM3ZjVjYTc0YjA4ZjhkYTYxYTYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjcxYjMwYjA0YTEzYTZjNDA3MmU1YWQ1ZmQxYTcxNzhlZDJkZGRiM2FkYzAxODI4OTg2YTQ5YjliMmQwMWMzOTEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjZiNmI0NzhhYWVjNjQwZWE2ODViOWM2MGIzOTYzNjNkOTA0OTBkMTc5ODkzZTBkY2U3MGUzMzA0MGQ2NDJmYzYifQ"
         },
         {
@@ -55,7 +55,7 @@
       "statement": "Deleting an album whose image has been sent to a TV succeeds, because UploadedImage.image cascades delete-orphan from Image, so the upload records go with the image row instead of SQLAlchemy trying to null the not-null image_id.",
       "evidence": [
         {
-          "resource": "repo://backend/app.py#L721-L728",
+          "resource": "repo://backend/app.py#L694-L701",
           "version": "repo-lines-v1:sha256:69f4a4b28368e57d37122126da28d3ffe9ab1a1b931295b55f103032426f7761:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYWQ1ZDVkMmQ0MDViMjk3OWU4Y2I0OGRmOTdhNDhhZWM4OTNmYThhMWM5YmFjMzQ4NzI0YWM1YzJiYmE1MjBlMyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNGQwMjNjZmMxNzc3YTVjMGQ5YTk3OGY5MzViNTIwYWQxMzQ3YzQ1MTE3MzZkNjEwOTIyYjAyZGEyMjBjYmQyOSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZjc5NTE1ZDE3NDJlMDA0NTQwMzE5MTY1Yzk1YjU1ZDExOTQ0YzY4ZWQ1YWFlZjIxMjU4ZGU4NDRkNDRkZTU2ZSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYWVhNTJkMjcyMzBiODljYTFiNzMyODY2YWZiZTEzN2E5OGU2NTEwMDA0OWE1NmIzMjkzZGVmOGQ1ZmU3ZGRhMCJ9"
         },
         {
@@ -69,7 +69,7 @@
       "statement": "Deleting an image removes the file, the records that it was sent to any TV, and its row, logging rather than failing if the file cannot be removed.",
       "evidence": [
         {
-          "resource": "repo://backend/app.py#L560-L583",
+          "resource": "repo://backend/app.py#L533-L556",
           "version": "repo-lines-v1:sha256:0e4b3b1ad719ae66c0e3aa80f378ee0c89115ff2ed6a452f1d2269e3fb2a8914:eyJzZWxlY3RlZExpbmVDb3VudCI6MjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk5ZmViYTQzOTkzZDVjNzM1YTA4NzExZDU3NWNlNjA5ZWM0MDcxNjdjZmJhNjdmYjcwN2Y1YjI4NWY4MWNlMTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdlYjcwMjU3NTkzZGEwNmY2ODJhM2RkZGE1NGE5ZDI2MGQ0ZmM1MTRmNjQ1MjM3ZjVjYTc0YjA4ZjhkYTYxYTYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImViZTVkYWNhMjhjMjAzZGZhNWQ5NGIwNzQwNGNkN2I1NDM1YWRlMzUxYmM0ODYyOWFiYTEyZTE4MDQ0Y2FmNGYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQzZTE3ZThiNzQwMTBhN2Q4MWIzYzc1MWI2OWUwMDAxZDcyNjIxNmNiMzVkZGFiNzFmYzk0Nzc4MDQwMzZlYjIifQ"
         }
       ]
@@ -79,7 +79,7 @@
       "statement": "Cropping overwrites the original image in place, taking either explicit coordinates or a preset from which a centred crop box is computed.",
       "evidence": [
         {
-          "resource": "repo://backend/app.py#L584-L626",
+          "resource": "repo://backend/app.py#L557-L599",
           "version": "repo-lines-v1:sha256:37d78fc27f0f961bc425fe3e7806e8a52122c6d2991f32caa05bf1af7678a3dd:eyJzZWxlY3RlZExpbmVDb3VudCI6NDMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE2ZDU5ZjU3YWI5MGE5ZGE3OTY5YmY4ZjI2ZjFhYzkyZDk1ZjEzMmZhMTA1MGM0NjhkZjhmZDRhNDQyZDgyMzciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdlYjcwMjU3NTkzZGEwNmY2ODJhM2RkZGE1NGE5ZDI2MGQ0ZmM1MTRmNjQ1MjM3ZjVjYTc0YjA4ZjhkYTYxYTYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjBkMzljOTI2OTA5MzZmMWRiNjNhOWNiNDVjNWZjM2MxYTUyNjdlZmVkNmRhMDU5MjU3MWZmNTc1NzVkNWFmMTgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjZhMTVmNjE3ZWM1ZTFhZDljZmNiNzc0MGZiY2I0NzgyMDZkNzhiMDRhM2NlZjcxMmJiOTNjMjY0MmFmZThiZWEifQ"
         },
         {
@@ -97,7 +97,7 @@
       "statement": "Reconcile adds rows with hashes for untracked files, removes rows and upload records for missing files, fills missing hashes, never touches album membership, and returns groups of filenames sharing a hash as duplicate_groups.",
       "evidence": [
         {
-          "resource": "repo://backend/app.py#L501-L549",
+          "resource": "repo://backend/app.py#L474-L522",
           "version": "repo-lines-v1:sha256:88f9614430e89d0a00ee3e8edb0e1b109a131d2d5fc12afe3101a319de61cde8:eyJzZWxlY3RlZExpbmVDb3VudCI6NDksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImYxNzNmNzIyZjkzN2I4YTFlMWM2ZTJjYWFlNjgzOTY5NzcwOGY1ZmVmNjcwODY0NWVmZWY1N2ViY2I4NzEyOTAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE0MTlhNmRjYzA0ZTIxM2EzYzdhNzdhNDU2YjAxZTc2ZDFlZjc4Y2QwMGJiZWMxZDhmODE0NThmZTkzZWRjNTYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjM0Njk0Mzc2OWEwOGY0NDVjMWQ5NGZjYzM5NTNmZjIzNTE0MzJhZWEyYzcwZTEyOTU4YzUzMGY0MTlkOWNjNTYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjFiNzMxNzk3M2VlZTEyZjA4OGI5ZmQyOGUzNWIwMTJkODk5NGNmZDhkMjc2MGYyNWE1YTQ0Y2U3N2I0ZTU1YTUifQ"
         }
       ]
@@ -107,22 +107,18 @@
       "statement": "The backup endpoint returns a zip of a consistent SQLite snapshot plus every upload, built in a temporary directory that a file wrapper deletes when the server closes the file, because deleting earlier fails while the archive is open, notably on Windows.",
       "evidence": [
         {
-          "resource": "repo://backend/app.py#L438-L499",
+          "resource": "repo://backend/app.py#L411-L472",
           "version": "repo-lines-v1:sha256:793fee9ef6fc272178eb51fe741a5dd353e7f21d0293c4cf159a2cfbdb7231cf:eyJzZWxlY3RlZExpbmVDb3VudCI6NjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjExY2VlMmRiYzNlMzVjYmE1NjgwNDU3YjU4MDY0OTEzOWZlYzU3NTg3YTE4ZTdlOTU1YjliMzFmNGRkYzBiYzUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdlYjcwMjU3NTkzZGEwNmY2ODJhM2RkZGE1NGE5ZDI2MGQ0ZmM1MTRmNjQ1MjM3ZjVjYTc0YjA4ZjhkYTYxYTYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE4YmU1YWI5NjRjMzA1NDcwMGNlNzJhNTc4MTFiZTA4YWRmZDU4YjA4ZGQ0YTM0ZTljMTY3MmE3OTRkNmEwZDYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM3NTE0M2QzYzllNjIzOGEzMTA4MTY4YjY0N2ZiNjg3OTZkMWRlMWU5Yjk4MTJiMDBmNDgyZTBhYTZiYjFiMTkifQ"
         }
       ]
     },
     {
       "id": "claim_e2d5c395e7c74306a1b56de14d3c3b8f",
-      "statement": "The Immich provider is loaded at start-up from stored provider settings when enabled, provider routes return 404 when none is configured, and streamed provider images are kept in an in-memory cache for the life of the process.",
+      "statement": "The Immich provider is built from the stored provider settings on every call by get_media_provider, so saving or removing the settings takes effect at once in every worker; provider routes return 404 when none is configured, 502 when Immich is unreachable, and streamed images are kept in an in-memory cache bounded to 32 entries.",
       "evidence": [
         {
-          "resource": "repo://backend/app.py#L292-L309",
-          "version": "repo-lines-v1:sha256:ddc159396ccd27045380c08c70e31cb11e896b4842a90a194e50913411ff8aae:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQzMGFhYzI2OGZmNDZiNzcwZjA5ZjlmODc4MzgzYzU3NWE5ZDljZjZjMzkzMTk3NjQ3YzE2NTNjNGM4NGI5ZWQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNlNjVlMDNhMDdkM2M3ZmU4ODY1NGRmMDBlZGZiMGE5YmIyODc0OTU2OGE3NTMxZmVlMDBhNjc5YzJlNzZlZGUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImM0OGI3OGM0MGYxZDYwODI1NDU3MTllMmMzYmQ2MmU5NzQ3ZGI3MTA0NTc1MmVlZWVlZGUyMGZiMzJkMmIzOGYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBjNWQyNjllZjgxN2UwOTg1ZGViMzA3MGUwOGJmMjc5NjRiOWQyZDA4YzI2NmQxZTkxNTJhMmUwOWQ5ZTliYTcifQ"
-        },
-        {
-          "resource": "repo://backend/media_provider_routes.py#L11-L63",
-          "version": "repo-lines-v1:sha256:058c327b649ae52f1e076d8a67b1fbac5ad09a00bd8c7c52dbfa3e109a0ccacf:eyJzZWxlY3RlZExpbmVDb3VudCI6NTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE4NDJhNGE2Y2ZiZDM3NzYzMTQ2MmNkYWEzNzYzMzc2MTc3ODNhYTU0MTM2NjVhOGQ4YjU5MTgyOTA1NWI4NWQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFkNDVmNWVkMjUxMGVlOTljZjNkODhlZDc2ZTJmODlmMmZkYmM0NmU3NGJlMzg1OTAxZDVmYjRjNTM5ZWQzNmMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImI1MDllNTE2ZDI1MDdmODg0MGM3NmRlZTM1YmY0YWFhMTdjN2E2YzA4OGRlYTgyMzk0YThiY2E1OThhYzUzYjEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+          "resource": "repo://backend/media_provider_routes.py#L1-L79",
+          "version": "repo-lines-v1:sha256:2c3daa3fedf257505a8ed8cd2a76f8775e9d2157451354c43b18fdd5436379f5:eyJzZWxlY3RlZExpbmVDb3VudCI6NzksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAzNGM5Y2RkNDJmOGQ4OGMwNDQyNTM3M2E3MzM2MjA5ZjZiMmEyZGNlYmVjMzJiNGQ0MDU5M2Y5MGJlMmJiMjgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU5MWMwZTQ0ZDJhYTNhMmI4ZTIyYTY3NTE1YTU2MjhjNThkM2I2MjI5ZWY3MjVhNzc2MmUzMTI2MmIyY2FiOTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
         }
       ]
     },
@@ -131,7 +127,7 @@
       "statement": "The Reframed import fetches a page only when its host is reframed.gallery or a subdomain and its scheme is http or https, downloads the artwork limited to MAX_UPLOAD_SIZE_BYTES, removes a partial file on failure, and records the image like an upload including hash and duplicate check.",
       "evidence": [
         {
-          "resource": "repo://backend/app.py#L789-L846",
+          "resource": "repo://backend/app.py#L762-L819",
           "version": "repo-lines-v1:sha256:c9e17a196333b4cc956b0d9667958e20781de9846fe5903c34585adeab661515:eyJzZWxlY3RlZExpbmVDb3VudCI6NTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZhOWZjZTY4NGM5ZmY5YmI5NzQxMWJmOWM5MzQzZGRmNGRhMzUxNTIyZDlmZTRhYTRlYWIwMGNiNjU3ZTdiOWYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdlYjcwMjU3NTkzZGEwNmY2ODJhM2RkZGE1NGE5ZDI2MGQ0ZmM1MTRmNjQ1MjM3ZjVjYTc0YjA4ZjhkYTYxYTYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE3YjYyN2JiZmEzOWUyOWNiYjk3NDZjODc3ZDU1Y2ZmY2Y0YWY2MDdiZjg3ODY2M2Q1NzZiMTc2ODU4ZTg3NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImRhZjA5YzJhMGRhZjZlN2M5ODI2NGI0OTI0Mjg0OTk3OGNjZGE1YjAwNTQzMjE2MDJiNTY5NWZlNDAwOGY0ZDAifQ"
         },
         {
@@ -145,18 +141,28 @@
       "statement": "The send endpoint refuses a provider_url with a 400 and names an image only by provider_id, so a client can no longer make the server request an arbitrary address with the Immich API key attached.",
       "evidence": [
         {
-          "resource": "repo://backend/app.py#L1054-L1058",
+          "resource": "repo://backend/app.py#L1027-L1031",
           "version": "repo-lines-v1:sha256:13840c2afe831b43cfa669ed0d6d59b63cdde825095655e047193c82994989f2:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiODcxYTYwMTk4NzQ1NTQxMmZlNzFkMzk2YjdkYjViM2M4NGRmYjE1MDM5ZGVhZDE2ZWZjODRkODViNmQyMDBmYiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYzdkNzNlYzcxNGViMmU3ZjM2MzU3NDU0Y2E0NzliOGQyZmQ3MzBiZjg1NTcxNTZhNzMyNTE0ODYxNDdjNThkYSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZjQwZDJmZDc4NzRjYmZjM2I0MTg3Zjk4MmE4MzA1ZjdjY2VkZTBmYzVlYzQ4NDM3YTU0YTFjNDMyNTUyY2YwZSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNzIzNGM1YjlmMTlhYmQ0MGMxYTI2MjgyZDNiZmEyZjFjZjUyYTZlODRiMmU1NWZlYjMzYWUxMmU3MjgzODkyNCJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_1b2618b926b0456fa5e811d574a0a77a",
+      "statement": "The Immich API key is write-only: GET /api/providers returns has_api_key and never the key, and a save that omits the key keeps the stored one.",
+      "evidence": [
+        {
+          "resource": "repo://backend/models.py#L69-L88",
+          "version": "repo-lines-v1:sha256:df3666265a4a8dffecfa93812b052546f5ccecf330c39fbf897adaf0140651db:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImUyNDFiODZjMmJmNDNkNDhlNzk2MzFmZTlhNjZlNWRiN2I1MDRhNTFjNDgxYjBmOThkNGE3OGU2ZDZkOWVkMGEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQzZmQ4YjNlOTcxNDI0YzU3NzI3NjdlYjViNDgzODk2ODEwZTU2ZDhlZjE5OTg4N2UxZmFkNGEzNDIwNzRjZWYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjRmYTk1YjM1MzlmMTM4OGU0Njg3NGE1NDI0MjM0ODJjNWZkZWVhZmRjZDk1MzIzN2Q0NDA0YmU5YTQxZjViNGIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjgyNTFiZmFiY2ZiNmQ4OWZkOWY0ZTNiN2JjNGExNzRmZDkwYzk5ODE4NmU0ZmRlMmM4ZmEzNGU2ZDVjMjkzYWEifQ"
         },
         {
-          "resource": "repo://backend/utils/immich_provider.py",
-          "version": "repo-file-v1:sha256:a0db9db9066f6782985ecd1c09ac2456401d5b3979ab74d2c7e5e136118768a9"
+          "resource": "repo://backend/provider_config_routes.py",
+          "version": "repo-file-v1:sha256:aae4ddb060510feab8efe9b656896ebc2d46022f952a43cfa3f48f961ddc3110"
         }
       ]
     }
   ],
   "verification": {
-    "by": "openwiki/0.5.1",
-    "at": "2026-09-21T12:08:00.549Z"
+    "by": "openwiki/0.7.2",
+    "at": "2026-10-28T14:34:25.443Z"
   }
 }

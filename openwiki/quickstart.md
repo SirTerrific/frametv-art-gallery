@@ -3,9 +3,6 @@ type: guide
 title: Quickstart and task map
 description: What the project is, how to run and change it locally, the handful of facts that explain most of its design, and which wiki page to read for each kind of task.
 tags: [quickstart, overview, onboarding, task-map]
-verified:
-  - by: openwiki/0.5.1
-    at: 2026-09-21T02:31:07.302Z
 sources:
   - id: openwiki-source-7872be2c059c5659d94804ea
     resource: repo://backend/app.py
@@ -15,7 +12,10 @@ sources:
     resource: repo://frontend/package.json
   - id: openwiki-source-23775c3de52f3ab95a13cb8b
     resource: repo://README.md
-generated: { by: "claude-code", at: "2026-10-27T18:55:06.371Z" }
+generated: { by: "claude-code", at: "2026-10-28T14:34:25.443Z" }
+verified:
+  - by: openwiki/0.7.2
+    at: 2026-10-28T14:34:25.443Z
 ---
 
 # Quickstart and task map
@@ -27,7 +27,7 @@ This wiki describes a self-hosted gallery manager for Samsung Frame TVs. You kee
 1. **A Frame TV serves one art channel at a time.** Almost every design decision in the TV code comes from this. A slow or long request holds the channel, and everything else aimed at that TV waits and then fails.
 2. **The library is the uploads folder.** The folder is the source of truth for which images exist, and the database only adds an album, an added time and a hash to each one.
 3. **Every TV call is bounded from outside.** The underlying library can wait forever on a read, so each call runs on a worker thread with a deadline, a per-TV lock and a cooldown after a failure.
-4. **There is no authentication.** The API is open to anyone who can reach the port, and CORS allows any origin. It is meant for a private network.
+4. **There is no authentication.** The API is open to anyone who can reach the port. It is meant for a private network. CORS is closed by default (`CORS_ORIGINS` to develop the frontend on another port), and the Immich API key is write-only.
 5. **The container uses the host network by default.** Wake-on-LAN needs it, and so does automatic discovery in practice, because on Docker's bridge the scan covers Docker's subnet instead of the LAN.
 
 ## Layout
@@ -36,6 +36,7 @@ This wiki describes a self-hosted gallery manager for Samsung Frame TVs. You kee
 | --- | --- |
 | `backend/app.py` | The Flask app: every route, database start-up, and the slideshow start. |
 | `backend/models.py`, `backend/migrations/` | The SQLite schema and the alembic history. |
+| `backend/media_provider_routes.py`, `backend/provider_config_routes.py` | The Immich provider routes and their settings. |
 | `backend/utils/tv_connection.py` | How a TV call is made safely. |
 | `backend/utils/frame_tv.py` | What to ask a TV: gallery, thumbnails, upload, delete, art mode, wake. |
 | `backend/utils/` (the rest) | Slideshow, cropping, downscaled copies, discovery, Immich and Reframed import. |
@@ -46,15 +47,13 @@ This wiki describes a self-hosted gallery manager for Samsung Frame TVs. You kee
 
 ## Running it locally
 
-**Backend.** From `backend/`, install with `pip install -e ".[test]"` and run `python app.py`. It listens on port 5000, or whatever `BACKEND_PORT` says, on all interfaces (`backend/app.py` lines 87 and 1502). Set `FRAME_TV_DATA` to choose where the data goes.
+**Backend.** From `backend/`, install with `pip install -e ".[test]"` and run `python app.py`. It listens on port 5000, or whatever `BACKEND_PORT` says, on all interfaces (`backend/app.py` lines 83 and 1484). Set `FRAME_TV_DATA` to choose where the data goes.
 
-**Frontend.** From `frontend/`, run `pnpm install` and then `pnpm run dev`, which starts the Vite dev server (`frontend/package.json` line 11, and `CONTRIBUTING.md` lines 13 to 16). Because the dev server is a different origin from the backend, point it at the backend with the `VITE_API_URL` variable. Without it the pages call their own origin.
+**Frontend.** From `frontend/`, run `pnpm install` and then `pnpm run dev`, which starts the Vite dev server (`frontend/package.json` line 11, and `CONTRIBUTING.md` lines 13 to 16). Because the dev server is a different origin from the backend, point it at the backend with the `VITE_API_URL` variable, and allow that origin on the backend with `CORS_ORIGINS=http://localhost:5173`. Without `VITE_API_URL` the pages call their own origin.
 
-<!-- openwiki: broken internal link [/openwiki/testing/test-suite.md] link "/openwiki/testing/test-suite.md" is root-absolute, which no real consumer resolves against the repository root (not a coding agent reading the page, not GitHub's Markdown renderer, not a local viewer); use a path relative to this file instead. Fix the href or restore the target, then delete this comment. -->
-**Tests.** From `backend/`, run `pytest -q`. See [Test suite](/openwiki/testing/test-suite.md).
+**Tests.** From `backend/`, run `pytest -q`. See [Test suite](testing/test-suite.md).
 
-<!-- openwiki: broken internal link [/openwiki/operations/deployment-and-release.md] link "/openwiki/operations/deployment-and-release.md" is root-absolute, which no real consumer resolves against the repository root (not a coding agent reading the page, not GitHub's Markdown renderer, not a local viewer); use a path relative to this file instead. Fix the href or restore the target, then delete this comment. -->
-**The container.** Build from the repository root, not from `backend/`. See [Deployment and release](/openwiki/operations/deployment-and-release.md).
+**The container.** Build from the repository root, not from `backend/`. See [Deployment and release](operations/deployment-and-release.md).
 
 The project asks for Conventional Commit messages and `feature/` or `fix/` branch prefixes (`CONTRIBUTING.md` lines 33 to 35).
 
@@ -62,45 +61,25 @@ The project asks for Conventional Commit messages and `feature/` or `fix/` branc
 
 | If you want to... | Read |
 | --- | --- |
-<!-- openwiki: broken internal link [/openwiki/architecture/overview.md] link "/openwiki/architecture/overview.md" is root-absolute, which no real consumer resolves against the repository root (not a coding agent reading the page, not GitHub's Markdown renderer, not a local viewer); use a path relative to this file instead. Fix the href or restore the target, then delete this comment. -->
-| Understand how the parts fit together | [System architecture](/openwiki/architecture/overview.md) |
-<!-- openwiki: broken internal link [/openwiki/architecture/data-model-and-migrations.md] link "/openwiki/architecture/data-model-and-migrations.md" is root-absolute, which no real consumer resolves against the repository root (not a coding agent reading the page, not GitHub's Markdown renderer, not a local viewer); use a path relative to this file instead. Fix the href or restore the target, then delete this comment. -->
-| Change the schema or add a migration | [Data model and migrations](/openwiki/architecture/data-model-and-migrations.md) |
-<!-- openwiki: broken internal link [/openwiki/frontend/spa-structure.md] link "/openwiki/frontend/spa-structure.md" is root-absolute, which no real consumer resolves against the repository root (not a coding agent reading the page, not GitHub's Markdown renderer, not a local viewer); use a path relative to this file instead. Fix the href or restore the target, then delete this comment. -->
-| Work on a page, component or API client | [Frontend structure](/openwiki/frontend/spa-structure.md) |
-<!-- openwiki: broken internal link [/openwiki/tv/connection-and-session.md] link "/openwiki/tv/connection-and-session.md" is root-absolute, which no real consumer resolves against the repository root (not a coding agent reading the page, not GitHub's Markdown renderer, not a local viewer); use a path relative to this file instead. Fix the href or restore the target, then delete this comment. -->
-| Understand why a TV call timed out, or change a timeout | [TV connection layer](/openwiki/tv/connection-and-session.md) |
-<!-- openwiki: broken internal link [/openwiki/tv/gallery-and-thumbnails.md] link "/openwiki/tv/gallery-and-thumbnails.md" is root-absolute, which no real consumer resolves against the repository root (not a coding agent reading the page, not GitHub's Markdown renderer, not a local viewer); use a path relative to this file instead. Fix the href or restore the target, then delete this comment. -->
-| Fix or change how a TV's images and thumbnails load | [TV gallery and thumbnails](/openwiki/tv/gallery-and-thumbnails.md) |
-<!-- openwiki: broken internal link [/openwiki/tv/uploading-and-display.md] link "/openwiki/tv/uploading-and-display.md" is root-absolute, which no real consumer resolves against the repository root (not a coding agent reading the page, not GitHub's Markdown renderer, not a local viewer); use a path relative to this file instead. Fix the href or restore the target, then delete this comment. -->
-| Change what happens when an image is sent, or a matte, or deletion | [Sending art to a TV](/openwiki/tv/uploading-and-display.md) |
-<!-- openwiki: broken internal link [/openwiki/tv/pairing-tokens-and-wake.md] link "/openwiki/tv/pairing-tokens-and-wake.md" is root-absolute, which no real consumer resolves against the repository root (not a coding agent reading the page, not GitHub's Markdown renderer, not a local viewer); use a path relative to this file instead. Fix the href or restore the target, then delete this comment. -->
-| Work on adding a TV, tokens, discovery or Wake-on-LAN | [Pairing, tokens, discovery and wake](/openwiki/tv/pairing-tokens-and-wake.md) |
-<!-- openwiki: broken internal link [/openwiki/workflows/slideshow.md] link "/openwiki/workflows/slideshow.md" is root-absolute, which no real consumer resolves against the repository root (not a coding agent reading the page, not GitHub's Markdown renderer, not a local viewer); use a path relative to this file instead. Fix the href or restore the target, then delete this comment. -->
-| Work on the rotation timer | [Slideshow rotation](/openwiki/workflows/slideshow.md) |
-<!-- openwiki: broken internal link [/openwiki/workflows/image-library.md] link "/openwiki/workflows/image-library.md" is root-absolute, which no real consumer resolves against the repository root (not a coding agent reading the page, not GitHub's Markdown renderer, not a local viewer); use a path relative to this file instead. Fix the href or restore the target, then delete this comment. -->
-| Change uploads, albums, cropping, backup or the importers | [Local image library](/openwiki/workflows/image-library.md) |
-<!-- openwiki: broken internal link [/openwiki/operations/diagnostics-and-failure-modes.md] link "/openwiki/operations/diagnostics-and-failure-modes.md" is root-absolute, which no real consumer resolves against the repository root (not a coding agent reading the page, not GitHub's Markdown renderer, not a local viewer); use a path relative to this file instead. Fix the href or restore the target, then delete this comment. -->
-| Read a failure log, or turn logging up | [Diagnostics and failure modes](/openwiki/operations/diagnostics-and-failure-modes.md) |
-<!-- openwiki: broken internal link [/openwiki/operations/deployment-and-release.md] link "/openwiki/operations/deployment-and-release.md" is root-absolute, which no real consumer resolves against the repository root (not a coding agent reading the page, not GitHub's Markdown renderer, not a local viewer); use a path relative to this file instead. Fix the href or restore the target, then delete this comment. -->
-| Ship a change, or understand the image and release flow | [Deployment and release](/openwiki/operations/deployment-and-release.md) |
-<!-- openwiki: broken internal link [/openwiki/testing/test-suite.md] link "/openwiki/testing/test-suite.md" is root-absolute, which no real consumer resolves against the repository root (not a coding agent reading the page, not GitHub's Markdown renderer, not a local viewer); use a path relative to this file instead. Fix the href or restore the target, then delete this comment. -->
-| Add or run tests | [Test suite](/openwiki/testing/test-suite.md) |
+| Understand how the parts fit together | [System architecture](architecture/overview.md) |
+| Change the schema or add a migration | [Data model and migrations](architecture/data-model-and-migrations.md) |
+| Work on a page, component or API client | [Frontend structure](frontend/spa-structure.md) |
+| Understand why a TV call timed out, or change a timeout | [TV connection layer](tv/connection-and-session.md) |
+| Fix or change how a TV's images and thumbnails load | [TV gallery and thumbnails](tv/gallery-and-thumbnails.md) |
+| Change what happens when an image is sent, or a matte, or deletion | [Sending art to a TV](tv/uploading-and-display.md) |
+| Work on adding a TV, tokens, discovery or Wake-on-LAN | [Pairing, tokens, discovery and wake](tv/pairing-tokens-and-wake.md) |
+| Work on the rotation timer | [Slideshow rotation](workflows/slideshow.md) |
+| Change uploads, albums, cropping, backup or the importers | [Local image library](workflows/image-library.md) |
+| Read a failure log, or turn logging up | [Diagnostics and failure modes](operations/diagnostics-and-failure-modes.md) |
+| Ship a change, or understand the image and release flow | [Deployment and release](operations/deployment-and-release.md) |
+| Add or run tests | [Test suite](testing/test-suite.md) |
 
 ## When something is wrong with a TV
 
-<!-- openwiki: broken internal link [/openwiki/operations/diagnostics-and-failure-modes.md] link "/openwiki/operations/diagnostics-and-failure-modes.md" is root-absolute, which no real consumer resolves against the repository root (not a coding agent reading the page, not GitHub's Markdown renderer, not a local viewer); use a path relative to this file instead. Fix the href or restore the target, then delete this comment. -->
-Start with [Diagnostics and failure modes](/openwiki/operations/diagnostics-and-failure-modes.md). Set `FRAME_TV_LOG_LEVEL=INFO`, reproduce the problem once, and read the last INFO line and the timeout warning. Then look at the TV itself: a Frame TV can wedge its art channel in a way software cannot clear, and switching it off at the wall is the known way out.
+Start with [Diagnostics and failure modes](operations/diagnostics-and-failure-modes.md). Set `FRAME_TV_LOG_LEVEL=INFO`, reproduce the problem once, and read the last INFO line and the timeout warning. Then look at the TV itself: a Frame TV can wedge its art channel in a way software cannot clear, and switching it off at the wall is the known way out. The Test connection button on the Settings page and the light in the header give a first diagnosis without reading logs.
 
-## Known gaps worth knowing before you change things
+## Points to know before you change things
 
-These are described in detail on the pages linked and are listed here so they are not a surprise:
+The known defects that used to be listed here have been fixed: deleting an album whose image was sent to a TV works, `provider_url` is refused, a malformed MAC gives a clear 400, and the traffic figure in the timeout log line is reliable (see [Local image library](workflows/image-library.md), [Pairing, tokens, discovery and wake](tv/pairing-tokens-and-wake.md) and [Diagnostics and failure modes](operations/diagnostics-and-failure-modes.md)).
 
-<!-- openwiki: broken internal link [/openwiki/workflows/image-library.md] link "/openwiki/workflows/image-library.md" is root-absolute, which no real consumer resolves against the repository root (not a coding agent reading the page, not GitHub's Markdown renderer, not a local viewer); use a path relative to this file instead. Fix the href or restore the target, then delete this comment. -->
-- Deleting an album whose image was sent to a TV fails ([Local image library](/openwiki/workflows/image-library.md)).
-<!-- openwiki: broken internal link [/openwiki/workflows/image-library.md] link "/openwiki/workflows/image-library.md" is root-absolute, which no real consumer resolves against the repository root (not a coding agent reading the page, not GitHub's Markdown renderer, not a local viewer); use a path relative to this file instead. Fix the href or restore the target, then delete this comment. -->
-- The deprecated `provider_url` field sends the Immich API key to any address it is given ([Local image library](/openwiki/workflows/image-library.md)).
-<!-- openwiki: broken internal link [/openwiki/tv/pairing-tokens-and-wake.md] link "/openwiki/tv/pairing-tokens-and-wake.md" is root-absolute, which no real consumer resolves against the repository root (not a coding agent reading the page, not GitHub's Markdown renderer, not a local viewer); use a path relative to this file instead. Fix the href or restore the target, then delete this comment. -->
-- A malformed MAC in a wake request is not handled by the endpoint ([Pairing, tokens, discovery and wake](/openwiki/tv/pairing-tokens-and-wake.md)).
-<!-- openwiki: broken internal link [/openwiki/operations/diagnostics-and-failure-modes.md] link "/openwiki/operations/diagnostics-and-failure-modes.md" is root-absolute, which no real consumer resolves against the repository root (not a coding agent reading the page, not GitHub's Markdown renderer, not a local viewer); use a path relative to this file instead. Fix the href or restore the target, then delete this comment. -->
-- The traffic figure in the timeout log line is unreliable after a timeout ([Diagnostics and failure modes](/openwiki/operations/diagnostics-and-failure-modes.md)).
+What remains: the API still has no login, a frontend served on another port needs `CORS_ORIGINS`, and a third-party TV client, such as a phone app, can take the art channel away from the app.

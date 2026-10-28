@@ -1,13 +1,13 @@
 {
   "schemaVersion": 1,
-  "pageVersion": "sha256:c16290aca02a07ba7ccad807370024e004010db079f65f08f8bf211faa94d136",
+  "pageVersion": "sha256:8172d6c0e6bb28abcf383919b06b96887f94198bd2b51ce44aa2e900750bdb1b",
   "claims": [
     {
       "id": "claim_712a71ed6c2f42f79921ae3213882d4d",
       "statement": "The frontend is built as a static single-page app with server-side rendering and prerendering both disabled, and Flask points its static folder at frontend/build/client.",
       "evidence": [
         {
-          "resource": "repo://backend/app.py#L102-L102",
+          "resource": "repo://backend/app.py#L96-L96",
           "version": "repo-lines-v1:sha256:6bfd55fbd623e47c8baf91a1e6878cf0906f6919e95de8dc9a22a5697b46e4c1:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNmJmZDU1ZmJkNjIzZTQ3YzhiYWY5MWExZTY4NzhjZjA5MDZmNjkxOWU5NWRlOGRjOWEyMmE1Njk3YjQ2ZTRjMSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNmJmZDU1ZmJkNjIzZTQ3YzhiYWY5MWExZTY4NzhjZjA5MDZmNjkxOWU5NWRlOGRjOWEyMmE1Njk3YjQ2ZTRjMSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOGI0ZTE5NWM0YmIxZTQ3MzIyNWE4NDM1ZTBjNjZkMTZhNDNjMDM1NDEwOTcwYTRjYjk1OTdmMGRlMjMyZjA1OCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZGRkOWMxZTBmMjAzNDY1N2JlMmE2NzYzYmJkZmY4MGQ3Yzk5MDNjMWY0MDVmMDMxOWEzZDc2YTE4NDkzYjQxMSJ9"
         },
         {
@@ -21,18 +21,18 @@
       "statement": "Flask serves the frontend through a catch-all route registered last: a request for an existing file returns that file and any other path returns index.html so client-side routing can handle it.",
       "evidence": [
         {
-          "resource": "repo://backend/app.py#L1527-L1538",
+          "resource": "repo://backend/app.py#L1458-L1469",
           "version": "repo-lines-v1:sha256:3338ca9dd890682fe4ac0c1a40088e73c002a7f57ddb4e940a9b060c0e7f87c8:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE5ZDcxYzhiNzE1NzhmZjg4MWI0OTEwNGUzYWU4YzAyZTQ0YTgwNDZlZGI2ZTU0NTdjODFhOTJkOGM3YWM2MzEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjEyNGE0ZjE3OTU0OGQzNmMyOTU5ZDFkYWUxMmE2MzY5NGQzMGFmM2Y2NmFhYjkzYTEzOWNmZmQ1N2JiNDRhNzAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjljZDk1NDU2MTkxYTE4NTI3Y2JjZmRkMWU3NmIzMmRmMjY3OTkyYzZjZTI0MjE1NjkxMTZhNjcwOTBmZGE1MDIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjhhMjlmOWMyNGVmOTczOWQzZGJmNzQwZjdmMDgxNGYwODMwNzE2NTQwMDQyMjUxMzRkYTI0M2IyOTczODUxMTQifQ"
         }
       ]
     },
     {
       "id": "claim_1d06cb16b0354570abd3f2a4a951fc0f",
-      "statement": "The backend allows cross-origin requests from any origin on /api/*, and an after_request hook sets Access-Control-Allow-Origin to * on every response and adds X-Content-Type-Options, X-Frame-Options DENY and a referrer policy.",
+      "statement": "CORS is off by default; it is enabled only for origins listed in the CORS_ORIGINS environment variable, and an after_request hook always sets X-Content-Type-Options nosniff, X-Frame-Options DENY and a strict-origin-when-cross-origin referrer policy.",
       "evidence": [
         {
-          "resource": "repo://backend/app.py#L107-L125",
-          "version": "repo-lines-v1:sha256:1325547e957e16d14a1e1456ded1e8eaf1f913902a41b58393bc0e9c03efa3d2:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNjNzhiMjJmMzY3NjY2YmFmOGE3ZTQ1NmE5NGMzMDExNTg2MWVlYTA0N2I1MDkxMThhMjdiYWQ1ZjQyN2IyOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA1MWNjNWRkYzNlZDQ5MTQzZTc2OWY1YTIxNTVhM2I1MmFlMWVmZWY0MGZlZWZiNjA3NTU4ZTdiOGYxNWQwMTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjBjZDVkN2ExZWNhN2M2MzVmZWEyMDA3MDE4NmQxM2Y3ZWQ3ZDQzNmY4MmJjOTc0YzBjMDU2ZjA0NjFjOTdmYjUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBmNWZkOWMwMTk4NmFmYjUyYWE0MDE2N2ZmMmZiMWNkYTc3MjJlMmE3YjFiNjQ5OTY1NDFhNjI4MzU5YWMzY2UifQ"
+          "resource": "repo://backend/app.py#L101-L114",
+          "version": "repo-lines-v1:sha256:9809eb75258f20fa7e24fadf38903198a57bfa35a2ce6ee1ebec39f3e6559519:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFmYzhiOTYxMDhlZTkxNmRiMmE0OGY3ZjAxYTQyOTMxODVlYTk5YjIzYWE5N2UwOTZhYzczYWFjNjk1YTFiYzYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk3YTRlYWE4MzkyNzNmNTNlNDY3NDdjNDMyZGFkMmVkMGI2NWIwYzI2NGIyNjg0MDQ4MTQ3MDNmYzg1ODkxYzEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhjNjVlMWU0OGE4YjM1ODA1MmE4NWFjZWVkNGQ3ZjM0MmQ3NWYwZjZiODEzMTYxYjUwN2EwNTg2ZTcxNTE2NmYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjJmNWY5ZWE5NWJhNTU0OWU4ZjAxNDAwNDA1NDRhYTU5N2YwYjk2YWJhOGE1YWQ1OTA1NWI0OGY4NTg2ZWQ3MzcifQ"
         }
       ]
     },
@@ -65,7 +65,7 @@
       "statement": "The data directory is named by FRAME_TV_DATA (default data); the backend creates uploads and instance folders under it, with the SQLite database at instance/frametv.db.",
       "evidence": [
         {
-          "resource": "repo://backend/app.py#L79-L98",
+          "resource": "repo://backend/app.py#L73-L92",
           "version": "repo-lines-v1:sha256:2490f4b56f5a2b6f160a42ccc8bba981eadc899128d46d356fc8b096d9ccb9dd:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI3YWY5NzA1OTc2MTc0ODRjODYyYWE5NTE0MTRlNjFhNDViZGM4Y2Y1MjExNDc4MjFhM2UyZTVjNDhlNmE5NjgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2NmJhNDkwYWRiOWZmNjdjY2QzOWFmZGZkODk0N2MwNWM3NWQ4OTEzYmIxOWQ3ZDJiOGFlM2I4NGZjNjNiYWIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijg1NzRlY2RkNTI0ZGRlY2Q4NjllOWYxOWY3ZTA5MTkxMGM4ODVlZDc0MDZlMjEzYThlNWNjMTAzZjBmOTE5ZmEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjhiNGUxOTVjNGJiMWU0NzMyMjVhODQzNWUwYzY2ZDE2YTQzYzAzNTQxMDk3MGE0Y2I5NTk3ZjBkZTIzMmYwNTgifQ"
         }
       ]
@@ -85,7 +85,7 @@
       "statement": "The backend registers two blueprints, media_provider_routes and provider_config_routes, in addition to its own routes.",
       "evidence": [
         {
-          "resource": "repo://backend/app.py#L134-L135",
+          "resource": "repo://backend/app.py#L124-L125",
           "version": "repo-lines-v1:sha256:d8886f8f280157e853e0adacb5a244322e43c1ddc81096056e7f8d315d3445ed:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMmZkZmMzZmZmYTc4M2YyNjQ2ZWQ4NWJmZjJlNjY5ZGEyMTczNjM4ZTBhOTg1ZDgyZDQ0OGE5NWQxZDk0MjgyZSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMzhiMmVjODhjM2YxZWJkZDAzYWJiMzk5MjFlODAyMDRjNjAyOWYwYTAyNmM3ZDhmNDJlM2MzNzU1NmE3OWY0YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYjFmZGYxNzZiN2UxMzI1ZWY1NmJiZWMzNTEzYTU0NGNiMGYxZDdmYjIxMTI0ZDg2YzdlMWY4NDFiYTE1ZDFlNSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiY2E2MGMxMWE4MjQ0MTIxODZlOGUxODlhOWVmNzI4ZjRmZGM1YjkzNmZiNWQ4NDNhMTNkYzUxYzljYTRlOGYzYiJ9"
         }
       ]
@@ -95,11 +95,11 @@
       "statement": "TV requests are split across two layers: utils/frame_tv.py decides what to ask a TV and utils/tv_connection.py decides how to ask it safely; the route handlers import the former, including probe_tv and diagnose_tv for the read-only diagnostics route.",
       "evidence": [
         {
-          "resource": "repo://backend/app.py#L1460-L1461",
+          "resource": "repo://backend/app.py#L1432-L1433",
           "version": "repo-lines-v1:sha256:857856f189d8401fa41fa4d8ce79ed772beb2423a6d52b1e103680d0def3a728:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNjFhMmYxYWEzZjViMjI4ZGFhZDIzNDZhMTQ3ZDM0OTIxZTBlZjhiYzk2NzA3YjBmNjVlZTcxY2Q3YTQzZGQ5NCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNjE2MzNmMTVkYzhiMmRhNDIyYWJkNjZlYzA3Y2EzNTQyMmIyMjY0NDg4MTY4MjUzYjQ5NzM2YTU2OWM0Y2YxZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiODMyYjA4OWExNmIyZWVjNmRjNzMxODdlNGIzZTAzOTdmYmZhZGVmYTAwMGUxOWMyN2I2MjYxMTRiZjk3NDc2YSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNGViMzEwYzE5ZTJlM2FlNDI1ZDM0MWIxMDU0YzRhOTE1M2NhYmFkZDNjZmVmOWY5YmQyZTUzNzIxZmY3YmZlMCJ9"
         },
         {
-          "resource": "repo://backend/app.py#L46-L69",
+          "resource": "repo://backend/app.py#L40-L63",
           "version": "repo-lines-v1:sha256:b58d33b54357657bee6554235e910a73123f1ff0f6884a2165b46e3d70b0bff7:eyJzZWxlY3RlZExpbmVDb3VudCI6MjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA2YjkzYjEwNTAwYmZjOGNjNDI1MzQyM2NlNzA2NDE0YmYzM2I5NzQwODVjM2MxNjRmZTA1YmZkOWEzNzI3OWYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjliMzllMDIyZTBkODU0MTIwMDAzZDc5MGMyOGI3NTk2MmVkZDMwMzc1NmQ1MTMzM2RmNzQ1Y2ZiODZlYTExY2UiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjgyNzY4NWFmOTFiZTRkYzEyZjU0MDFlYzk0NTA2YjZlNjZiMmU4MjZjNWM3NDlmNDNiMTgxYjQ3MGVhODBiOWEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY0MjliZGU4ZjUxMzI0Zjc4MzZhNjMwMTlhNTg1MzU3YzQ0YzJlYjgyODM1MWJlZTc0NmNjNzdhZThjYzFhYzIifQ"
         }
       ]
@@ -109,7 +109,7 @@
       "statement": "The slideshow loop is started at import time unless FRAME_TV_SLIDESHOW is set to 0, false or no.",
       "evidence": [
         {
-          "resource": "repo://backend/app.py#L159-L172",
+          "resource": "repo://backend/app.py#L149-L162",
           "version": "repo-lines-v1:sha256:15d4e9500a637c847941e3cfaaddd4307c3b8a4ea6eb7355c479fd4906d7219c:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE0MzQ5YTM2NmUxN2RmMTUxYTNhMmMxYWRlYmIwMGYxYjIyM2RkMGM5YjYwYmJhYWIzMWM2NTUxZDZkYTE1ODAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM5MjIwNGM2NWY1MDJkYzE2NDU0YjYyNDA4NTZhOWFiN2FkZTAwM2E4ZTlmODYzMzNlYzBiN2M5ZTQwOTQ5MWQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjBiMGI5M2Y1NGUwMTZmNzI5NjdiZDIzOTE4ZmY4Yzk3NjM3ZWViMzE2Yzk0NjMyNTU0YmQ3NmU0YTUzODZkZmYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjVhMWRlOTM2M2YwZDcyZWMzYmY2MjM1N2NjZGVhMWY0NWE0NzVmNzBmOGQzOWIyZGFkY2JjZDVmZGMxMTVjYjUifQ"
         }
       ]
@@ -151,6 +151,6 @@
   ],
   "verification": {
     "by": "openwiki/0.7.2",
-    "at": "2026-10-27T18:55:06.371Z"
+    "at": "2026-10-28T14:34:25.443Z"
   }
 }

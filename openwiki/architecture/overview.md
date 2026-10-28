@@ -3,9 +3,6 @@ type: architecture
 title: System architecture
 description: How the Flask backend, the React single-page frontend, the on-disk data directory and the optional Electron desktop shell fit together, and how a request travels from the browser to a Samsung Frame TV.
 tags: [architecture, flask, react, electron, overview]
-verified:
-  - by: openwiki/0.7.2
-    at: 2026-10-27T18:55:06.371Z
 sources:
   - id: openwiki-source-3fe14ba9156cad65ad4a9425
     resource: repo://.github/workflows/build_desktop_app.yaml
@@ -21,7 +18,10 @@ sources:
     resource: repo://frontend/react-router.config.ts
   - id: openwiki-source-23775c3de52f3ab95a13cb8b
     resource: repo://README.md
-generated: { by: "claude-code", at: "2026-10-27T18:55:06.371Z" }
+generated: { by: "claude-code", at: "2026-10-28T14:34:25.443Z" }
+verified:
+  - by: openwiki/0.7.2
+    at: 2026-10-28T14:34:25.443Z
 ---
 
 # System architecture
@@ -32,7 +32,7 @@ The project is a self-hosted manager for the art on Samsung Frame TVs. It has th
 browser / Electron window
         │  fetch /api/...
         ▼
-Flask app  (backend/app.py, 42 routes)
+Flask app  (backend/app.py, 40 routes)
    ├─ SQLite + uploads on disk   (data directory)
    ├─ utils/frame_tv.py          (what to ask a TV)
    │     └─ utils/tv_connection.py   (how to ask it: locks, deadlines, cleanup)
@@ -42,21 +42,25 @@ Flask app  (backend/app.py, 42 routes)
 
 ## The frontend is a static single-page app
 
-The frontend is built with server-side rendering switched off and prerendering off, so the build output is plain static files (`frontend/react-router.config.ts` lines 5 to 7). Flask points its static folder at `../frontend/build/client` (`backend/app.py` line 100).
+The frontend is built with server-side rendering switched off and prerendering off, so the build output is plain static files (`frontend/react-router.config.ts` lines 5 to 7). Flask points its static folder at `../frontend/build/client` (`backend/app.py` line 96).
 
-Flask serves that build through a catch-all route registered last so that it has the lowest priority. If the requested path is a real file it sends the file, and for any other path it sends `index.html`, which is what lets client-side routing handle URLs such as `/tv-gallery` on a page reload (`backend/app.py` lines 1476 to 1487).
+Flask serves that build through a catch-all route registered last so that it has the lowest priority. If the requested path is a real file it sends the file, and for any other path it sends `index.html`, which is what lets client-side routing handle URLs such as `/tv-gallery` on a page reload (`backend/app.py` lines 1460 to 1469).
 
-Uploaded images are served separately from `/uploads/<filename>` (`backend/app.py` lines 879 to 880).
+Uploaded images are served separately from `/uploads/<filename>` (`backend/app.py` line 852).
 
 ## The API surface
 
-Everything the frontend needs is under `/api/`. `backend/app.py` declares 42 route decorators covering images, albums, upload, TV management, sending art, power and art mode, backup, reconcile and the status check. Two blueprints add the external photo-source routes: `media_provider_routes` and `provider_config_routes` (`backend/app.py` lines 132 to 133).
+Everything the frontend needs is under `/api/`. `backend/app.py` declares 40 route decorators covering images, albums, upload, TV management, sending art, power and art mode, backup, reconcile and the status check. Two blueprints add the external photo-source routes: `media_provider_routes` and `provider_config_routes` (`backend/app.py` lines 124 and 125).
 
-A few older TV routes exist without the `/api` prefix, for example `/tv/<ip>/on`, `/tv/<ip>/off`, `/tv/<ip>/artmode` and `/tv/<ip>/status`, alongside their `/api/tv/...` equivalents.
+The older TV routes without the `/api` prefix, `/tv/<ip>/on`, `/off`, `/artmode` and `/status`, have been removed: they no longer worked and nothing used them. Only the `/api/tv/...` routes exist.
 
-### There is no authentication, and CORS is open
+### There is no authentication, and CORS is closed by default
 
-The README states that the app implements no authentication or authorisation and is meant for private networks only (`README.md` lines 30 to 34). The code matches: cross-origin access is allowed from any origin on `/api/*`, and an `after_request` hook also sets `Access-Control-Allow-Origin: *` on every response. The same hook adds `X-Content-Type-Options`, `X-Frame-Options: DENY` and a referrer policy (`backend/app.py` lines 105 to 123).
+The README states that the app implements no authentication or authorisation and is meant for private networks only (`README.md` lines 30 to 34). The code matches: there is no login.
+
+CORS is off by default, so no other website gets permission to read the API from a browser. The built frontend is served by Flask and shares the API's origin, so it does not need it. To develop the frontend on another port, list the allowed origins in `CORS_ORIGINS`, for example `CORS_ORIGINS=http://localhost:5173`. An `after_request` hook always adds `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY` and a `strict-origin-when-cross-origin` referrer policy (`backend/app.py` lines 101 to 114).
+
+The Immich API key is write-only: API responses only say whether a key is stored, never the key itself, because without a login sending it back would hand it to anyone who can reach the port.
 
 Treat the service as reachable by anyone who can reach its port. Do not publish it without adding your own protection in front.
 
@@ -71,24 +75,24 @@ Each API client module builds its base URL from `VITE_API_URL` and falls back to
 - `uploads/` holds the image files.
 - `instance/` holds `frametv.db`, the SQLite database, plus the derived thumbnail directories (`backend/app.py` lines 77 to 96).
 
-<!-- openwiki: broken internal link [/openwiki/architecture/data-model-and-migrations.md] link "/openwiki/architecture/data-model-and-migrations.md" is root-absolute, which no real consumer resolves against the repository root (not a coding agent reading the page, not GitHub's Markdown renderer, not a local viewer); use a path relative to this file instead. Fix the href or restore the target, then delete this comment. -->
-TV preview thumbnails are cached under `instance/tv_thumbnails` (`backend/utils/frame_tv.py` lines 52 to 57). Everything in `instance/thumbnails` and `instance/tv_thumbnails` can be rebuilt, so only the database and `uploads/` need backing up. See [Data model and migrations](/openwiki/architecture/data-model-and-migrations.md) for the schema.
+TV preview thumbnails are cached under `instance/tv_thumbnails` (`backend/utils/frame_tv.py` lines 52 to 57). Everything in `instance/thumbnails` and `instance/tv_thumbnails` can be rebuilt, so only the database and `uploads/` need backing up. See [Data model and migrations](data-model-and-migrations.md) for the schema.
 
 ## How a request reaches a TV
 
 A request that touches a TV goes through two layers, and keeping them apart is the main design rule:
 
-<!-- openwiki: broken internal link [/openwiki/operations/diagnostics-and-failure-modes.md] link "/openwiki/operations/diagnostics-and-failure-modes.md" is root-absolute, which no real consumer resolves against the repository root (not a coding agent reading the page, not GitHub's Markdown renderer, not a local viewer); use a path relative to this file instead. Fix the href or restore the target, then delete this comment. -->
-1. `backend/utils/frame_tv.py` decides what to ask: list the gallery, upload an image, delete, select, switch art mode. The route handlers in `app.py` import these functions (`backend/app.py` lines 46 to 69). Two of them, `probe_tv` and `diagnose_tv`, serve the read-only `GET /api/tv/<ip>/diagnostics` route (`backend/app.py` line 1460), which the Settings page uses for its test-connection button; see [Diagnostics and failure modes](/openwiki/operations/diagnostics-and-failure-modes.md).
+1. `backend/utils/frame_tv.py` decides what to ask: list the gallery, upload an image, delete, select, switch art mode. The route handlers in `app.py` import these functions (`backend/app.py` lines 46 to 69). Two of them, `probe_tv` and `diagnose_tv`, serve the read-only `GET /api/tv/<ip>/diagnostics` route (`backend/app.py` line 1460), which the Settings page uses for its test-connection button; see [Diagnostics and failure modes](../operations/diagnostics-and-failure-modes.md).
 2. `backend/utils/tv_connection.py` decides how to ask it safely: one caller per TV at a time, a hard deadline, a watchdog for silence, and cleanup of connections the TV left half-open.
 
-<!-- openwiki: broken internal link [/openwiki/tv/connection-and-session.md] link "/openwiki/tv/connection-and-session.md" is root-absolute, which no real consumer resolves against the repository root (not a coding agent reading the page, not GitHub's Markdown renderer, not a local viewer); use a path relative to this file instead. Fix the href or restore the target, then delete this comment. -->
-See [TV connection layer](/openwiki/tv/connection-and-session.md) for the second layer, which is where most reliability problems live.
+See [TV connection layer](../tv/connection-and-session.md) for the second layer, which is where most reliability problems live.
+
+## External photo provider
+
+The Immich source is not built at start-up: `get_media_provider()` in `backend/media_provider_routes.py` reads the saved settings (`ProviderConfig`) on every call. Saving or removing the settings therefore takes effect at once in every worker, with no restart. When Immich is unreachable the API answers 502, and the cache of recently viewed images is bounded to 32 entries. See [Local image library](../workflows/image-library.md).
 
 ## Background work
 
-<!-- openwiki: broken internal link [/openwiki/workflows/slideshow.md] link "/openwiki/workflows/slideshow.md" is root-absolute, which no real consumer resolves against the repository root (not a coding agent reading the page, not GitHub's Markdown renderer, not a local viewer); use a path relative to this file instead. Fix the href or restore the target, then delete this comment. -->
-On import the app also starts the slideshow loop unless `FRAME_TV_SLIDESHOW` is set to `0`, `false` or `no`. Only one worker process runs it (`backend/app.py` lines 157 to 170). See [Slideshow rotation](/openwiki/workflows/slideshow.md).
+On import the app also starts the slideshow loop unless `FRAME_TV_SLIDESHOW` is set to `0`, `false` or `no`. Only one worker process runs it (`backend/app.py` lines 152 to 170). See [Slideshow rotation](../workflows/slideshow.md).
 
 ## The desktop shell
 
@@ -100,14 +104,10 @@ The Electron main process, `frontend/main.js`, runs three things when the app is
 
 If the backend exits with a non-zero code while the app is not quitting, the shell shows the captured error to the user (`frontend/main.js` lines 115 to 130).
 
-<!-- openwiki: broken internal link [/openwiki/operations/deployment-and-release.md] link "/openwiki/operations/deployment-and-release.md" is root-absolute, which no real consumer resolves against the repository root (not a coding agent reading the page, not GitHub's Markdown renderer, not a local viewer); use a path relative to this file instead. Fix the href or restore the target, then delete this comment. -->
-In the container image none of this applies: gunicorn runs the Flask app directly and Flask serves the frontend build. See [Deployment and release](/openwiki/operations/deployment-and-release.md).
+In the container image none of this applies: gunicorn runs the Flask app directly and Flask serves the frontend build. See [Deployment and release](../operations/deployment-and-release.md).
 
 ## Related pages
 
-<!-- openwiki: broken internal link [/openwiki/architecture/data-model-and-migrations.md] link "/openwiki/architecture/data-model-and-migrations.md" is root-absolute, which no real consumer resolves against the repository root (not a coding agent reading the page, not GitHub's Markdown renderer, not a local viewer); use a path relative to this file instead. Fix the href or restore the target, then delete this comment. -->
-- [Data model and migrations](/openwiki/architecture/data-model-and-migrations.md)
-<!-- openwiki: broken internal link [/openwiki/frontend/spa-structure.md] link "/openwiki/frontend/spa-structure.md" is root-absolute, which no real consumer resolves against the repository root (not a coding agent reading the page, not GitHub's Markdown renderer, not a local viewer); use a path relative to this file instead. Fix the href or restore the target, then delete this comment. -->
-- [Frontend structure](/openwiki/frontend/spa-structure.md)
-<!-- openwiki: broken internal link [/openwiki/operations/deployment-and-release.md] link "/openwiki/operations/deployment-and-release.md" is root-absolute, which no real consumer resolves against the repository root (not a coding agent reading the page, not GitHub's Markdown renderer, not a local viewer); use a path relative to this file instead. Fix the href or restore the target, then delete this comment. -->
-- [Deployment and release](/openwiki/operations/deployment-and-release.md)
+- [Data model and migrations](data-model-and-migrations.md)
+- [Frontend structure](../frontend/spa-structure.md)
+- [Deployment and release](../operations/deployment-and-release.md)

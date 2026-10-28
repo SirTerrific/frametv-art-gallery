@@ -3,9 +3,6 @@ type: workflow
 title: TV gallery and thumbnails
 description: How the list of images on a Frame TV is fetched and briefly cached, how thumbnails are collected in batches and cached in memory and on disk, when a TV is written off or an image is remembered as having no preview, and how the frontend paces the requests.
 tags: [tv, gallery, thumbnails, caching, batching, art-channel]
-verified:
-  - by: openwiki/0.5.1
-    at: 2026-09-21T02:31:07.302Z
 sources:
   - id: openwiki-source-7872be2c059c5659d94804ea
     resource: repo://backend/app.py
@@ -13,15 +10,17 @@ sources:
     resource: repo://backend/utils/frame_tv.py
   - id: openwiki-source-912a1ff2967d1aceca07a022
     resource: repo://frontend/app/routes/tvGallery.tsx
-generated: { by: "claude-code", at: "2026-10-27T18:55:06.371Z" }
+generated: { by: "claude-code", at: "2026-10-28T14:34:25.443Z" }
+verified:
+  - by: openwiki/0.7.2
+    at: 2026-10-28T14:34:25.443Z
 ---
 
 # TV gallery and thumbnails
 
 The TV gallery page shows what is stored on a Frame TV. Two things have to be fetched from the set: the list of images, which is small and quick, and a thumbnail for each, which is large and slow. The design keeps the list fast, fetches thumbnails in small batches, and remembers as much as it can so a reload does not go back to the TV.
 
-<!-- openwiki: broken internal link [/openwiki/tv/connection-and-session.md] link "/openwiki/tv/connection-and-session.md" is root-absolute, which no real consumer resolves against the repository root (not a coding agent reading the page, not GitHub's Markdown renderer, not a local viewer); use a path relative to this file instead. Fix the href or restore the target, then delete this comment. -->
-The single fact behind the design is that a Frame TV serves one art channel at a time. Anything that holds the channel for a long time makes every other request to that TV wait and then fail (see [TV connection layer](/openwiki/tv/connection-and-session.md)).
+The single fact behind the design is that a Frame TV serves one art channel at a time. Anything that holds the channel for a long time makes every other request to that TV wait and then fail (see [TV connection layer](connection-and-session.md)).
 
 ## The page flow
 
@@ -74,8 +73,7 @@ A batch that raises is handled in one of two ways, and the difference is the imp
 - If frames arrived during the call and it ran for nearly the whole stall timeout, the TV answered and then stopped. Its transfer started and never finished, so the images in that batch are treated as previewless and remembered, otherwise every page load would pay the same stall again.
 - Otherwise the batch was refused quickly, or the TV said nothing at all. It is logged at INFO and the images are retried one at a time.
 
-<!-- openwiki: broken internal link [/openwiki/operations/diagnostics-and-failure-modes.md] link "/openwiki/operations/diagnostics-and-failure-modes.md" is root-absolute, which no real consumer resolves against the repository root (not a coding agent reading the page, not GitHub's Markdown renderer, not a local viewer); use a path relative to this file instead. Fix the href or restore the target, then delete this comment. -->
-The stall test uses the frame counter the connection layer keeps. See the note in [Diagnostics and failure modes](/openwiki/operations/diagnostics-and-failure-modes.md) about how reliable that counter is after a timeout.
+The stall test uses the frame counter the connection layer keeps. See the note in [Diagnostics and failure modes](../operations/diagnostics-and-failure-modes.md) about how reliable that counter is after a timeout.
 
 ### 4. One at a time, and when to give up
 
@@ -103,9 +101,6 @@ The line `TV <ip> has no preview for SAM-...` for the built-in art is written wi
 
 ## Related pages
 
-<!-- openwiki: broken internal link [/openwiki/tv/connection-and-session.md] link "/openwiki/tv/connection-and-session.md" is root-absolute, which no real consumer resolves against the repository root (not a coding agent reading the page, not GitHub's Markdown renderer, not a local viewer); use a path relative to this file instead. Fix the href or restore the target, then delete this comment. -->
-- [TV connection layer](/openwiki/tv/connection-and-session.md)
-<!-- openwiki: broken internal link [/openwiki/operations/diagnostics-and-failure-modes.md] link "/openwiki/operations/diagnostics-and-failure-modes.md" is root-absolute, which no real consumer resolves against the repository root (not a coding agent reading the page, not GitHub's Markdown renderer, not a local viewer); use a path relative to this file instead. Fix the href or restore the target, then delete this comment. -->
-- [Diagnostics and failure modes](/openwiki/operations/diagnostics-and-failure-modes.md)
-<!-- openwiki: broken internal link [/openwiki/frontend/spa-structure.md] link "/openwiki/frontend/spa-structure.md" is root-absolute, which no real consumer resolves against the repository root (not a coding agent reading the page, not GitHub's Markdown renderer, not a local viewer); use a path relative to this file instead. Fix the href or restore the target, then delete this comment. -->
-- [Frontend structure](/openwiki/frontend/spa-structure.md)
+- [TV connection layer](connection-and-session.md)
+- [Diagnostics and failure modes](../operations/diagnostics-and-failure-modes.md)
+- [Frontend structure](../frontend/spa-structure.md)

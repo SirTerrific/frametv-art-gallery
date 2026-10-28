@@ -4,8 +4,8 @@ title: Data model and migrations
 description: The SQLite schema behind the gallery, how a fresh database is created and stamped, how alembic migrations run at container start, and what happens when an older image meets a newer database.
 tags: [database, sqlite, alembic, migrations, models, deployment]
 verified:
-  - by: openwiki/0.5.1
-    at: 2026-09-21T12:08:00.549Z
+  - by: openwiki/0.7.2
+    at: 2026-10-28T14:34:25.443Z
 sources:
   - id: openwiki-source-7872be2c059c5659d94804ea
     resource: repo://backend/app.py
@@ -21,7 +21,7 @@ sources:
     resource: repo://backend/models.py
   - id: openwiki-source-64ed2c6018b0eae34dd77457
     resource: repo://backend/tests/test_migrations.py
-generated: { by: "claude-code", at: "2026-10-27T18:55:06.371Z" }
+generated: { by: "claude-code", at: "2026-10-28T14:34:25.443Z" }
 ---
 
 # Data model and migrations
@@ -55,7 +55,7 @@ A `TV` row carries behaviour that belongs to one set rather than to the app:
 
 The link to `Image` cascades too. The `image` relationship declares its backref with `cascade='all, delete-orphan'`, so deleting an `Image` deletes the `UploadedImage` rows that point at it. Without that, SQLAlchemy tried to null the non-nullable `image_id` and the delete failed with an `IntegrityError`, which is what broke deleting an album that held an image already sent to a TV. Deleting an album now reaches its images and, through them, their upload records (`backend/models.py` lines 58 to 70).
 
-`ProviderConfig.as_dict()` includes the `api_key` in what it returns, so anything that serialises a provider with it exposes the key (`backend/models.py` lines 78 to 86).
+`ProviderConfig.as_dict()` never returns the API key. It exposes `has_api_key`, a boolean that only says whether a key is stored. The key is write-only: the app has no login, so sending it back would hand it to anyone who can reach the API (`backend/models.py` lines 69 to 88).
 
 ## How a database comes into being
 
@@ -107,7 +107,5 @@ There are two ways out:
 
 ## Related pages
 
-<!-- openwiki: broken internal link [/openwiki/architecture/overview.md] link "/openwiki/architecture/overview.md" is root-absolute, which no real consumer resolves against the repository root (not a coding agent reading the page, not GitHub's Markdown renderer, not a local viewer); use a path relative to this file instead. Fix the href or restore the target, then delete this comment. -->
-- [System architecture](/openwiki/architecture/overview.md)
-<!-- openwiki: broken internal link [/openwiki/operations/deployment-and-release.md] link "/openwiki/operations/deployment-and-release.md" is root-absolute, which no real consumer resolves against the repository root (not a coding agent reading the page, not GitHub's Markdown renderer, not a local viewer); use a path relative to this file instead. Fix the href or restore the target, then delete this comment. -->
-- [Deployment and release](/openwiki/operations/deployment-and-release.md)
+- [System architecture](overview.md)
+- [Deployment and release](../operations/deployment-and-release.md)

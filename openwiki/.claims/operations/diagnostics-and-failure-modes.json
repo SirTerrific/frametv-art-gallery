@@ -1,13 +1,13 @@
 {
   "schemaVersion": 1,
-  "pageVersion": "sha256:8aeae15ee7f0e895e98441d1f3754038d4fa4b74d7abda04ef38ca6465a3670d",
+  "pageVersion": "sha256:bdda8a6943632eee72fb007ad88e5882edf3ac61b98819ddf01e46bed60678ea",
   "claims": [
     {
       "id": "claim_ab4391c1723f41c7ad59ad41662b63c2",
       "statement": "FRAME_TV_LOG_LEVEL configures the root and utils loggers at the given level so the INFO lines the TV code writes become visible; when unset nothing is configured and those lines are dropped.",
       "evidence": [
         {
-          "resource": "repo://backend/app.py#L71-L77",
+          "resource": "repo://backend/app.py#L65-L71",
           "version": "repo-lines-v1:sha256:ba0c66baf1690f1e30d73898f8ba5dc867d3dc6deca4a4c17f55f35e8a746592:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYTNiNTU1ZmE3M2M3OGRjNjU1NGFjY2NkYTViOWE2ZTEzZWY1NmNhNjBiYThkNDFlNjczOWY4OTI3YjlkYmEzYiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDRlMWJjOWYzZGRhNzMxYmY3YmEyYWQzOTAxZmE3MzM3YjhkNDZjNmIwYWE2ZjY2ODJkYjQzYzFlZGFkYmZmMCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNTIxMTRmZTc1NTY2YjQzN2FiZjNkNDg2MWI2MWUxMmNjNjZkMTlkOTg3NmIzYjliNDZkY2EyYjc1YmMzM2NkMCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMWZlYWMwOWJmMTJlYzJkYjVhMDVmOTE3ZDU1Yjc0YTVmMjZiMTRiMTE1MzZiYzJhYWVjNjYyZWQ1OTQ5MTM0ZiJ9"
         }
       ]
@@ -17,7 +17,7 @@
       "statement": "The gallery endpoint maps the three TV exceptions to different HTTP responses: FrameTVUnavailableError to 503 with tv_unavailable true, FrameTVTimeoutError to 504, and FrameTVConnectionError to 503.",
       "evidence": [
         {
-          "resource": "repo://backend/app.py#L1216-L1224",
+          "resource": "repo://backend/app.py#L1188-L1196",
           "version": "repo-lines-v1:sha256:532a407952376d6aaa1ab3aad58be459572a4a6c9f9b51423df885dffc0318d7:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNGU4YzI4YWE1NDg4YzdmZjFlNDI4NjU5MzcxZWRjMTZjNzRkNTdjYjE4ZTFkOTA0ZTRhNmM0Zjg0Y2U2MTNjMiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMWU3OTgwMDQ1NTg0MzAyZWJhMTUwMmIwY2QzYTg0ZmFmNWMzMjUyMGQ5ZjhiMDQ0ZTlkM2E1NmEyOTNiODcwNiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMGNhOTE4NGI0YWI3M2E0OTQ0YTMzZTc0YzUxNDJhMDc0ZDQ4Nzk3ZTI5YTI1YjFhYTdjMTAwZWEwMzJmMzE5YSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYWE2MjMyYjU1YjhiMGVlMDBjYmMzYmZkZTI4Yjk2MTZjYzgxOGQ4NTFiNGM5MzE3NmRmYzNkZTAyNmYxYzVkNSJ9"
         }
       ]
@@ -93,7 +93,7 @@
       "statement": "The pairing handshake is bounded by FRAME_TV_PAIRING_TIMEOUT and always closes its connection, because a handshake with no deadline parked the request until gunicorn killed the worker and left a half-open socket holding the TV's single art channel.",
       "evidence": [
         {
-          "resource": "repo://backend/app.py#L1000-L1011",
+          "resource": "repo://backend/app.py#L971-L982",
           "version": "repo-lines-v1:sha256:048811b46e69268e3cfac84451d9591f80ecafa6e2cbadfbb1d2977a746b5842:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdmZjQwZTUyN2VmMzM3ZjIyZjE5MDc4MDk2NTkwYzdiMTg0ZGE3YjU0ZDk5MjdkYzc4OWU0ODE0YjVmYzJkYzIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZhNDI1MTcxYTQzZDFkMGQ1YmQ1NTFlNGZmNjAzNjg0MzA2MmRkMDFhMDhjZDQzNjBhNmRkZTdiMjQwMmZmNjYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImM5Y2NiNzFjMDM4MzYwMDUwMTllY2QzMzM4ZDU5NTQyYjQyNmZhMTA0ZmJhNjYxMWVhYzIyZWU0NTg2MWQwMjQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjZjMTAyMGQyOTc2MTQ3YTE3N2MyNGJlYTBmM2Y5Nzk2MWE1YjJiYTk4NDIxMTA2Yjk2ZTkxMGVmOTlmNGE3ODgifQ"
         }
       ]
@@ -110,15 +110,11 @@
     },
     {
       "id": "claim_bd59b9f63c484bd58f9234213d268517",
-      "statement": "The /api/status endpoint asks the GitHub releases API for the latest release of the fork's repository with a 5 second timeout, caches the answer in the app_settings table for 24 hours, and serves the cached answer when GitHub cannot be reached.",
+      "statement": "The /api/status endpoint asks the GitHub releases API for the latest release of the fork's repository with a 5 second timeout, caches the answer in the app_settings table for 24 hours, and when GitHub cannot be reached serves the cached answer and remembers the failed check for 15 minutes before retrying.",
       "evidence": [
         {
-          "resource": "repo://backend/app.py#L320-L353",
-          "version": "repo-lines-v1:sha256:0484340b137b15ada1760d86c406af63ba1fe4a94b238011d89d0ba15fe35b84:eyJzZWxlY3RlZExpbmVDb3VudCI6MzQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNiZjc0NjU3YjliZTkxZWVjNDgzYmJhMjhkOGE4ODJkZmUzMTM5N2I5ODQ2ZTY4MWYzN2M5NjIzNzkyY2I4NzEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE3OTE0M2U4MmE3ZjY5M2ZmZGZmMTg1ZWU5ZmZiNTQ4ZTk3ZjA5MTg0NzY4OWMwYzhiM2U4NzY1YzJhOGY5ZmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImYzMmM1YzgyN2UzZWFlNTRlYzRlMmEzMWJjNjdjNjg1NmVmZDUwYjg4ZTA4NWQyMWEwZTI2ZDI3NWVjMGI3NjMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjdlMDkxMGIwYWJlNWUyNGI4ZTllNzQ5ZGFjYmUwZjZmYzgzYzg2MTliN2U0YzhhZGQ4ZWEzMGNlNDFmMjQzMTkifQ"
-        },
-        {
-          "resource": "repo://backend/app.py#L354-L389",
-          "version": "repo-lines-v1:sha256:a2625b2a1d541443aeb6224aa584ee9c3b6297289484e8ac7cb279b5b021671d:eyJzZWxlY3RlZExpbmVDb3VudCI6MzYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhjOTAxNzUzNDllN2RmNzkzMjFkNTZmMDA3NTliZjRiNmQxNjgwODRiOTY3NjBhMTFkOWRiMjk3M2FhOWQ3Y2YiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ1YjM2NjdmNDlkOGI4NTU1NDkxOTlmYmM2ODMyYzM0ODczNjNkYTVjZjlhMmMwY2U2ZmJjMjE1YTRlZDVjNmQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQ0MWQ2MGFkMjc4ZTYyZTk1MzUyMDI0N2FhM2I5OTNiNGE3M2MxZjBlY2NjNDAxYTQ4MjliY2RkNDc2ODAyZjUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImFjZDFiNmZhYmY3NTRmOTFlOTQ5NGE3MjhhNGYzNTY0ZmVjNzFhODk5NjU1NjFmMzdmNDBlNDkxZjA3YzZmNDUifQ"
+          "resource": "repo://backend/app.py#L288-L360",
+          "version": "repo-lines-v1:sha256:474b0990c06c47f2903d2060b02b2b77aa64a0ef1e7f0cf0d867f4583d769a80:eyJzZWxlY3RlZExpbmVDb3VudCI6NzMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU4ZTk3MTY5OTdiOTg4NzYzMzVkZDNiOTljN2Y4MTQ2YzRjNDk5YTM2NDcyOGUxMzMyNjBiOTRmOTY3MmQ2ODAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ1YjM2NjdmNDlkOGI4NTU1NDkxOTlmYmM2ODMyYzM0ODczNjNkYTVjZjlhMmMwY2U2ZmJjMjE1YTRlZDVjNmQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImM5OWI4OWQ0ZDUxYTRmNWY5MDVmODEzNGI5ODY1NDMzNTE2NWM5OTRkMmQ2MWUxZTUxZDI2NWE1ZDcyZTNhOTEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImFjZDFiNmZhYmY3NTRmOTFlOTQ5NGE3MjhhNGYzNTY0ZmVjNzFhODk5NjU1NjFmMzdmNDBlNDkxZjA3YzZmNDUifQ"
         }
       ]
     },
@@ -127,7 +123,7 @@
       "statement": "Sending artwork adds a machine-readable code to its error body: tv_busy (503), tv_timeout (504) and tv_unreachable (503).",
       "evidence": [
         {
-          "resource": "repo://backend/app.py#L1147-L1167",
+          "resource": "repo://backend/app.py#L1119-L1139",
           "version": "repo-lines-v1:sha256:2f1261e946e184857e1e9e4a477cace829f67bdc5ede1d56c1f8c3b4375c7650:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRlOGMyOGFhNTQ4OGM3ZmYxZTQyODY1OTM3MWVkYzE2Yzc0ZDU3Y2IxOGUxZDkwNGU0YTZjNGY4NGNlNjEzYzIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjIyNjQyYWEwNTAxODM5NmU5ZDIzNDIxZjkyNzcyYjZiYzUyMzI3NWNkZDc4MzgyMGRiYTc4MzEyNjljYTk5NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjllYmNlZTZmYzBiMGI4ODFkMzlmMjFjOGMyZTI5NDJhNmNkNWRlMDhmMDMzYTA0OTRiY2VkZTFkMTE5YjFiOWMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM4YWE3YjMyMGVlY2QwNDY3NjE1NzRkZGNjOWRiZTM5YTAyZjEyYWJiNWVmYjZhN2I0NzVhMDcwZjc2YzJkMmQifQ"
         }
       ]
@@ -137,7 +133,7 @@
       "statement": "GET /api/tv/<ip>/reachability reads only the TV's plain HTTP endpoint on port 8001, so it never takes the art channel; it backs the header connection light.",
       "evidence": [
         {
-          "resource": "repo://backend/app.py#L1449-L1458",
+          "resource": "repo://backend/app.py#L1421-L1430",
           "version": "repo-lines-v1:sha256:dbd3cf0712b5ffd4bc666fe1e21bf70c7616ee43759ea1c0f70a275ceb99f1ba:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE2MDkzY2E1NDkzZDI4MjNjYjg1NDY5NmNjMzE2ODQ1Zjk0ZDcxODk4OTM4ZmE2YjUwYWQ1NzQwMmQyNjhhODkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImMyZjZlNjNhNzdmMzJjNTFiNWQ5NTk4ZWJkZWE5OWQ4ZTY5NDc1YWQxMWNlZTFlNjRkZmQ4NjFhODBmZDI5NWQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA1MWNhYzBmNjhhNDlkYTM1MzIyYWE4Njg1OGNhNThjNTMwNDJlMWRlODRlYTRlMDVjY2ExNzI4MThmOGYzN2EiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImNjNDFmYTAwOGVlZGUxYjZiMTZlZGVkYTUwZDE1Nzk1MDE0NmYzYjM0ODNkN2MxOWFiZmJkOTQ1NDJjNTcwYjQifQ"
         },
         {
@@ -151,7 +147,7 @@
       "statement": "GET /api/tv/<ip>/diagnostics returns the HTTP probe plus one art session reading the art API version, art mode and artwork count, with has_mac; art_error is unreachable, busy, timeout, refused or error.",
       "evidence": [
         {
-          "resource": "repo://backend/app.py#L1460-L1483",
+          "resource": "repo://backend/app.py#L1432-L1455",
           "version": "repo-lines-v1:sha256:f4674ae1d57ddb4d2d4e29ef4723dbe7e6c6a8facfab88e6d6531dd870694378:eyJzZWxlY3RlZExpbmVDb3VudCI6MjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjYxYTJmMWFhM2Y1YjIyOGRhYWQyMzQ2YTE0N2QzNDkyMWUwZWY4YmM5NjcwN2IwZjY1ZWU3MWNkN2E0M2RkOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFiY2MxZDEwMGEwMGZiN2Q4MjhmYzllOTgzOTMyNGZkMmExNTNhNjYzYzg5MTQyZGEwMGUwNDBiYWMwNDhiYmYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjgzMmIwODlhMTZiMmVlYzZkYzczMTg3ZTRiM2UwMzk3ZmJmYWRlZmEwMDBlMTljMjdiNjI2MTE0YmY5NzQ3NmEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjE4Y2UyYjBiNTQ2NTQyZjFjMTg2MzM1NmY5ZjRlNzMxOWZmYzAxYTU3MjgxYTkzZDA0N2ZjZDdhZTZjN2M0MDMifQ"
         },
         {
@@ -169,10 +165,24 @@
           "version": "repo-lines-v1:sha256:cd530eb0e473887b48ffad6cad08b542d2c2271aeabc83707752f1ae5d6eb724:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNjI2NWU3Y2ViNjliMjY1MGFkOGFhN2Q0ZmU2ZmZjOTM3Y2YyMTcxYTVkNGUyODcwZDdhZjBjY2EzMzU2NGMxYSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOWY4NzNlOGVkMDU3ZGJmYzlkYmRlMDc1YjVlNDcyZTk1YTcyMzNmYmM4MGJjNjg0Mjc5MmEyZDIxYmJmY2ZmYSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiODNmM2U4MDgzNzIxZmYxNWFkNDE4ODNiMjZhMDQzZDExZjcyZmE3OGY1YjM0YmQxOTVhMjcyZDhlMmQ2ZjNkZiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMjNiNjQzYzU2YzM5ODMzM2U1NmI1ZjFkOWE3MDQyMjcyYmNlNTY0YTBiM2NjNjIxNTkzMmZkM2I0YmIxNTVjZSJ9"
         }
       ]
+    },
+    {
+      "id": "claim_099b9d9ef8cb4d038546563a2627e546",
+      "statement": "When Immich cannot be reached, the /api/provider routes answer 502 instead of crashing, and each call closes its HTTP session even on failure.",
+      "evidence": [
+        {
+          "resource": "repo://backend/media_provider_routes.py",
+          "version": "repo-file-v1:sha256:2c3daa3fedf257505a8ed8cd2a76f8775e9d2157451354c43b18fdd5436379f5"
+        },
+        {
+          "resource": "repo://backend/utils/immich_provider.py",
+          "version": "repo-file-v1:sha256:7bfd1b9f8a2cb89d9b8c6b2bc06ceb848c1ccb55763116841e450546cf69e8d0"
+        }
+      ]
     }
   ],
   "verification": {
     "by": "openwiki/0.7.2",
-    "at": "2026-10-27T18:55:06.371Z"
+    "at": "2026-10-28T14:34:25.443Z"
   }
 }

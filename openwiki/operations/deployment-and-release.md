@@ -12,8 +12,6 @@ sources:
     resource: repo://.github/workflows/ci.yaml
   - id: openwiki-source-f8b7b48444f96e08372841e6
     resource: repo://.github/workflows/release.yaml
-  - id: openwiki-source-7872be2c059c5659d94804ea
-    resource: repo://backend/app.py
   - id: openwiki-source-3641e44aef067384d4965781
     resource: repo://backend/docker-compose.yml
   - id: openwiki-source-600e7dce49b27b22f5486b40
@@ -22,10 +20,10 @@ sources:
     resource: repo://backend/flask_backend.spec
   - id: openwiki-source-1047363cf615000e4c9bb694
     resource: repo://frontend/package.json
-generated: { by: "claude-code", at: "2026-10-27T18:55:06.371Z" }
+generated: { by: "claude-code", at: "2026-10-28T14:34:25.443Z" }
 verified:
   - by: openwiki/0.7.2
-    at: 2026-10-27T18:55:06.371Z
+    at: 2026-10-28T14:34:25.443Z
 ---
 
 # Deployment and release
@@ -45,8 +43,7 @@ The image sets `PORT=8000`, exposes it, and records its version in `FRAME_TV_VER
 
 ### Start-up sequence
 
-<!-- openwiki: broken internal link [/openwiki/architecture/data-model-and-migrations.md] link "/openwiki/architecture/data-model-and-migrations.md" is root-absolute, which no real consumer resolves against the repository root (not a coding agent reading the page, not GitHub's Markdown renderer, not a local viewer); use a path relative to this file instead. Fix the href or restore the target, then delete this comment. -->
-The entrypoint runs first and applies database migrations. If they fail it refuses to start, printing why (`backend/Dockerfile` line 51 and `backend/entrypoint.sh`). See [Data model and migrations](/openwiki/architecture/data-model-and-migrations.md). It then runs gunicorn:
+The entrypoint runs first and applies database migrations. If they fail it refuses to start, printing why (`backend/Dockerfile` line 51 and `backend/entrypoint.sh`). See [Data model and migrations](../architecture/data-model-and-migrations.md). It then runs gunicorn:
 
 ```
 gunicorn app:app --bind 0.0.0.0:${PORT:-8000} --workers ${GUNICORN_WORKERS:-4} --timeout ${GUNICORN_TIMEOUT:-180}
@@ -54,16 +51,17 @@ gunicorn app:app --bind 0.0.0.0:${PORT:-8000} --workers ${GUNICORN_WORKERS:-4} -
 
 Two choices in that line are deliberate. Several workers, four by default, mean that one TV that stops answering cannot freeze the whole app. The timeout of 180 seconds sits above `FRAME_TV_UPLOAD_DEADLINE`, so a legitimately slow upload is not killed by gunicorn first. Keep that ordering if you change either value (`backend/Dockerfile` lines 53 to 56).
 
-<!-- openwiki: broken internal link [/openwiki/workflows/slideshow.md] link "/openwiki/workflows/slideshow.md" is root-absolute, which no real consumer resolves against the repository root (not a coding agent reading the page, not GitHub's Markdown renderer, not a local viewer); use a path relative to this file instead. Fix the href or restore the target, then delete this comment. -->
-Because there are several worker processes, anything that must happen once per app, such as the slideshow loop, has to be coordinated across processes. See [Slideshow rotation](/openwiki/workflows/slideshow.md).
+Because there are several worker processes, anything that must happen once per app, such as the slideshow loop, has to be coordinated across processes. See [Slideshow rotation](../workflows/slideshow.md).
 
 ## The compose file
 
-`backend/docker-compose.yml` runs the published image with one named volume mounted at `/data` and `FRAME_TV_DATA=/data`, so uploads, the database and caches survive an image update (`backend/docker-compose.yml` lines 3 to 7 and 18 to 20).
+`backend/docker-compose.yml` runs the published image with one named volume mounted at `/data` and `FRAME_TV_DATA=/data`, so uploads, the database and caches survive an image update (`backend/docker-compose.yml` lines 6 to 7 and 21).
 
-It uses the host network by default, for two separate reasons. Wake-on-LAN is a UDP broadcast, and a broadcast never leaves Docker's bridge network. Automatic TV discovery does not broadcast at all: it probes the addresses `.1` to `.254` of the /24 that the container itself uses, over HTTP. On the host network that is your LAN. On the bridge it is Docker's own subnet, so the scan finds nothing. On the bridge you replace `network_mode: host` with a `ports` mapping and add each TV by typing its address; everything else keeps working (`backend/docker-compose.yml` lines 9 to 18). On the host network there is no port mapping to move the app with, so `PORT` is how you avoid a clash (`backend/docker-compose.yml` lines 23 to 25).
+It uses the host network by default, for two separate reasons. Wake-on-LAN is a UDP broadcast, and a broadcast never leaves Docker's bridge network. Automatic TV discovery does not broadcast at all: it probes the addresses `.1` to `.254` of the /24 that the container itself uses, over HTTP. On the host network that is your LAN. On the bridge it is Docker's own subnet, so the scan finds nothing. On the bridge you replace `network_mode: host` with a `ports` mapping and add each TV by typing its address; everything else keeps working (`backend/docker-compose.yml` lines 9 to 18). On the host network there is no port mapping to move the app with, so `PORT` is how you avoid a clash (`backend/docker-compose.yml` lines 22 to 24).
 
-The file ships `SECRET_KEY=supersecretkey` as a placeholder. If the variable is unset the app falls back to its own built-in default, so change it in your own deployment (`backend/docker-compose.yml` line 19 and `backend/app.py` line 101).
+The app no longer has a `SECRET_KEY`: the compose file does not set it and `app.py` does not read it, because nothing used it (no sessions or signatures).
+
+CORS is closed by default. To develop the frontend on another port, set `CORS_ORIGINS`, for example `CORS_ORIGINS=http://localhost:5173` (`backend/app.py` lines 101 to 106).
 
 ## Environment variables
 
@@ -77,9 +75,9 @@ The full table of tunables, with defaults, is in the README (`README.md` lines 9
 | `FRAME_TV_CALL_DEADLINE`, `FRAME_TV_UPLOAD_DEADLINE`, `FRAME_TV_STALL_TIMEOUT` | How long a TV call may take before it is cut off. |
 | `FRAME_TV_LOG_LEVEL` | Set to `INFO` or `DEBUG` to see what a TV is doing. |
 | `FRAME_TV_SLIDESHOW` | Set to `0` to stop the slideshow loop. |
+| `CORS_ORIGINS` | Comma-separated origins allowed to call the API from a browser. Empty by default. |
 
-<!-- openwiki: broken internal link [/openwiki/tv/connection-and-session.md] link "/openwiki/tv/connection-and-session.md" is root-absolute, which no real consumer resolves against the repository root (not a coding agent reading the page, not GitHub's Markdown renderer, not a local viewer); use a path relative to this file instead. Fix the href or restore the target, then delete this comment. -->
-The TV timeouts are explained in [TV connection layer](/openwiki/tv/connection-and-session.md).
+The TV timeouts are explained in [TV connection layer](../tv/connection-and-session.md).
 
 ## From merge to published image
 
@@ -105,12 +103,9 @@ You can start the build by hand from the Actions tab and pass a version to publi
 
 `build_desktop_app.yaml` runs when a release is published, or by hand. It builds on Windows, Linux and macOS runners: it freezes the backend with PyInstaller, builds the frontend with `VITE_API_URL` pointing at `http://127.0.0.1:5543`, and packages both with `electron-builder` without publishing (`.github/workflows/build_desktop_app.yaml` lines 3 to 17, 71 to 90). A final job attaches the `.exe`, `.dmg`, `.AppImage`, `.deb` and `.zip` files to the release, and only when the run was triggered by a release (`.github/workflows/build_desktop_app.yaml` lines 104 to 127).
 
-<!-- openwiki: broken internal link [/openwiki/architecture/overview.md] link "/openwiki/architecture/overview.md" is root-absolute, which no real consumer resolves against the repository root (not a coding agent reading the page, not GitHub's Markdown renderer, not a local viewer); use a path relative to this file instead. Fix the href or restore the target, then delete this comment. -->
-The Electron configuration bundles the frozen backend as an extra resource and targets an NSIS installer on Windows, a DMG on macOS and an AppImage on Linux (`frontend/package.json` lines 57 to 84). The backend spec file bundles the `migrations` folder so the desktop build can upgrade its database (`backend/flask_backend.spec` line 9). See [System architecture](/openwiki/architecture/overview.md) for how the shell starts the backend.
+The Electron configuration bundles the frozen backend as an extra resource and targets an NSIS installer on Windows, a DMG on macOS and an AppImage on Linux (`frontend/package.json` lines 57 to 84). The backend spec file bundles the `migrations` folder so the desktop build can upgrade its database (`backend/flask_backend.spec` line 9). See [System architecture](../architecture/overview.md) for how the shell starts the backend.
 
 ## Related pages
 
-<!-- openwiki: broken internal link [/openwiki/architecture/overview.md] link "/openwiki/architecture/overview.md" is root-absolute, which no real consumer resolves against the repository root (not a coding agent reading the page, not GitHub's Markdown renderer, not a local viewer); use a path relative to this file instead. Fix the href or restore the target, then delete this comment. -->
-- [System architecture](/openwiki/architecture/overview.md)
-<!-- openwiki: broken internal link [/openwiki/operations/diagnostics-and-failure-modes.md] link "/openwiki/operations/diagnostics-and-failure-modes.md" is root-absolute, which no real consumer resolves against the repository root (not a coding agent reading the page, not GitHub's Markdown renderer, not a local viewer); use a path relative to this file instead. Fix the href or restore the target, then delete this comment. -->
-- [Diagnostics and failure modes](/openwiki/operations/diagnostics-and-failure-modes.md)
+- [System architecture](../architecture/overview.md)
+- [Diagnostics and failure modes](diagnostics-and-failure-modes.md)

@@ -6,16 +6,20 @@ tags: [diagnostics, logging, troubleshooting, tv, failure-modes, update-check]
 sources:
   - id: openwiki-source-7872be2c059c5659d94804ea
     resource: repo://backend/app.py
+  - id: openwiki-source-e4a635ea27709b0335115c6f
+    resource: repo://backend/media_provider_routes.py
   - id: openwiki-source-ba30ebcb023436412b51c6d9
     resource: repo://backend/utils/frame_tv.py
+  - id: openwiki-source-6f692cd6120b32764242a4be
+    resource: repo://backend/utils/immich_provider.py
   - id: openwiki-source-a74be312010be245530dc464
     resource: repo://backend/utils/tv_connection.py
   - id: openwiki-source-912a1ff2967d1aceca07a022
     resource: repo://frontend/app/routes/tvGallery.tsx
-generated: { by: "claude-code", at: "2026-10-27T18:55:06.371Z" }
+generated: { by: "claude-code", at: "2026-10-28T14:34:25.443Z" }
 verified:
   - by: openwiki/0.7.2
-    at: 2026-10-27T18:55:06.371Z
+    at: 2026-10-28T14:34:25.443Z
 ---
 
 # Diagnostics and failure modes
@@ -38,8 +42,7 @@ The route handlers turn the three TV exception types into different HTTP statuse
 | `FrameTVTimeoutError` | 504 | `TV request timed out` |
 | `FrameTVConnectionError` | 503 | `TV is unavailable` |
 
-<!-- openwiki: broken internal link [/openwiki/tv/connection-and-session.md] link "/openwiki/tv/connection-and-session.md" is root-absolute, which no real consumer resolves against the repository root (not a coding agent reading the page, not GitHub's Markdown renderer, not a local viewer); use a path relative to this file instead. Fix the href or restore the target, then delete this comment. -->
-The gallery endpoint shows the pattern (`backend/app.py` lines 1204 to 1212). `FrameTVUnavailableError` is the cooldown case: the app declined to contact a TV that failed a moment ago (see [TV connection layer](/openwiki/tv/connection-and-session.md)).
+The gallery endpoint shows the pattern (`backend/app.py` lines 1204 to 1212). `FrameTVUnavailableError` is the cooldown case: the app declined to contact a TV that failed a moment ago (see [TV connection layer](../tv/connection-and-session.md)).
 
 Sending artwork goes further and adds a machine-readable `code` next to the message, so the browser can show help that matches the cause: `tv_busy` (503, the single art channel is in use), `tv_timeout` (504, the TV did not answer, which can mean it is fully off or waiting for the pairing prompt to be accepted) and `tv_unreachable` (503, the connection failed). Any other failure keeps the generic 500 or 400 (`backend/app.py` lines 1147 to 1167). The frontend turns these codes into a plain explanation and exposes the status through `TVError.code`.
 
@@ -98,27 +101,26 @@ A Frame TV serves a single art channel, and most of these come from that one fac
 - **The art channel is wedged.** The TV accepts the websocket and never sends anything on it. The remote channel still opens, and the TV's own HTTP endpoint still reports it is on, so the app reads as unable to reach a TV that is running fine. In the one case where this was observed on a real TV, restarting the container did not clear it and unplugging the TV from the wall did; no software-side reset is known.
 - **A connection was left half open.** A pairing handshake with no deadline used to park a request until gunicorn killed the worker, leaving a socket the TV kept treating as the art channel's owner. The pairing call now has its own timeout, `FRAME_TV_PAIRING_TIMEOUT`, and closes the connection even when the handshake fails (`backend/app.py` lines 998 to 1009).
 - **Another client may hold the channel.** Because there is only one, any second client of the same TV, such as a phone app, would compete for it. This follows from the single-channel limit and has not been reproduced in this project.
-<!-- openwiki: broken internal link [/openwiki/tv/gallery-and-thumbnails.md] link "/openwiki/tv/gallery-and-thumbnails.md" is root-absolute, which no real consumer resolves against the repository root (not a coding agent reading the page, not GitHub's Markdown renderer, not a local viewer); use a path relative to this file instead. Fix the href or restore the target, then delete this comment. -->
-- **One request holds the channel for too long.** A single request for every thumbnail on a TV occupies the channel for the whole transfer, and anything else aimed at that TV queues behind it and times out. The frontend therefore asks for thumbnails a batch at a time and the backend takes an exclusive lock per TV (`frontend/app/routes/tvGallery.tsx` lines 17 to 20, and see [TV gallery and thumbnails](/openwiki/tv/gallery-and-thumbnails.md)).
+- **One request holds the channel for too long.** A single request for every thumbnail on a TV occupies the channel for the whole transfer, and anything else aimed at that TV queues behind it and times out. The frontend therefore asks for thumbnails a batch at a time and the backend takes an exclusive lock per TV (`frontend/app/routes/tvGallery.tsx` lines 17 to 20, and see [TV gallery and thumbnails](../tv/gallery-and-thumbnails.md)).
 
 A failed call also puts the TV in a short cooldown, `FRAME_TV_DOWN_COOLDOWN` seconds, during which background reads are refused immediately instead of piling up (`backend/utils/tv_connection.py` lines 189 to 213).
 
 ## Missing logs on a first start
 
-<!-- openwiki: broken internal link [/openwiki/architecture/data-model-and-migrations.md] link "/openwiki/architecture/data-model-and-migrations.md" is root-absolute, which no real consumer resolves against the repository root (not a coding agent reading the page, not GitHub's Markdown renderer, not a local viewer); use a path relative to this file instead. Fix the href or restore the target, then delete this comment. -->
-If a brand new data directory produced no `utils.*` log lines at all, the cause was alembic, not the app: `migrations/env.py` used to call `fileConfig` with its default of disabling every existing logger, and the stamp of a fresh database runs it inside the gunicorn process. It now passes `disable_existing_loggers=False` (`backend/migrations/env.py` lines 12 to 18). An image older than v2.3.2 still has the fault; restarting the container works around it, because the second start finds an existing database and skips the stamp. See [Data model and migrations](/openwiki/architecture/data-model-and-migrations.md).
+If a brand new data directory produced no `utils.*` log lines at all, the cause was alembic, not the app: `migrations/env.py` used to call `fileConfig` with its default of disabling every existing logger, and the stamp of a fresh database runs it inside the gunicorn process. It now passes `disable_existing_loggers=False` (`backend/migrations/env.py` lines 12 to 18). An image older than v2.3.2 still has the fault; restarting the container works around it, because the second start finds an existing database and skips the stamp. See [Data model and migrations](../architecture/data-model-and-migrations.md).
+
+## Immich unreachable
+
+The Immich provider routes (`/api/provider/...`) answer 502 with "Could not reach the Immich server" when Immich does not respond, instead of crashing, and the HTTP session of the call is closed even on failure (`backend/media_provider_routes.py`).
 
 ## The update check
 
-`/api/status` reports the running version and whether a newer release exists. It asks the GitHub releases API for the latest release of the fork's repository, with a 5 second timeout, and caches the answer in the `app_settings` table for 24 hours (`backend/app.py` lines 318 to 351).
+`/api/status` reports the running version and whether a newer release exists. It asks the GitHub releases API for the latest release of the fork's repository, with a 5 second timeout, and caches the answer in the `app_settings` table for 24 hours (`backend/app.py` lines 288 to 360).
 
-If GitHub cannot be reached or answers with an error, it logs the problem and serves the cached answer instead. It compares versions with `packaging` and falls back to plain inequality when a version cannot be parsed (`backend/app.py` lines 352 to 387). The repository it queries is set in one line, and it must name the repository whose images are actually running, otherwise the app announces updates that no image it runs will ever carry (`backend/app.py` line 323).
+If GitHub cannot be reached or answers with an error, it logs the problem and serves the cached answer instead. That failure is remembered too: the next attempt is made only 15 minutes later, so a slow or rate-limited GitHub does not stall every status call for 5 seconds. Versions are compared with `packaging`, falling back to plain inequality when a version cannot be parsed. The repository it queries is set in one line, and it must name the repository whose images are actually running, otherwise the app announces updates that no image it runs will ever carry (`backend/app.py` lines 288 to 360).
 
 ## Related pages
 
-<!-- openwiki: broken internal link [/openwiki/tv/connection-and-session.md] link "/openwiki/tv/connection-and-session.md" is root-absolute, which no real consumer resolves against the repository root (not a coding agent reading the page, not GitHub's Markdown renderer, not a local viewer); use a path relative to this file instead. Fix the href or restore the target, then delete this comment. -->
-- [TV connection layer](/openwiki/tv/connection-and-session.md)
-<!-- openwiki: broken internal link [/openwiki/tv/gallery-and-thumbnails.md] link "/openwiki/tv/gallery-and-thumbnails.md" is root-absolute, which no real consumer resolves against the repository root (not a coding agent reading the page, not GitHub's Markdown renderer, not a local viewer); use a path relative to this file instead. Fix the href or restore the target, then delete this comment. -->
-- [TV gallery and thumbnails](/openwiki/tv/gallery-and-thumbnails.md)
-<!-- openwiki: broken internal link [/openwiki/tv/pairing-tokens-and-wake.md] link "/openwiki/tv/pairing-tokens-and-wake.md" is root-absolute, which no real consumer resolves against the repository root (not a coding agent reading the page, not GitHub's Markdown renderer, not a local viewer); use a path relative to this file instead. Fix the href or restore the target, then delete this comment. -->
-- [Pairing, tokens, discovery and wake](/openwiki/tv/pairing-tokens-and-wake.md)
+- [TV connection layer](../tv/connection-and-session.md)
+- [TV gallery and thumbnails](../tv/gallery-and-thumbnails.md)
+- [Pairing, tokens, discovery and wake](../tv/pairing-tokens-and-wake.md)

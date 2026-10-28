@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "pageVersion": "sha256:cc2b8e54211bf706f0bfc08228c2d0762968e5a550c20f791158129fdea972a0",
+  "pageVersion": "sha256:d70d3fd139128d6ff735c991227b078d93f67440cfabd827127212861c92fdb1",
   "claims": [
     {
       "id": "claim_74fae2036f2a4f27abe68c470503ba0c",
@@ -35,7 +35,7 @@
       "statement": "Slideshow settings are validated by PATCH /api/tvs/<ip>: the album must exist, the interval must be a whole number of at least one minute, and the slideshow cannot be enabled without both an album and an interval.",
       "evidence": [
         {
-          "resource": "repo://backend/app.py#L941-L972",
+          "resource": "repo://backend/app.py#L914-L945",
           "version": "repo-lines-v1:sha256:376c3348adae30d4898f04a9ab43c0968dce31fc73f90e0e696c58a06a95a68f:eyJzZWxlY3RlZExpbmVDb3VudCI6MzIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU4OGFiZTA1Njg2YTk3NTJlZGVhNTk3OTc2Y2VmNjA0NjlkMTNkNzBmNzgyNTIxZTY0YTA4MTBmOGVlYTNmNzYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMTcxOWE4NDExNDk0MjBmMTNjZGEyODA4NTE5NWJhYTYyNjY0YmIxMGI4MTBiZTZiYTFlN2MyNzA4ZGQ3YjgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjBjMjAxMTE2ZmQ1N2E0MDE5ZGFkYjVkM2QxYTAwMmU2ZmM1ZmFjYjczODgzNWVjMjk0Yzg1NTQ0YThmMDkwOTQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjEyMjY4MjcyOGJiYWU0NDBlNTBlYTY5ODMxMGFmMzk1YTIxNTNhNGVmOGFkMzY5NTIzYTc3N2M2ZTBiOTc5MWMifQ"
         }
       ]
@@ -45,7 +45,7 @@
       "statement": "A single worker runs the slideshow loop because each process tries at start-up to take an exclusive non-blocking flock on a lock file, the winner keeps the handle open so the lock is released if it dies, and the others log that another worker runs it and do nothing.",
       "evidence": [
         {
-          "resource": "repo://backend/app.py#L158-L158",
+          "resource": "repo://backend/app.py#L150-L150",
           "version": "repo-lines-v1:sha256:cf40c8c27074834eb79b505392d8a9db400bed08807be26f8e4747714450699f:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiY2Y0MGM4YzI3MDc0ODM0ZWI3OWI1MDUzOTJkOGE5ZGI0MDBiZWQwODgwN2JlMjZmOGU0NzQ3NzE0NDUwNjk5ZiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiY2Y0MGM4YzI3MDc0ODM0ZWI3OWI1MDUzOTJkOGE5ZGI0MDBiZWQwODgwN2JlMjZmOGU0NzQ3NzE0NDUwNjk5ZiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYWQ4ZTZmNmZiZTUzYmRkMmJkMzVhZGI4MjE4ZGVjOGFmMDM2M2FmOGI4MjY1M2JiYjI4MGRhNzg1NWIxOTQzZSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNzhkNmNjM2UyY2EzNjRkY2M3NjBiY2ExZDAwYjlkM2E4MTQyMTljOTBjYWY1ZDE5MmY3NzdhMzFkM2JmNTE4MSJ9"
         },
         {
@@ -137,14 +137,14 @@
       "statement": "The slideshow loop is not started when FRAME_TV_SLIDESHOW is set to 0, false or no.",
       "evidence": [
         {
-          "resource": "repo://backend/app.py#L157-L170",
+          "resource": "repo://backend/app.py#L149-L162",
           "version": "repo-lines-v1:sha256:15d4e9500a637c847941e3cfaaddd4307c3b8a4ea6eb7355c479fd4906d7219c:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE0MzQ5YTM2NmUxN2RmMTUxYTNhMmMxYWRlYmIwMGYxYjIyM2RkMGM5YjYwYmJhYWIzMWM2NTUxZDZkYTE1ODAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM5MjIwNGM2NWY1MDJkYzE2NDU0YjYyNDA4NTZhOWFiN2FkZTAwM2E4ZTlmODYzMzNlYzBiN2M5ZTQwOTQ5MWQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjBiMGI5M2Y1NGUwMTZmNzI5NjdiZDIzOTE4ZmY4Yzk3NjM3ZWViMzE2Yzk0NjMyNTU0YmQ3NmU0YTUzODZkZmYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjVhMWRlOTM2M2YwZDcyZWMzYmY2MjM1N2NjZGVhMWY0NWE0NzVmNzBmOGQzOWIyZGFkY2JjZDVmZGMxMTVjYjUifQ"
         }
       ]
     }
   ],
   "verification": {
-    "by": "openwiki/0.5.1",
-    "at": "2026-09-21T02:31:07.302Z"
+    "by": "openwiki/0.7.2",
+    "at": "2026-10-28T14:34:25.443Z"
   }
 }

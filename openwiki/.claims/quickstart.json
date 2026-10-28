@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "pageVersion": "sha256:b5d547969a8a840d1e5232c53bdc524f918ab84a1b19646304b215ba58d63477",
+  "pageVersion": "sha256:e02a4a5a909fc06bf4509f4f02ff187a0a7d043d0f6199b7833f833d7e0aeffa",
   "claims": [
     {
       "id": "claim_bea1c9fdd990438697890ef4b2fc63fe",
@@ -17,11 +17,11 @@
       "statement": "Run directly, the backend serves on all interfaces on the port named by BACKEND_PORT, defaulting to 5000.",
       "evidence": [
         {
-          "resource": "repo://backend/app.py#L1502-L1502",
+          "resource": "repo://backend/app.py#L1484-L1484",
           "version": "repo-lines-v1:sha256:c8be4f3637efe486c0aec6b42bcb8a054d6149824e97b68b8b703608d39d133e:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYzhiZTRmMzYzN2VmZTQ4NmMwYWVjNmI0MmJjYjhhMDU0ZDYxNDk4MjRlOTdiNjhiOGI3MDM2MDhkMzlkMTMzZSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYzhiZTRmMzYzN2VmZTQ4NmMwYWVjNmI0MmJjYjhhMDU0ZDYxNDk4MjRlOTdiNjhiOGI3MDM2MDhkMzlkMTMzZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNDI3MjAyOWE5ZjhjMmIzODcxYzhhMzNlN2ZmZDc4YjExMWE3ZTgxNTRlMTM5Y2M0Yzk1Y2Q0Zjk1YTBjMWZlZiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
         },
         {
-          "resource": "repo://backend/app.py#L87-L87",
+          "resource": "repo://backend/app.py#L83-L83",
           "version": "repo-lines-v1:sha256:988ff3bc0c11b3ca96a50824b76e805e2e45f9d323426ea18948ebda403315bb:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOTg4ZmYzYmMwYzExYjNjYTk2YTUwODI0Yjc2ZTgwNWUyZTQ1ZjlkMzIzNDI2ZWExODk0OGViZGE0MDMzMTViYiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOTg4ZmYzYmMwYzExYjNjYTk2YTUwODI0Yjc2ZTgwNWUyZTQ1ZjlkMzIzNDI2ZWExODk0OGViZGE0MDMzMTViYiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYjIzNWRjMzU0MTU2MjAxN2M2MzA5ZTM4YmEwOGRhN2M5YTFjYTk1YTZhZjZmMjI1ZWU0MmUwOTMzYmNmZTM5MCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMDEwMDZmYzdjNzRmODM3OTQyZDZlZGRhNDk0NmI5OTYxNzUyZjI1OGYzYmUwM2I0OTk5MzUyYmNlMTM5MzI4YyJ9"
         }
       ]
@@ -49,10 +49,20 @@
           "version": "repo-lines-v1:sha256:8eae134a21c21107483cb87afae1162ecaea6f61620686b522ee9eb2e6441079:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZWMxZmU5MGFmMmE5ZjAxM2RhYTMxYWM5MDZjNTM2NjU0ZjZiZGE4MDZhNTE5YjAxODE3ODE0MTQzYTg4MzRkNSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMTY3ZDQ0YzU2MmE5ZGY1MzE2MjZiNjQwOTJkMjlhYjUxZjg5ZWNkOWUwMWIxYjgyOGVkY2IwMDYzMGJjNDBjMiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTc1ZWMwZjg5ZjRlYmJiOThjOGI1MDJjMmQ1N2YxNTdiM2MxZjk0YmM2YTE5NjViNWIwZTVhNGE3N2M3NjUyNCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
         }
       ]
+    },
+    {
+      "id": "claim_da92229be077406487a68ac6365f84bc",
+      "statement": "CORS is closed by default; to develop the frontend on another port the allowed origin is listed in CORS_ORIGINS, for example http://localhost:5173.",
+      "evidence": [
+        {
+          "resource": "repo://backend/app.py#L101-L106",
+          "version": "repo-lines-v1:sha256:58dafa9ed32ffde2350eff7056ca2ae2b69893063d3f341d043b7a990fc59616:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMWZjOGI5NjEwOGVlOTE2ZGIyYTQ4ZjdmMDFhNDI5MzE4NWVhOTliMjNhYTk3ZTA5NmFjNzNhYWM2OTVhMWJjNiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYzc0N2QyODM5NzYwODlkM2YzMDk2MmY3NDQyMzEzNmFlZDFmNGYxY2VjMDc1NTc1NzA1N2ZhNmNiZTRiMzY0MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOGM2NWUxZTQ4YThiMzU4MDUyYTg1YWNlZWQ0ZDdmMzQyZDc1ZjBmNmI4MTMxNjFiNTA3YTA1ODZlNzE1MTY2ZiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZThiMzUxNThhMmRjZjIxZjZmZWQyNWUwYjNmNTY0ZjBkYzFlMTE0ZGFmZmQwYzBhMWNjNWIxNzU2YjM2YThjMSJ9"
+        }
+      ]
     }
   ],
   "verification": {
-    "by": "openwiki/0.5.1",
-    "at": "2026-09-21T02:31:07.302Z"
+    "by": "openwiki/0.7.2",
+    "at": "2026-10-28T14:34:25.443Z"
   }
 }

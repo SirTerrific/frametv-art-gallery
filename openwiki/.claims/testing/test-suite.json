@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "pageVersion": "sha256:6377c1ae87bd3d80cbd28cdd8de16809c8b10b8c204766fd32d68e5e648a6ac5",
+  "pageVersion": "sha256:b7a99a6401f2861bc0b36ed5cd8365c056446d861d2ae2876fc9d10c33cb5610",
   "claims": [
     {
       "id": "claim_7f445f624dfd4910946ecf6d0bda5f6c",
@@ -105,10 +105,20 @@
           "version": "repo-lines-v1:sha256:d9cb24acec282eaaac92a054c309a01d1118e2550fe08a98f9b59cb16d515f91:eyJzZWxlY3RlZExpbmVDb3VudCI6MTE0LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiJjZDAzOGJjNDM3M2YwODMyZmM2MGI4ZDc1MGUzOGUwMTU4NDI2NDRlNjNiMmUwNWJjNWZkNDcxM2E4ZGNkNWU1IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiIwYjlkMmFlY2NmOTNiOGY5YWZjYjA2OWVkYTFmNjFjY2JmMzMwN2IzMzZlNmE2NDE0NjgyZDUwYWIxZGE2ZGY0IiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiI2ZDBmY2VkMWVmY2JlNmRmNWYyN2ZlYWI3ZmU1ZWI3YWRjMWI0Y2JmM2YzMGRkOWE0YmY5NjY5M2QwYzJkMWE4IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiJlODMyMGZmNDIwY2MzOTVkOWU2OTcxNTViZTQ0ZjY1MGZjOGM1ZWFiMjllOGE2ODBjYTQwYzJmYzk1NDQxZGYyIn0"
         }
       ]
+    },
+    {
+      "id": "claim_fc62c8ab9e5e4dd08e0e6db02e79bd43",
+      "statement": "The tests directory holds 19 test files with 150 test functions, including test_provider_settings.py which covers the write-only Immich key, partial saves keeping the stored key, the provider following saved settings, a 502 when Immich is down, the bounded image cache, closed CORS and the cached failed update check.",
+      "evidence": [
+        {
+          "resource": "repo://backend/tests/test_provider_settings.py",
+          "version": "repo-file-v1:sha256:0dae35a904765f734c371565a2a27c1533d7af00171b0505322f72038934b6aa"
+        }
+      ]
     }
   ],
   "verification": {
     "by": "openwiki/0.7.2",
-    "at": "2026-10-27T18:55:06.371Z"
+    "at": "2026-10-28T14:34:25.443Z"
   }
 }
