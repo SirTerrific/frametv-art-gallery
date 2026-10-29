@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.4.1](https://github.com/SirTerrific/frametv-art-gallery/compare/v2.4.0...v2.4.1) (2026-10-29)
+
+
+### Bug Fixes
+
+* apply the audit findings (key exposure, CORS, provider reload, dead routes) ([#41](https://github.com/SirTerrific/frametv-art-gallery/issues/41)) ([d4726e4](https://github.com/SirTerrific/frametv-art-gallery/commit/d4726e48929f78e39cd5338ef2b6a01836d40c9e))
+
 ## [2.4.0](https://github.com/SirTerrific/frametv-art-gallery/compare/v2.3.2...v2.4.0) (2026-10-19)
 
 
