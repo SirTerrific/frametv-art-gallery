@@ -3,15 +3,15 @@ type: workflow
 title: Slideshow rotation
 description: How a per-TV slideshow steps through an album on an interval, why exactly one gunicorn worker runs the loop, how it avoids interrupting someone who is watching, and how a stale image is handled.
 tags: [slideshow, background-thread, gunicorn, flock, scheduling, workflow]
-verified:
-  - by: openwiki/0.5.1
-    at: 2026-09-21T02:31:07.302Z
 sources:
   - id: openwiki-source-7872be2c059c5659d94804ea
     resource: repo://backend/app.py
   - id: openwiki-source-bdcda08a153a6290f9c1105f
     resource: repo://backend/utils/slideshow.py
-generated: { by: "claude-code", at: "2026-10-27T18:55:06.371Z" }
+generated: { by: "claude-code", at: "2026-10-28T14:34:25.443Z" }
+verified:
+  - by: openwiki/0.7.2
+    at: 2026-10-28T14:34:25.443Z
 ---
 
 # Slideshow rotation
@@ -28,8 +28,7 @@ Because of that, an album must be sent to the TV before its slideshow has anythi
 
 ## Configuring it
 
-<!-- openwiki: broken internal link [/openwiki/architecture/data-model-and-migrations.md] link "/openwiki/architecture/data-model-and-migrations.md" is root-absolute, which no real consumer resolves against the repository root (not a coding agent reading the page, not GitHub's Markdown renderer, not a local viewer); use a path relative to this file instead. Fix the href or restore the target, then delete this comment. -->
-The settings live on the `TV` row: an enabled flag, an album, an interval in minutes, the time of the last rotation and the last content id shown (see [Data model and migrations](/openwiki/architecture/data-model-and-migrations.md)). They are changed through `PATCH /api/tvs/<ip>`, which validates them (`backend/app.py` lines 941 to 972):
+The settings live on the `TV` row: an enabled flag, an album, an interval in minutes, the time of the last rotation and the last content id shown (see [Data model and migrations](../architecture/data-model-and-migrations.md)). They are changed through `PATCH /api/tvs/<ip>`, which validates them (`backend/app.py` lines 897 to 945):
 
 - The album must exist. An unknown one is a 404 and a malformed id is a 400.
 - The interval must be a whole number of at least one minute.
@@ -41,13 +40,13 @@ An empty value clears the album or the interval.
 
 gunicorn starts several worker processes and every one imports the app, and with it this module. A plain thread would therefore fire each rotation once per worker. A lock file decides which single process owns the loop (`backend/utils/slideshow.py` lines 1 to 6).
 
-At start-up each process tries to take an exclusive, non-blocking `flock` on `instance/slideshow.lock`. The one that succeeds runs the loop and keeps the file handle open for as long as it lives. Every other process logs that another worker runs the slideshow and does nothing (`backend/app.py` line 158 and `backend/utils/slideshow.py` lines 32 to 48 and 106 to 110).
+At start-up each process tries to take an exclusive, non-blocking `flock` on `instance/slideshow.lock`. The one that succeeds runs the loop and keeps the file handle open for as long as it lives. Every other process logs that another worker runs the slideshow and does nothing (`backend/app.py` lines 152 to 158 and `backend/utils/slideshow.py` lines 32 to 48 and 106 to 110).
 
 Keeping the handle open is the point of the design: if the owning process dies, the operating system releases the lock, and the next worker that starts can take it. Without `fcntl`, as on Windows, there is no arbitration and the process simply becomes the owner, which is acceptable only for a single-process development server (`backend/utils/slideshow.py` lines 32 to 41).
 
 The lock is claimed once, at start-up. A worker that was not chosen does not retry later, so if the owner dies while the other workers keep running, nothing takes over until a new worker starts.
 
-Setting `FRAME_TV_SLIDESHOW` to `0`, `false` or `no` skips starting the loop at all (`backend/app.py` lines 157 to 170).
+Setting `FRAME_TV_SLIDESHOW` to `0`, `false` or `no` skips starting the loop at all (`backend/app.py` lines 152 to 170).
 
 ### It stays out of the way of database migrations
 
@@ -68,8 +67,7 @@ Two details keep this safe and quiet:
 - A TV whose state cannot be read is treated as in use. Skipping a rotation is harmless and interrupting one is not.
 - A skipped rotation records nothing, so the rotation resumes on the next tick once the TV returns to art mode, rather than waiting out another full interval.
 
-<!-- openwiki: broken internal link [/openwiki/tv/connection-and-session.md] link "/openwiki/tv/connection-and-session.md" is root-absolute, which no real consumer resolves against the repository root (not a coding agent reading the page, not GitHub's Markdown renderer, not a local viewer); use a path relative to this file instead. Fix the href or restore the target, then delete this comment. -->
-The art-mode read is an ordinary call, so it respects the cooldown described in [TV connection layer](/openwiki/tv/connection-and-session.md), which also means a TV that just failed is treated as in use for a short while.
+The art-mode read is an ordinary call, so it respects the cooldown described in [TV connection layer](../tv/connection-and-session.md), which also means a TV that just failed is treated as in use for a short while.
 
 ## When a TV no longer has an image
 
@@ -81,7 +79,5 @@ Only a successful rotation records the content id and the time and commits them 
 
 ## Related pages
 
-<!-- openwiki: broken internal link [/openwiki/tv/uploading-and-display.md] link "/openwiki/tv/uploading-and-display.md" is root-absolute, which no real consumer resolves against the repository root (not a coding agent reading the page, not GitHub's Markdown renderer, not a local viewer); use a path relative to this file instead. Fix the href or restore the target, then delete this comment. -->
-- [Sending art to a TV](/openwiki/tv/uploading-and-display.md)
-<!-- openwiki: broken internal link [/openwiki/architecture/data-model-and-migrations.md] link "/openwiki/architecture/data-model-and-migrations.md" is root-absolute, which no real consumer resolves against the repository root (not a coding agent reading the page, not GitHub's Markdown renderer, not a local viewer); use a path relative to this file instead. Fix the href or restore the target, then delete this comment. -->
-- [Data model and migrations](/openwiki/architecture/data-model-and-migrations.md)
+- [Sending art to a TV](../tv/uploading-and-display.md)
+- [Data model and migrations](../architecture/data-model-and-migrations.md)

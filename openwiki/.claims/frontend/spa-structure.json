@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "pageVersion": "sha256:f3deea2934bebdcfb52bfa013980562015d2e4e011284ff6a73b32630a1213c0",
+  "pageVersion": "sha256:17f631799576ac4b121e417dad68d6942a839e4877019ff2d64533f6d42fff48",
   "claims": [
     {
       "id": "claim_b8c0133ca7284b6a8b687cb2de37abba",
@@ -49,7 +49,7 @@
           "version": "repo-lines-v1:sha256:fab4ca966bf8c25b1de71f7b5a8692d91998235df1f416115fde893157e01802:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZmFiNGNhOTY2YmY4YzI1YjFkZTcxZjdiNWE4NjkyZDkxOTk4MjM1ZGYxZjQxNjExNWZkZTg5MzE1N2UwMTgwMiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZmFiNGNhOTY2YmY4YzI1YjFkZTcxZjdiNWE4NjkyZDkxOTk4MjM1ZGYxZjQxNjExNWZkZTg5MzE1N2UwMTgwMiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNDJjNTU0ZTgzMGQ4NDdlNzg4MWYyN2M5ODhjNDFiZDJkODg5MjlhYzg1NmM1ZjU2MDhhMTBlNTUyNzE3YjI5ZiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYTllNTQzNDQxYTAzYWQ0MmJmYmUwYjM1ZTlhNTkxYzRlYmUzNTgwYjA4MDk3Y2ZmM2NiNTU1YmI0NTczMWJjZSJ9"
         },
         {
-          "resource": "repo://frontend/app/utils/providerApi.ts#L15-L37",
+          "resource": "repo://frontend/app/utils/providerApi.ts#L17-L39",
           "version": "repo-lines-v1:sha256:0c14a7745913b4d8055358955f77ec234074a2e118224ca185fe47456dfa10f7:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdiM2FhYWYwZDk4MzQwZWMzMjk5MGY4ZjU4NTM4YzM2MjZkMWY2NDhmMzhkOWYyYTI2MjQyNjY4ZTcyOWVmZDMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4NjIwNTZkNzM4MmVlNTdkNjkxZDA2ZDE3OWVlYTM2OWMwNjcyNTdjNGFiOTkxNGUxN2I3ZWYzMWJlNTJmNjAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk0ZjQ0ZWJlMWVjMDA2MmYwNzkxMDYzMmQ0ODZhNDIzODEzMWIzNDM0YTVjNzE4MDM4NDI0MzUwYzFjNGQzNGIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjUwOGZhNzkyYjFlZjRjODYzZDc1MmY4MDY2YTgzOTE1MzgwYzFjYzExNTczM2I4NGM1YzYxZWExNzA3ZWM5Y2EifQ"
         },
         {
@@ -101,10 +101,24 @@
           "version": "repo-lines-v1:sha256:76002c89cdb37a80d76edbb7ef7574bcbff5f6e0a5ecc062bce77c90dc400b73:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYjg4ZDE0ZTNiODNiZTBiOTJiMDQ4NWQyODE0MGMyNmU5ZTdiYWUzZmNmN2E5YzQ0ZmRlY2MwOTU3MDg1NDBiNyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNTA0YjA0NGFiZGFlZDljZmJhNzFhZTM2YjdlMjg0NjkyZGQxZWYxNzAxZGRkM2RiMDhjZTA5NDMzMzg4ZjdkNCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTM3MWJmNTk0MDA4MDYwZjk5MjdjMmJjMzg4NWYxNTljODM1NGVjNjJkNDAxYmIxY2I3OGU5MzBiNWQ2M2IxYSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
         }
       ]
+    },
+    {
+      "id": "claim_729e4e3db6cf4742b153900f02bcda76",
+      "statement": "The Immich API key is write-only in the frontend: the settings field is a password input, the server returns only has_api_key, and saving with the field empty keeps the stored key.",
+      "evidence": [
+        {
+          "resource": "repo://frontend/app/routes/settings.tsx",
+          "version": "repo-file-v1:sha256:2e94832ad9f44f85d6516941b2d287801374e9b94a5aeea3ddffeddecb366686"
+        },
+        {
+          "resource": "repo://frontend/app/utils/providerApi.ts",
+          "version": "repo-file-v1:sha256:2e48b7a83a7b8d560705831d7d8774d2fe062f4c3f0547de7ca92a2274a8fdde"
+        }
+      ]
     }
   ],
   "verification": {
     "by": "openwiki/0.7.2",
-    "at": "2026-10-27T18:55:06.371Z"
+    "at": "2026-10-28T14:34:25.443Z"
   }
 }

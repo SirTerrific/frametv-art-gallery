@@ -1,13 +1,13 @@
 {
   "schemaVersion": 1,
-  "pageVersion": "sha256:7272d8dae6301a28de0cd4ac516339d338cf43cf117b76386ed8c0bf7a036e2f",
+  "pageVersion": "sha256:2f27cbbc52d1f389e3073dbf2e9f7d6e8f14bfee14b8c1fd82d890104a18f167",
   "claims": [
     {
       "id": "claim_ce88836a1f524c7fb727dc918d7df78a",
       "statement": "init_db runs at module import, always calls db.create_all, and stamps alembic at head only when the database file did not exist beforehand; an existing database is left to migrate normally.",
       "evidence": [
         {
-          "resource": "repo://backend/app.py#L141-L155",
+          "resource": "repo://backend/app.py#L133-L147",
           "version": "repo-lines-v1:sha256:25a7936d5ed3f2dcd1a98d0c94a28350265055845658043e529cabb2673a6086:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjgyNzExNjQ0YTc4NWEyOTMwODcyMTEyZmIwZWM2MzlkZTU2ODVjNjgxODU2MmY3NmIwYjRlYTVhNTI5YWZmZWUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhjZmMyNWMxMjEyYWY1NmM5ZTA5MTk4NDM5Y2M0NDA4MjA2Y2FmNjljZmJiZTc5ZTg0YzRmNmRjZTdhMmY0MjMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjM5NzViN2MzYjUyMThjMWEyNWNhMWI0ZTEzMWJhZDU1YWM3MzU3NDUzZTI3MzZjYzBlNTU4YWQwNjVjYzQzMGUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijg3Y2E5OWJkMWFjZjc4MjU4ODBkN2U5MjEzM2E5NTFkMGNkMWQ0M2YyOTgzMWVjMGE4NjgwYTU1Y2YyNjI4YzcifQ"
         }
       ]
@@ -57,7 +57,7 @@
       "statement": "The migration environment takes its engine from the running Flask app's migrate extension, so migrations target the same database file as the app.",
       "evidence": [
         {
-          "resource": "repo://backend/migrations/env.py#L18-L24",
+          "resource": "repo://backend/migrations/env.py#L22-L28",
           "version": "repo-lines-v1:sha256:1d4803aae98a16b8705c23a068f3ea9fa5c034e244cd75309197aab9d55bb321:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNTQ3MThkNWUzNDgxNmFjNmU4MTc1NTk1ZTQ3ZjE4MzE2YTMyZjgxMTBmNTY4NTNjOGU1N2RmYjJiMmY1MDc4YSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMTMyZWViNjNhOTczOTgxMDJmMzhlNmE0MzVhMzJmMDY5Y2RiMGQzMmQ4Y2ZiMDYxOTFiNzIwZGJhNDQ5YTE1ZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNzhmYTBmY2M2MGQ2MmRkODYxMjZhZGE3NzViMmVlOThmMTUzZjY1MzdjMDJlZjJjOWI4NjA5NjhhNzQ1M2EzMiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMmFlNDM1YWVkMjI2MzQ2YjBjMmVhMjk3ODJiNTJkZjE4YTZkZDE0MWMxMzVjZmQxOGYyMTE2YjYyMzA0YWE1MyJ9"
         }
       ]
@@ -87,7 +87,7 @@
       "statement": "Removing a TV removes its UploadedImage history at both the ORM level and the database level, since tv_id has ondelete CASCADE and the TV relationship cascades.",
       "evidence": [
         {
-          "resource": "repo://backend/models.py#L51-L67",
+          "resource": "repo://backend/models.py#L51-L70",
           "version": "repo-lines-v1:sha256:a084eb0432b07505e328a36f22f36d2a8cb96090893678b3999853d778054225:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg0OTc0YmNjNGVjYjI2YjhiODMxYjRhNTRhMDgxNjFjMjI2M2U0NzJmZjExMjc5ODY0ZTFlMGQ2NmVhZWE5Y2UiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU5MmNlZTIzY2JhZjRiMDMyZWJkMjJiNzRmZjZlNWQxZGVlMmI1OTFkODMzNzczNDhhMzUwMDUzMDc3ZDNhMTAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImJlYjhmYTUzNDUzMTJmMzczNzM1ODc3NzVhMGJjOTVkYjRkNzdjNGU1ZjMxYTc2ZmU4ODJmYzc4ZTIwMGY1NTQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI0MTU2YjE2MWFjNWFjOWFkMDAwM2QyY2QxMTVmNzE3MzNhNzU3MDQ0YTg0ZWU1YzlmMjdkNzIwNzFhMjI1NzMifQ"
         }
       ]
@@ -104,11 +104,11 @@
     },
     {
       "id": "claim_ad948265a90843e1bc8cbe17317d721d",
-      "statement": "ProviderConfig.as_dict includes api_key in the dictionary it returns.",
+      "statement": "ProviderConfig.as_dict never returns the API key; it returns has_api_key, a boolean saying whether a key is stored.",
       "evidence": [
         {
-          "resource": "repo://backend/models.py#L69-L86",
-          "version": "repo-lines-v1:sha256:b76b8e41f3f50cfb5bd0e44c10ca2cb98f19a7b83347099b6db24630f716ba79:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU3YzNjNjRlMWI4MmYwMDNlZTVlNTg5MzdhYTQzZDQ0ZDUzNmU5NmUxYWUzMTE4OGQxNzM2YzRiMDIyMDM5NjYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjgyNTFiZmFiY2ZiNmQ4OWZkOWY0ZTNiN2JjNGExNzRmZDkwYzk5ODE4NmU0ZmRlMmM4ZmEzNGU2ZDVjMjkzYWEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjIwMzFiY2RlMzkyMzg2NzFjNzQwYmJiODIyYWUxZjZkZTdkMWExMTllZjg5YzJhZjg3YTQwOTBmMzRhY2NkOTIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+          "resource": "repo://backend/models.py#L69-L88",
+          "version": "repo-lines-v1:sha256:df3666265a4a8dffecfa93812b052546f5ccecf330c39fbf897adaf0140651db:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImUyNDFiODZjMmJmNDNkNDhlNzk2MzFmZTlhNjZlNWRiN2I1MDRhNTFjNDgxYjBmOThkNGE3OGU2ZDZkOWVkMGEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQzZmQ4YjNlOTcxNDI0YzU3NzI3NjdlYjViNDgzODk2ODEwZTU2ZDhlZjE5OTg4N2UxZmFkNGEzNDIwNzRjZWYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjRmYTk1YjM1MzlmMTM4OGU0Njg3NGE1NDI0MjM0ODJjNWZkZWVhZmRjZDk1MzIzN2Q0NDA0YmU5YTQxZjViNGIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjgyNTFiZmFiY2ZiNmQ4OWZkOWY0ZTNiN2JjNGExNzRmZDkwYzk5ODE4NmU0ZmRlMmM4ZmEzNGU2ZDVjMjkzYWEifQ"
         }
       ]
     },
@@ -117,11 +117,11 @@
       "statement": "When the app runs frozen the migrations directory is taken from sys._MEIPASS, and the --upgrade-db flag runs alembic upgrade inside an app context before the server starts.",
       "evidence": [
         {
-          "resource": "repo://backend/app.py#L1490-L1496",
+          "resource": "repo://backend/app.py#L1472-L1478",
           "version": "repo-lines-v1:sha256:041f00c0cb849381dd1ecec8114498e9dad53af260ef9f010f078ed7cf41ba48:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNTExODFiMmNlZGU4OTA1NGNjYjRhYmY1ZDcwNDZhMGQ2YmEwMWI1MzgxZjFhOTg2Mzc4NWRmMjBjODY1ZTc1YiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOGM5MDE3NTM0OWU3ZGY3OTMyMWQ1NmYwMDc1OWJmNGI2ZDE2ODA4NGI5Njc2MGExMWQ5ZGIyOTczYWE5ZDdjZiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMWE0YzhhOTkzYTZjNzRmMDk5MWQ1YTU1NDhkZDY5ODA3NmMzNzkyNDg0N2VhYmYwNGY3NDk0ZTM3N2U4MTNkZSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNzc3Nzg5ZTU3M2QzOWU2MzNiNDhhODU2OGQ4MzkyY2QyNWQ5ZGJjZTQ5NmFjNjA5YTM5NDAwZGJhMDBlZTQxNiJ9"
         },
         {
-          "resource": "repo://backend/app.py#L80-L83",
+          "resource": "repo://backend/app.py#L76-L79",
           "version": "repo-lines-v1:sha256:36a4c128d3521273fbadd574bb102d818b9524b25f28bda5f623369eeb13d280:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYWQ1ZDc2MmYwNjkzMjE2MjRmMGJmNWY5MDNkMmE3ZWIzNWMwYWMxNzQxNDU3ZjQzOGEzNWUzMTZhZmZmODc4NSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZGY3YmM4YzZiNTc4YzAyNDdmNTBkOTZkMzgwZWJiNTUzZjk2MDg2OGU2YmJmMzgxMjkxMWEwM2RhZjgwOTdmMSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYWViYWQ5MGY2NGQwZDVhZDU4ZjliNGIyYjQwNGQzM2FkMTM4NGQ1YjFmZjEyMzNmNzQyMmIwYWJlNjhmOGY3OSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYjIzNWRjMzU0MTU2MjAxN2M2MzA5ZTM4YmEwOGRhN2M5YTFjYTk1YTZhZjZmMjI1ZWU0MmUwOTMzYmNmZTM5MCJ9"
         }
       ]
@@ -152,7 +152,7 @@
     }
   ],
   "verification": {
-    "by": "openwiki/0.5.1",
-    "at": "2026-09-21T12:08:00.549Z"
+    "by": "openwiki/0.7.2",
+    "at": "2026-10-28T14:34:25.443Z"
   }
 }

@@ -18,10 +18,10 @@ sources:
     resource: repo://backend/utils/tv_discovery.py
   - id: openwiki-source-463c99d2c8ebb24e2bc02214
     resource: repo://frontend/app/routes/settings.tsx
-generated: { by: "claude-code", at: "2026-10-27T18:55:06.371Z" }
+generated: { by: "claude-code", at: "2026-10-28T14:34:25.443Z" }
 verified:
-  - by: openwiki/0.5.1
-    at: 2026-09-21T12:08:00.549Z
+  - by: openwiki/0.7.2
+    at: 2026-10-28T14:34:25.443Z
 ---
 
 # Pairing, tokens, discovery and wake
@@ -30,23 +30,24 @@ This page covers how the app first meets a TV and how it keeps recognising it: a
 
 ## Adding a TV
 
-The Settings page posts to `POST /api/tvs` with an address and, optionally, a name and MAC. The handler refuses an address that is already stored, then opens a connection to the TV to obtain a token (`backend/app.py` lines 986 to 1028).
+The Settings page posts to `POST /api/tvs` with an address and, optionally, a name and MAC. The handler refuses an address that is already stored, then opens a connection to the TV to obtain a token (`backend/app.py` lines 959 to 1001).
 
 Opening that connection is what makes a Frame TV show an on-screen prompt asking whether to allow the app. The handler waits for the person to accept, then reads the token the TV issues, and stores a new `TV` row with the address, name, MAC and token.
 
 The details that matter:
 
-- **The wait is bounded.** The connection is built with `FRAME_TV_PAIRING_TIMEOUT` (default 45 seconds). Without it the socket has no read timeout at all, a prompt nobody answers would hold the request until gunicorn killed the worker, and the half-open socket it left behind would hold the TV's single art channel and make every later call time out. The connection is also closed in a `finally`, so a refused or failed pairing does not leak it (`backend/app.py` lines 998 to 1009).
-- **The token must be all digits.** Whatever form the library returns, it is normalised to a string, and anything that is missing or not numeric is rejected with 403 and the message that the person must accept pairing on the TV (`backend/app.py` lines 1010 to 1018).
-- **Failures are generic.** The handler catches `FrameTVError` and then any other exception. A pairing timeout comes from the underlying library, not from the app's own error types, so it lands in the generic branch and returns a 500 with "Unexpected error while adding TV" (`backend/app.py` lines 1019 to 1024).
+- **The wait is bounded.** The connection is built with `FRAME_TV_PAIRING_TIMEOUT` (default 45 seconds). Without it the socket has no read timeout at all, a prompt nobody answers would hold the request until gunicorn killed the worker, and the half-open socket it left behind would hold the TV's single art channel and make every later call time out. The connection is also closed in a `finally`, so a refused or failed pairing does not leak it.
+- **The token must be all digits.** Whatever form the library returns, it is normalised to a string, and anything that is missing or not numeric is rejected with 403 and the message that the person must accept pairing on the TV
+- **Failures are generic.** The handler catches `FrameTVError` and then any other exception. A pairing timeout comes from the underlying library, not from the app's own error types, so it lands in the generic branch and returns a 500 with "Unexpected error while adding TV"
 - **An existing address cannot be added again.** Adding is refused with 400 when the address exists, so anything that must be changed on an existing TV is done with `PATCH /api/tvs/<ip>` instead.
+
+Like every JSON route, adding answers a clear 400 when the request has no JSON body, instead of a 500.
 
 ## Keeping the token
 
 A Frame TV issues a fresh token each time a client connects and stops honouring the previous one. If the app kept only the token from pairing, every later connection would present a stale one and the TV would ask the person to allow the app again, every time.
 
-<!-- openwiki: broken internal link [/openwiki/tv/connection-and-session.md] link "/openwiki/tv/connection-and-session.md" is root-absolute, which no real consumer resolves against the repository root (not a coding agent reading the page, not GitHub's Markdown renderer, not a local viewer); use a path relative to this file instead. Fix the href or restore the target, then delete this comment. -->
-So the connection layer captures the newest token after every call, including calls that fail, and hands it to an observer that writes it to the TV's row. The token arrives during the handshake, so even a call that dies later has learned the one the TV expects next time (`backend/app.py` lines 186 to 207 and `backend/utils/tv_connection.py` lines 416 to 424). See [TV connection layer](/openwiki/tv/connection-and-session.md).
+So the connection layer captures the newest token after every call, including calls that fail, and hands it to an observer that writes it to the TV's row. The token arrives during the handshake, so even a call that dies later has learned the one the TV expects next time (`backend/app.py` lines 178 to 207 and `backend/utils/tv_connection.py` lines 416 to 424). See [TV connection layer](connection-and-session.md).
 
 The token is stored as text on the `TV` row (`backend/models.py` line 34). It is sent back to the TV on every call and is never shown to the frontend as part of the TV list.
 
@@ -78,14 +79,12 @@ Points to know:
 
 - **A broadcast cannot be acknowledged.** The app can report only that the packet was sent, never that the TV woke. See the troubleshooting section in the README for what has to be true on the TV: the setting that lets it wake from the network, and the MAC of the interface it actually uses, since Wi-Fi and Ethernet differ.
 - **It needs the host network.** A broadcast sent from a bridged container stays on Docker's bridge. Only the host network puts it on the physical LAN (`backend/docker-compose.yml` lines 9 to 14).
-- **It needs a MAC.** `POST /api/tv/<ip>/on` uses the MAC in the request, or falls back to the one stored on the TV, and answers 400 saying the TV has no MAC saved when neither exists (`backend/app.py` lines 1384 to 1391).
-- **A malformed MAC is a 400, not a server error.** The packet builder rejects a MAC that is not twelve hex digits with a `ValueError`. The endpoint catches it before the app's own TV errors and answers 400 with "The MAC address is not valid", so the user is told what to fix instead of seeing a generic 500 (`backend/utils/frame_tv.py` lines 300 to 309 and `backend/app.py` lines 1379 to 1396).
+- **It needs a MAC.** `POST /api/tv/<ip>/on` uses the MAC in the request, or falls back to the one stored on the TV, and answers 400 saying the TV has no MAC saved when neither exists (`backend/app.py` lines 1366 to 1390).
+- **A malformed MAC is a 400, not a server error.** The packet builder rejects a MAC that is not twelve hex digits with a `ValueError`. The endpoint catches it before the app's own TV errors and answers 400 with "The MAC address is not valid", so the user is told what to fix instead of seeing a generic 500 (`backend/utils/frame_tv.py` lines 300 to 309 and `backend/app.py` lines 1366 to 1390).
 
-A TV added by hand starts without a MAC, and adding it again is refused. The Settings page therefore shows a MAC field for any TV that lacks one, and saves it with `PATCH /api/tvs/<ip>`, which accepts a `mac` value (`backend/app.py` lines 925 to 940 and `frontend/app/routes/settings.tsx` lines 173 to 185 and 370 to 390). Discovery fills the MAC in automatically when a TV is added from a scan.
+A TV added by hand starts without a MAC, and adding it again is refused. The Settings page therefore shows a MAC field for any TV that lacks one, and saves it with `PATCH /api/tvs/<ip>`, which accepts a `mac` value (`backend/app.py` lines 897 to 945 and `frontend/app/routes/settings.tsx` lines 173 to 185 and 370 to 390). Discovery fills the MAC in automatically when a TV is added from a scan.
 
 ## Related pages
 
-<!-- openwiki: broken internal link [/openwiki/tv/connection-and-session.md] link "/openwiki/tv/connection-and-session.md" is root-absolute, which no real consumer resolves against the repository root (not a coding agent reading the page, not GitHub's Markdown renderer, not a local viewer); use a path relative to this file instead. Fix the href or restore the target, then delete this comment. -->
-- [TV connection layer](/openwiki/tv/connection-and-session.md)
-<!-- openwiki: broken internal link [/openwiki/operations/deployment-and-release.md] link "/openwiki/operations/deployment-and-release.md" is root-absolute, which no real consumer resolves against the repository root (not a coding agent reading the page, not GitHub's Markdown renderer, not a local viewer); use a path relative to this file instead. Fix the href or restore the target, then delete this comment. -->
-- [Deployment and release](/openwiki/operations/deployment-and-release.md)
+- [TV connection layer](connection-and-session.md)
+- [Deployment and release](../operations/deployment-and-release.md)

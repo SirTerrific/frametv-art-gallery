@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "pageVersion": "sha256:3156aee6b9901dbc6e5313f89519b28f86595aeb1f298a1cab712cb89b043a53",
+  "pageVersion": "sha256:f3e68e13f6a445fc206af81ebf9cb610377112cfa5a91ccdcd4be2fe43e5d3ec",
   "claims": [
     {
       "id": "claim_2ded0f1da12b491d81791bf240e3350c",
@@ -21,7 +21,7 @@
       "statement": "frame_tv.py re-exports the exception classes, session class and helpers from tv_connection and defines a thin _tv_call that supplies the session factory and busy wait then delegates, so the session factory stays patchable in one place.",
       "evidence": [
         {
-          "resource": "repo://backend/utils/frame_tv.py#L894-L920",
+          "resource": "repo://backend/utils/frame_tv.py#L939-L965",
           "version": "repo-lines-v1:sha256:0e1bacefd6a67b0e75532ecc87522439ce0839a4f07c7373a0d834a9a7862066:eyJzZWxlY3RlZExpbmVDb3VudCI6MjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMyNWIzZWMwOThhOWIzMGEwODEyYjZiZjk1NjQ3N2I5NzQzYTU5ZjRmYjVkODg2YTVlYzIzYzg4N2NmZTM0YzMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM5MjIwNGM2NWY1MDJkYzE2NDU0YjYyNDA4NTZhOWFiN2FkZTAwM2E4ZTlmODYzMzNlYzBiN2M5ZTQwOTQ5MWQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjljYmE4Njc4MTdkNWE0M2IzMjMzY2Q5ZTIxZDc2YzgxMmQ0MDI5ZTcyN2I2ZDY4NDRmY2Q5YTQwMGFkMjY5ZDYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
         }
       ]
@@ -51,27 +51,27 @@
       "statement": "Upload, delete, play, brightness, power-off, art mode and matte changes are deliberate calls that pass skip_when_down=False and so ignore the cooldown.",
       "evidence": [
         {
-          "resource": "repo://backend/utils/frame_tv.py#L177-L177",
+          "resource": "repo://backend/utils/frame_tv.py#L179-L179",
           "version": "repo-lines-v1:sha256:ca44bde6d55e65fae68f8d55ec66d6f8060a15d1a02bed8e673722b70f426376:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiY2E0NGJkZTZkNTVlNjVmYWU2OGY4ZDU1ZWM2NmQ2ZjgwNjBhMTVkMWEwMmJlZDhlNjczNzIyYjcwZjQyNjM3NiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiY2E0NGJkZTZkNTVlNjVmYWU2OGY4ZDU1ZWM2NmQ2ZjgwNjBhMTVkMWEwMmJlZDhlNjczNzIyYjcwZjQyNjM3NiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTk5NzkxN2UzZWNjOGUwNWE3ZjBkZTA0ZTdkNzc4MmQ2ZDQ3MDUzNzJmMDE1NzQ1OTBlODA1MjBhNmRlMzlkOCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNmRiNTEwMmRjMWVkMDBiMmZiYmQ1OWY5NmUxN2NlODFkMWE1MTNkMGFiYjA5NTQxZGRlOTE1ODA1YjhiYTUyNCJ9"
         },
         {
-          "resource": "repo://backend/utils/frame_tv.py#L233-L233",
+          "resource": "repo://backend/utils/frame_tv.py#L235-L235",
           "version": "repo-lines-v1:sha256:850972f888718e294c802cedde36f2841fa4090d5b01455df6e4bab97c576b00:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiODUwOTcyZjg4ODcxOGUyOTRjODAyY2VkZGUzNmYyODQxZmE0MDkwZDViMDE0NTVkZjZlNGJhYjk3YzU3NmIwMCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiODUwOTcyZjg4ODcxOGUyOTRjODAyY2VkZGUzNmYyODQxZmE0MDkwZDViMDE0NTVkZjZlNGJhYjk3YzU3NmIwMCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNzk0Yjg4MTNmZjM5Y2E5ZTdiN2FkY2NlMGNlMmIxYTg0N2NiNTk2NTdhZWNhODA5Y2I2NGU1NzUxNWEzZTdkNCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMzc4M2Y5Yzc5ZGEzYjZhMzI5NDgxODliYjFiMTkwN2NkNzc3YTE3ZTM3ZTM4MjBmNjNmMDQzZTRlNmExNmJhNSJ9"
         },
         {
-          "resource": "repo://backend/utils/frame_tv.py#L249-L249",
+          "resource": "repo://backend/utils/frame_tv.py#L251-L251",
           "version": "repo-lines-v1:sha256:e554e600433e20b0d24a8f00e2372c3b55b0ffb412a007432ad9ea05ae897556:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZTU1NGU2MDA0MzNlMjBiMGQyNGE4ZjAwZTIzNzJjM2I1NWIwZmZiNDEyYTAwNzQzMmFkOWVhMDVhZTg5NzU1NiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZTU1NGU2MDA0MzNlMjBiMGQyNGE4ZjAwZTIzNzJjM2I1NWIwZmZiNDEyYTAwNzQzMmFkOWVhMDVhZTg5NzU1NiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMTc2MjY2OGFhNTcyODAxMzFjYjU2ZGE5YWQ5YTA2YWQyYTFhNWMzN2U4MjUxZGJhMzYwMWZhYmJkNTkzZmE4NyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMDg5ZGYzZWE3ZjdhZjY3MjNhNDRiYTMxNjhhM2E4Yzk0OWEzOTZiYzkyZDUyOTY2ODA5MDk0OTNhNmRmZTc3MCJ9"
         },
         {
-          "resource": "repo://backend/utils/frame_tv.py#L357-L357",
+          "resource": "repo://backend/utils/frame_tv.py#L359-L359",
           "version": "repo-lines-v1:sha256:f55f4947cc03292d1c9322ca0e4df887bd6c6dfae0c8e4515c07df93d1f5beb4:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZjU1ZjQ5NDdjYzAzMjkyZDFjOTMyMmNhMGU0ZGY4ODdiZDZjNmRmYWUwYzhlNDUxNWMwN2RmOTNkMWY1YmViNCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZjU1ZjQ5NDdjYzAzMjkyZDFjOTMyMmNhMGU0ZGY4ODdiZDZjNmRmYWUwYzhlNDUxNWMwN2RmOTNkMWY1YmViNCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNjY0YjM3ODNjOGM5OTVkNWJmZWIxODE2ZmZmZGI0ZGY2ZmUzMDEyOWNiYTc4OGY2MGUzOWJjNTUxNTA5MzQ2ZCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMWVjYTgwNzU4OTNhYmU3NDhkZTY4NTdjNmYyMDBhZjA5ZDQ0MTlmMDU4MDNhZWY5NWRmMTFkYmE2ZDY5MDQ0YSJ9"
         },
         {
-          "resource": "repo://backend/utils/frame_tv.py#L371-L371",
+          "resource": "repo://backend/utils/frame_tv.py#L373-L373",
           "version": "repo-lines-v1:sha256:e554e600433e20b0d24a8f00e2372c3b55b0ffb412a007432ad9ea05ae897556:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZTU1NGU2MDA0MzNlMjBiMGQyNGE4ZjAwZTIzNzJjM2I1NWIwZmZiNDEyYTAwNzQzMmFkOWVhMDVhZTg5NzU1NiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZTU1NGU2MDA0MzNlMjBiMGQyNGE4ZjAwZTIzNzJjM2I1NWIwZmZiNDEyYTAwNzQzMmFkOWVhMDVhZTg5NzU1NiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMDI0MzQ3YzIxZWRiOTUwMjU1NTI2M2UyOGRiMGRjNjZhM2IwNzZiZTIwMTA2ZmI1MTBlYTU1MjViODE5NWU0YyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOTFmYjEwYjRkNWMxYWFlZDgzZGMwMmZhZjJjMWUzMTVlYTIyY2JmZjQzYTZlZmNlOTUzMWY5MTc3NGQwNjZhNCJ9"
         },
         {
-          "resource": "repo://backend/utils/frame_tv.py#L416-L416",
+          "resource": "repo://backend/utils/frame_tv.py#L418-L418",
           "version": "repo-lines-v1:sha256:ae518a100bd16e5ad1c6194083bb26d66e3814a59c860e2eb12282dcd2c87c3a:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYWU1MThhMTAwYmQxNmU1YWQxYzYxOTQwODNiYjI2ZDY2ZTM4MTRhNTljODYwZTJlYjEyMjgyZGNkMmM4N2MzYSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYWU1MThhMTAwYmQxNmU1YWQxYzYxOTQwODNiYjI2ZDY2ZTM4MTRhNTljODYwZTJlYjEyMjgyZGNkMmM4N2MzYSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZGVhODhmMGJjY2RjMzdhZTMxNGQxODgzNWVlOGM2MjQ0ZDRjMmVmMDBiNjc4ZGQxYjdmODE4MDdjYWMzMjQxOCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiY2FhMzg2NmNhMjMyZGRjNjJkZWE4YmQ0M2JiMzkwNDBkZDg1NDZlYTRlYjgzOTAyZWU4YmFmOWE0NzI3Y2ZjNiJ9"
         }
       ]
@@ -99,7 +99,7 @@
           "version": "repo-lines-v1:sha256:339bedbdedaae45b6f4e83ab75bea761fc8c44c3ebb502fba45b13a335bbab81:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjUxYThjNzFlMTBmMTg0NDNmZjZkZTBjMTcwZGE5OGVmYTAxMzVlZTRhZDcwOWE4MjM1YTBiNzMyZDdkNmIxZGUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBmZTdhMzk5ZDE3ZWU5N2Q5ZDY0MWQ4NzZmMjk3NjYxZDI1ZjJjZWZhMzI1YmRhZjdkMjRlYmY3NTUyOWIwM2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE1NWNmZTk0ZmJkM2M4NzZkYjJhYjA4Y2NlYjY1OTVmZDFkZjEwYzAzOWEyZmJhOGYyYmIyMDcxNzk3MTdlZjQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImVjNGU0NjI1NTIyNDZlYTMzYjY0M2NlYzJjZTViMjAzNTdmODVhZjEzZmVmMDU3NzQ4ZTBjMTYzYmJmNWM4YWEifQ"
         },
         {
-          "resource": "repo://backend/utils/tv_connection.py#L486-L486",
+          "resource": "repo://backend/utils/tv_connection.py#L496-L496",
           "version": "repo-lines-v1:sha256:5714f7fee653276895973def8b3d769fab45c0a54fc41c20d44d03bd3131f3ea:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNTcxNGY3ZmVlNjUzMjc2ODk1OTczZGVmOGIzZDc2OWZhYjQ1YzBhNTRmYzQxYzIwZDQ0ZDAzYmQzMTMxZjNlYSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNTcxNGY3ZmVlNjUzMjc2ODk1OTczZGVmOGIzZDc2OWZhYjQ1YzBhNTRmYzQxYzIwZDQ0ZDAzYmQzMTMxZjNlYSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMzllOTM1MmY2ZWFjYzhkZWI4MTc4YzkyNjQwNGUzNmZhMDI0OGYzMDBhNjVhMGY5ZDgyNmI4MTVlYjBhN2NmZSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
         },
         {
@@ -113,15 +113,15 @@
       "statement": "The stall watchdog is a daemon thread that checks once a second how long since a frame arrived and closes the session when the limit is exceeded; it is enabled for the gallery listing and thumbnail fetches, and defaults to 25 seconds.",
       "evidence": [
         {
-          "resource": "repo://backend/utils/frame_tv.py#L31-L31",
+          "resource": "repo://backend/utils/frame_tv.py#L33-L33",
           "version": "repo-lines-v1:sha256:51cc21552e46f4e959a2728ff0ff72908267de0be9323171ff8b1530507d2a56:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNTFjYzIxNTUyZTQ2ZjRlOTU5YTI3MjhmZjBmZjcyOTA4MjY3ZGUwYmU5MzIzMTcxZmY4YjE1MzA1MDdkMmE1NiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNTFjYzIxNTUyZTQ2ZjRlOTU5YTI3MjhmZjBmZjcyOTA4MjY3ZGUwYmU5MzIzMTcxZmY4YjE1MzA1MDdkMmE1NiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYWFhNWQwZTY1ZDE0OTQzYjlkYzhjNTY5Zjg1OGM1ZmVhYTkyNjg2MjVjN2U4ZTA0ZjQzMTEyYzk0ZjMxNTgwNyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZDEwZWE5NzE5Y2M5YjdiODRiNjFhNjkyZGE1Zjk0OTcxMmY0MjlhNTUwNGE2NzAzZGU1OTM0ZTQxNTdkNzUwNSJ9"
         },
         {
-          "resource": "repo://backend/utils/frame_tv.py#L709-L709",
+          "resource": "repo://backend/utils/frame_tv.py#L711-L711",
           "version": "repo-lines-v1:sha256:d021a5b5b970bb61e1867336c8392aec4b64757b0fc3d7845e8afd83167739c2:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZDAyMWE1YjViOTcwYmI2MWUxODY3MzM2YzgzOTJhZWM0YjY0NzU3YjBmYzNkNzg0NWU4YWZkODMxNjc3MzljMiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZDAyMWE1YjViOTcwYmI2MWUxODY3MzM2YzgzOTJhZWM0YjY0NzU3YjBmYzNkNzg0NWU4YWZkODMxNjc3MzljMiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYTNjMzFjYmM0YTUwNjJkNGU1ZDQwMjBkNWJmMTJkY2NiNzU0ZWQ0OTllMDZjZjUxNzAxNWVlYzhlMWU1M2VkYyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiODgzN2NlOTA1NDNmODQ5MWI0ODkwZmI1NzNlOGNlZjk0MTA0ZTkyMmQxNWE1YzM0ZjU2OTIyZjY2OTIyYTU3YiJ9"
         },
         {
-          "resource": "repo://backend/utils/frame_tv.py#L777-L777",
+          "resource": "repo://backend/utils/frame_tv.py#L779-L779",
           "version": "repo-lines-v1:sha256:cd921a452e51d5208d056b57b6111915287773c60fd9c9eee34a608f25d8ec29:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiY2Q5MjFhNDUyZTUxZDUyMDhkMDU2YjU3YjYxMTE5MTUyODc3NzNjNjBmZDljOWVlZTM0YTYwOGYyNWQ4ZWMyOSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiY2Q5MjFhNDUyZTUxZDUyMDhkMDU2YjU3YjYxMTE5MTUyODc3NzNjNjBmZDljOWVlZTM0YTYwOGYyNWQ4ZWMyOSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMjZlNWEzOGJlMmNkYWE5YzY1ZDIxZDFmMzg3NWRlNDU5NTBlY2M4YmQ3OTI4OGQ0MmMxYjM3MzQ5ZjA0NGQyZiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOWFjOTQwYWEyYjcxMmQ0MTQ2ZDBmZjY5MjRmZjQ3NmNhM2M2ZjVhNmQzZmU4NGEwZDIyMWViM2FhYTk3ZjIyZSJ9"
         },
         {
@@ -135,7 +135,7 @@
       "statement": "After every call, successful or not, _tv_call hands any newer token found on the session's channels to a registered observer, and app.py registers _remember_tv_token which stores it on the TV's row.",
       "evidence": [
         {
-          "resource": "repo://backend/app.py#L186-L207",
+          "resource": "repo://backend/app.py#L178-L199",
           "version": "repo-lines-v1:sha256:423bc658809bfc043b6373aae25aa533dc6e7601326b400727d5aedb9dfb34bb:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMwNjlmYzVlZGYyZDU3ZTNiNDVlZDYxZjM1MTc4MjQ4ODVkNDI5MjVhMDcyYWU2ZGM4NmY5YTdkMDdiYTQ2OTMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFiZmFjMTU2MDUzMzBlZmZlODA1ZjFkZTc5ZGUzZDVmMzMyNjEyZWRmZjUzOGIyMWNlMDExYzc3OGE3YTE0ZjEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijg4OWQ1MGYwZmZhNzIxYjAwMTUwNDlhOGVmMzFjNjE1OGQ1ZjU3MzVlYmM3OWExYzkyMWMzYTkwODRlNGZmZjEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijc0NDk5YTJiNTM3YmNhNzVjZTJkM2UzNjVjMTZhNDJiMWFhMDI2YTJkOWU4ZmFhZWNiNDBkNGMyY2NkY2VmYjcifQ"
         },
         {
@@ -157,7 +157,7 @@
           "version": "repo-lines-v1:sha256:c9fd6cccdcc1e59589583898d137dfa3f2a63fe5b16ec7197bf15f92a1202ba8:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI1NTNiM2MyMGUxYzBhNzU2ZTE3YjZiYzU3ZDNkNzIxNTYxMzM5ZDJhNzk0YTQyYjYyYzI3ZTFjOGExOGM0YzUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImYxYThlNzM5MmNjOGY5MWMyYWU3NmY1MDM2MGMyMWQ1YjIyMmRjNDUwMDFlOWQyZDIxMDRmNGE5ZTNjOTVlZDEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhiOTc0ZGE0MDg2MzJhNGFhN2UyYWU4MGI4NjAzOTFhM2RjZDgyMTFjNzllY2FkN2NhOGU5NTEyOGIwMDE4MzIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQ2NjU2ODVhODBjNmU4OGUxZTEwYjZmYWMyYzQ1YzJmYWE4YWQ2OThhODgzOTE4NTQ2ZWNmZDk4NmQ0NzMwYjcifQ"
         },
         {
-          "resource": "repo://backend/utils/tv_connection.py#L473-L479",
+          "resource": "repo://backend/utils/tv_connection.py#L483-L489",
           "version": "repo-lines-v1:sha256:27b244dfe454097882d9b1ae23c67e7999a71a05abc4df8d4156a37fba590d11:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZTEyMDRjMzYzY2IwMjI1MzFmMjkxMDliNWNjODQwYjRkY2QwYTJjMWZmODBkYzZlODg1Y2IzNDkzMjAzNzE2NSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMTM0MjI1YmRiM2MxYTc5MTE1NjY4YzIwZWU4MjliMWViNDhmNjkwOGZiNDI5NDA3YmZhOGRiZjJhMzQ0MjU3OCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZmYzZTUzOWUxODVhZWRhYjI5NGY4YWYwOWE2NzMwNjA4Y2I1Nzk2ZmVhY2NhNmQxZjYwN2NmYzQ0YzE5ODEzMCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMTUwNjBhOTllOWFlZmFhNjQ5NWVkOTM4ZmJhYWFlMzkzNmFjYTg5ODlkODhlZWUwZmUwMGVmZTEyYWQ3NDE3ZSJ9"
         }
       ]
@@ -191,7 +191,7 @@
       "statement": "Several deadline defaults are declared in both tv_connection.py and frame_tv.py, reading the same environment variables, so a default changed in the code must be changed in both places.",
       "evidence": [
         {
-          "resource": "repo://backend/utils/frame_tv.py#L24-L26",
+          "resource": "repo://backend/utils/frame_tv.py#L26-L28",
           "version": "repo-lines-v1:sha256:935dc144cbc2e80800a87ed916edc5c2ddd797313edd4ebcc43acb3282bf7570:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZGRlNjA5NjMwYWM3ZGI5NDQ0MjRlNzcxMjNjM2NlMjBiYzJmOWViMTQ1YWY1ZGU2ZGJmNDIxZjU0M2I0NzMyZiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNzFmMGQ5Mjg3ZjAzNjY4Mjg5MjhiM2M4ZjkyZDI5ZjE5NjZlNTNhZjM0NTRmZGJhNzExMGFiOTIwNGZiNWY5NyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiODdlZjJlYzEyMzlhOGI1ZTlmMDA2M2IxNTEwMzI1MmNkMTFhMTJkMmU2ZjBkNDg2MzQ2OWRmMjlkYTBlYTBkOSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYzI3YWU0NjQ4YWQ5N2M2OGIzZTEwNmJhNTZmNjVlMjQ0OGQyOTNmZWJmZjdmM2IzN2JiNDgyN2E1YzYyZDQwOCJ9"
         },
         {
@@ -212,7 +212,7 @@
     }
   ],
   "verification": {
-    "by": "openwiki/0.5.1",
-    "at": "2026-09-21T12:08:00.549Z"
+    "by": "openwiki/0.7.2",
+    "at": "2026-10-28T14:34:25.443Z"
   }
 }

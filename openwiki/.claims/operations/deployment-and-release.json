@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "pageVersion": "sha256:a16aa95ebe91ae83887652bb24a5a6ccb39c8e6c9bb5c5c37e2808b69d7fceea",
+  "pageVersion": "sha256:d906be8cd1c20caefc7e787ef5c5c61e1f240810638c9d7d53c94281817e496d",
   "claims": [
     {
       "id": "claim_091d99b3d34346868c72b0273b6a331f",
@@ -51,12 +51,12 @@
       "statement": "The compose file mounts one named volume at /data with FRAME_TV_DATA set to /data, so uploads, database and caches survive an image update.",
       "evidence": [
         {
-          "resource": "repo://backend/docker-compose.yml#L20-L22",
-          "version": "repo-lines-v1:sha256:1d8ac62d3757e64af947cfcda140f0e543e15d51a9c92a050874be96d1d26ddb:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMmU2OGM5NjcwYWM0OGIzM2U0YzJlYmMxYzE1NTEyMjNmMDA3OTdmNWI3ODBmZWNjMjVjM2UwZjJjNzlhMmNjMSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDIyNzUxOTdjZDRjOWYzMTMyOWI2MzFkODY3MmQyN2IxMzBiNmU1YzUyYTNkMzljNjU0ODA3Y2M2MWFiZDdkNyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTFiMWM0OTUxZTA4YTgzYmEzNzBiNmFjODA0ZThiN2QzOWM4MDk2OTIyNGFkY2NmMDQ0NTJmY2FlZjFmMmU3MCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMWNmZTAxMTIwZDU0MTNjODJiZjA2OTNmNmNjOTJkODAxNDljZWU5ODIwOTdhMjJhYTEzNTk3OTQ2NTc5Y2ZmNCJ9"
+          "resource": "repo://backend/docker-compose.yml#L21-L21",
+          "version": "repo-lines-v1:sha256:485e92c95248606214fc1802ff79aa0e77ed4cd4e4a918ad2ff9a2b371b5eb70:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNDg1ZTkyYzk1MjQ4NjA2MjE0ZmMxODAyZmY3OWFhMGU3N2VkNGNkNGU0YTkxOGFkMmZmOWEyYjM3MWI1ZWI3MCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDg1ZTkyYzk1MjQ4NjA2MjE0ZmMxODAyZmY3OWFhMGU3N2VkNGNkNGU0YTkxOGFkMmZmOWEyYjM3MWI1ZWI3MCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYThmOWM2OTE4NjdjOWZhYjRmMGMzNjcxYWQzN2Y5OTQ5NjJhYjg1YTI5ZjFjZTU2M2UxOWQxOTc3ZjA2Mjc5YyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDE5ZjM0YjdmOTY3ZTUyMDZkMjcxN2RhZTNkOTAzZmUxNTFhNGY1OGVhMGYxMzhjYTliZWMzNjAyMjc2ZWEwYSJ9"
         },
         {
-          "resource": "repo://backend/docker-compose.yml#L3-L7",
-          "version": "repo-lines-v1:sha256:31b2e27ce4a5538f74caae1265b538c3f96c41514009154280f7559c5c3ef746:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMWE3OWVkZDc5YWI2ZTc5MzFmNDJmODVjY2VkZTI2N2M0MWQ0OTM2YTE3NzVhMGU4ZmU1Yjc2ZmQ1ZTgzNzI5NCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMWJhYTQzYjNjNjNmMzVjMDRiM2NhYjk5YTM3NjRhNmMxNWFhZDMwMWJiY2E1YWQ0MjI1OGMzYTdhOWJkZTYxMSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjIsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZDM2MzZjZDY1ZGVkMThkMDg1ZjE1NDJmZGRkMTg3NDAzNDRjZjdkMzVhZWQzYmZlM2UxOTk2NjBlNTc1ZGZkZCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMmNlMDc3ZWQxOGY1NWJjYmEwM2YyYzFmNzk3ODBiZmEyZjgxMTI2ZWNhM2RjMzk0MTkwOTM2MTRiNjgyNmQ3ZSJ9"
+          "resource": "repo://backend/docker-compose.yml#L6-L7",
+          "version": "repo-lines-v1:sha256:54b42bc3283d09139c0be686b610ea67af84bc369556ff673366945ef372bb32:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEzZjRkOTY2MWU5ZDJjM2UxYTI4OWU1ODMyMjk5YmVhMTRjZGI2NGJmODg2NjFkZjcxN2IxMmZhMDJkMDExZSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNGE0NWM2NjQ1ZThkOTA4NWYzOTdjMjZhMzRmM2M1MzRmZmM1ZmU0OTA3ZjA1ZTdiN2EwNWYyY2IyOTFhZGMwYiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNGY1ZDdmOWE3ODNmODFmODU2YzI1YmI3NGViMDNjZjdiOGQzYTZlNGM2Mjc4YTRmMzk5YjY3MGUxMmE0OGExMiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNjI1ZTU1YTk4ZWUxMjBlNDA5NzlmNTllMzlkYmUyNWE4MmJlZWY3NTE4MDM4NjZmOGIyZjgzMDllY2M1ZWRlMCJ9"
         }
       ]
     },
@@ -65,22 +65,12 @@
       "statement": "The compose file uses the host network by default because Wake-on-LAN is a UDP broadcast that never leaves Docker's bridge, and automatic TV discovery probes the container's own /24 over HTTP, which on the bridge is Docker's subnet rather than the LAN; on the bridge a ports mapping is used and TVs are added by address.",
       "evidence": [
         {
-          "resource": "repo://backend/docker-compose.yml#L9-L18",
-          "version": "repo-lines-v1:sha256:b177daec65369b2f3e7042a85dbd45c2b762056fbdecff086d956cdb626e308b:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE0OTljMmI2ODM4ODk5ZmM1YzQzOTNkZTY1NzEzNWE4Y2EwZTA3YWEzOTU4N2NiYjdlNDU3OWZjMDc5MGEzMGQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE5NzU2ZjQwNThjNWViYTgyNjUzYWE1YzI1ZmU2ZGU1ZDBmNWEwYjVhZWE3NDYzMGZkNTliY2M1ZjFjNWQ4YTUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZjZTJjYTQyZmE5NmZmN2Y5ZTE2OTY4ZGM5NzUwYTUzM2U4MGQxMDVmOGY3NzFkODdlOTNkMTI3NDM5NGM2MDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjFhYjBkYzg4YjVmMTYxYTQxNmYzMjFhNjU5NTQyYjAyOTIwZmQ1Y2UwNDk0MjA3MjAzOGY3ZGVmMGY2MTBhMDUifQ"
-        }
-      ]
-    },
-    {
-      "id": "claim_41644ad6c42d4b69aa4faa41ee723b6e",
-      "statement": "The compose file ships SECRET_KEY=supersecretkey as a placeholder, and the app falls back to its own built-in default secret when the variable is unset.",
-      "evidence": [
-        {
-          "resource": "repo://backend/app.py#L103-L103",
-          "version": "repo-lines-v1:sha256:e4748a4dd36f3b304a48445db110d3b7528d08ae10c2145df8c6b1e27f7e7c06:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZTQ3NDhhNGRkMzZmM2IzMDRhNDg0NDVkYjExMGQzYjc1MjhkMDhhZTEwYzIxNDVkZjhjNmIxZTI3ZjdlN2MwNiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZTQ3NDhhNGRkMzZmM2IzMDRhNDg0NDVkYjExMGQzYjc1MjhkMDhhZTEwYzIxNDVkZjhjNmIxZTI3ZjdlN2MwNiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNjEzZDk5ZDAxZTJiM2Q5Y2EyMGI4YmY2MWJiZTFiYWYxMDk5MjhjNmYzMzg4YjRiZjA2ZmQ3YjBiNzUyNDRjOSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMGNkNWQ3YTFlY2E3YzYzNWZlYTIwMDcwMTg2ZDEzZjdlZDdkNDM2ZjgyYmM5NzRjMGMwNTZmMDQ2MWM5N2ZiNSJ9"
+          "resource": "repo://backend/docker-compose.yml#L16-L18",
+          "version": "repo-lines-v1:sha256:4c0b09b94944a2704bbfc843f85666e8f7dd7cc5ca9d7bad3a3cf8456eb545f5:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNmU3MGQ0ODM0NjgyNjhlYjMxYjRjYWM2ZjFlMmFiN2JhMGVjNGZhMzJhY2Q5M2M5MTEwZTNjZmExMzc0MGI2ZiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOTE0NTFkOTNmYjhmMjMxMDgwNGZjMmMzMTQ5NTViODU0MGYxYTBkZWYyZmRhYzA0Njg1Njg1MDUyYWU5NjQwOSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOTI3MjQ1MzlkZmZhNjlkMmJlNWY3MTQwNTU5MWY3NDk4YjNiNzY3MDhlZDdkNDc4MjY4NzVjYTk3NjVjOGEyNiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNjhlODhjMmZhMTUzOTI3NWVkZjFiMmQzYmZkMGEwZmQ0MTA0YmFhYWJlOWM3MmY4ZmNlN2MyNGUyYzg2NTAyNCJ9"
         },
         {
-          "resource": "repo://backend/docker-compose.yml#L21-L21",
-          "version": "repo-lines-v1:sha256:746937cd10e62ac10a651567096c6891f44772ceee97aa92b3feb9a6c88c8621:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNzQ2OTM3Y2QxMGU2MmFjMTBhNjUxNTY3MDk2YzY4OTFmNDQ3NzJjZWVlOTdhYTkyYjNmZWI5YTZjODhjODYyMSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNzQ2OTM3Y2QxMGU2MmFjMTBhNjUxNTY3MDk2YzY4OTFmNDQ3NzJjZWVlOTdhYTkyYjNmZWI5YTZjODhjODYyMSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNGYwNTJlN2YzOTVkMWIwOWVhZDUwODkzODk4NTQwM2NhMzlkODMwOWRmNDEyZTI5MDUwZTdhNjhmZWMyZjA4MyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiN2RjNzI2NTYwNGRmZTQ2ZmQ5YmU3YTVhNDNlYzhhOTA2YmZjYzBhYzBhOWJjNDhjMDEzMGY1NzRmMTc0OGUyMiJ9"
+          "resource": "repo://backend/docker-compose.yml#L9-L14",
+          "version": "repo-lines-v1:sha256:cc19ba3733b95d88b16bcf576573800f9d0b37c9954da69773fb471f94d90644:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZDE5NjMxMTQwNzcyMWFlYmU3YjUxODE5MGRiZmFmMmRkYTdlODdhZTYwYzhlNDYwNTQ0M2FmMGQ5OWQzY2Q2MCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZjliYWVhMmFiMzM4NmVhYzhhNDFjYWNjNGYxMThjZDMzNTcxOTk4YTk1YWMxMWFmNTg3ZWNjNGU2MTY2NjE3YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNjMzNTI4NTU2MjY0MmZjM2VjMDVlNjZlNDgzNjg5ZmQ4NTg5MDliNjlkODE2YWNmZTEyNmNkNDMyOTYwNDc3NiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMjY3M2I2NjE1ZTA2MjM5Zjg4ZTg1NDRlMTUxZmI4NGE0YjA2OGYxY2E3NTNmZjQwMjg4NTUwOGQ1NWNjZDI2MyJ9"
         }
       ]
     },
@@ -177,6 +167,6 @@
   ],
   "verification": {
     "by": "openwiki/0.7.2",
-    "at": "2026-10-27T18:55:06.371Z"
+    "at": "2026-10-28T14:34:25.443Z"
   }
 }

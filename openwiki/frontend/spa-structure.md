@@ -15,6 +15,8 @@ sources:
     resource: repo://frontend/app/routes/_layout.tsx
   - id: openwiki-source-d6ac8081471b25d06d9e5077
     resource: repo://frontend/app/routes/gallery.tsx
+  - id: openwiki-source-463c99d2c8ebb24e2bc02214
+    resource: repo://frontend/app/routes/settings.tsx
   - id: openwiki-source-2b1512f45a6dd66527495ba1
     resource: repo://frontend/app/utils/appApi.ts
   - id: openwiki-source-c1cd5dfce419b6b44db275e7
@@ -23,17 +25,16 @@ sources:
     resource: repo://frontend/app/utils/providerApi.ts
   - id: openwiki-source-f938d694130f9cef91cfe20f
     resource: repo://frontend/app/utils/tvApi.ts
-generated: { by: "claude-code", at: "2026-10-27T18:55:06.371Z" }
+generated: { by: "claude-code", at: "2026-10-28T14:34:25.443Z" }
 verified:
   - by: openwiki/0.7.2
-    at: 2026-10-27T18:55:06.371Z
+    at: 2026-10-28T14:34:25.443Z
 ---
 
 
 # Frontend structure
 
-<!-- openwiki: broken internal link [/openwiki/architecture/overview.md] link "/openwiki/architecture/overview.md" is root-absolute, which no real consumer resolves against the repository root (not a coding agent reading the page, not GitHub's Markdown renderer, not a local viewer); use a path relative to this file instead. Fix the href or restore the target, then delete this comment. -->
-The frontend is a React Router single-page app under `frontend/`. It has no server of its own: the build is static files that Flask or Electron serves (see [System architecture](/openwiki/architecture/overview.md)). Its source lives in `frontend/app/`.
+The frontend is a React Router single-page app under `frontend/`. It has no server of its own: the build is static files that Flask or Electron serves (see [System architecture](../architecture/overview.md)). Its source lives in `frontend/app/`.
 
 ## Routes and layout
 
@@ -66,6 +67,10 @@ Every backend call goes through one of four modules in `frontend/app/utils/`. Pa
 
 `tvApi.ts` defines a `TVError` class that carries the HTTP status with the message, so a caller can tell an unreachable TV from a rejected request (`frontend/app/utils/tvApi.ts` lines 44 to 54). The module also exposes `tvReachability` and `tvDiagnostics`, and `TV_ART_ERROR_HELP`, which maps each art-channel failure to a plain-language explanation.
 
+### The Immich key is write-only
+
+In `providerApi.ts`, `ProviderConfig` carries `api_key` (send only) and `has_api_key` (response). The server never sends the key back. On the Settings page the key field is a password input; when a key is already stored its placeholder says so, and leaving it empty keeps the stored key on save (`frontend/app/routes/settings.tsx`, `frontend/app/utils/providerApi.ts`). Saving the Immich settings takes effect at once, with no Frame Gallery restart.
+
 ### The status check is cached in the browser
 
 `fetchAppStatus` reads `/api/status`, which reports the running version and whether a newer release exists. It keeps the last answer in `localStorage` for six hours and returns that instead of calling the backend, unless a refresh is forced. A missing or corrupt cache entry, or a storage failure, is silently ignored and the network call is made (`frontend/app/utils/appApi.ts` lines 12 to 64).
@@ -74,8 +79,7 @@ Every backend call goes through one of four modules in `frontend/app/utils/`. Pa
 
 The library page loads images and albums together with `Promise.all`, and reloads whenever the search text or sort order changes. The reload is debounced by 250 ms when a search term is present, so typing does not send a request per keystroke, and runs immediately otherwise (`frontend/app/routes/gallery.tsx` lines 61 to 98).
 
-<!-- openwiki: broken internal link [/openwiki/tv/gallery-and-thumbnails.md] link "/openwiki/tv/gallery-and-thumbnails.md" is root-absolute, which no real consumer resolves against the repository root (not a coding agent reading the page, not GitHub's Markdown renderer, not a local viewer); use a path relative to this file instead. Fix the href or restore the target, then delete this comment. -->
-The TV page is different because a TV is slow and serves one request at a time. It first loads the image list, shows it at once, and then fetches missing thumbnails in the background in fixed-size batches, in order. See [TV gallery and thumbnails](/openwiki/tv/gallery-and-thumbnails.md).
+The TV page is different because a TV is slow and serves one request at a time. It first loads the image list, shows it at once, and then fetches missing thumbnails in the background in fixed-size batches, in order. See [TV gallery and thumbnails](../tv/gallery-and-thumbnails.md).
 
 ## Components
 
@@ -88,8 +92,7 @@ The components in `frontend/app/components/` group as follows:
 - Shell: `header`, `bottomTabs`, `loading-screen`, `update-status`.
 - `ui/`: small design-system pieces (`button`, `card`, `input`, `badge`, `skeleton`, and the `sonner` toast wrapper).
 
-<!-- openwiki: broken internal link [/openwiki/workflows/image-library.md] link "/openwiki/workflows/image-library.md" is root-absolute, which no real consumer resolves against the repository root (not a coding agent reading the page, not GitHub's Markdown renderer, not a local viewer); use a path relative to this file instead. Fix the href or restore the target, then delete this comment. -->
-The gallery page shows two floating action buttons, one to import from Reframed Gallery and one to upload from the device, and each opens its own modal and calls back into the page to reload the library. See [Local image library](/openwiki/workflows/image-library.md).
+The gallery page shows two floating action buttons, one to import from Reframed Gallery and one to upload from the device, and each opens its own modal and calls back into the page to reload the library. See [Local image library](../workflows/image-library.md).
 
 ## Working on the frontend
 
@@ -97,9 +100,6 @@ From `frontend/`, `pnpm run typecheck` runs route type generation and `tsc`, and
 
 ## Related pages
 
-<!-- openwiki: broken internal link [/openwiki/architecture/overview.md] link "/openwiki/architecture/overview.md" is root-absolute, which no real consumer resolves against the repository root (not a coding agent reading the page, not GitHub's Markdown renderer, not a local viewer); use a path relative to this file instead. Fix the href or restore the target, then delete this comment. -->
-- [System architecture](/openwiki/architecture/overview.md)
-<!-- openwiki: broken internal link [/openwiki/tv/gallery-and-thumbnails.md] link "/openwiki/tv/gallery-and-thumbnails.md" is root-absolute, which no real consumer resolves against the repository root (not a coding agent reading the page, not GitHub's Markdown renderer, not a local viewer); use a path relative to this file instead. Fix the href or restore the target, then delete this comment. -->
-- [TV gallery and thumbnails](/openwiki/tv/gallery-and-thumbnails.md)
-<!-- openwiki: broken internal link [/openwiki/workflows/image-library.md] link "/openwiki/workflows/image-library.md" is root-absolute, which no real consumer resolves against the repository root (not a coding agent reading the page, not GitHub's Markdown renderer, not a local viewer); use a path relative to this file instead. Fix the href or restore the target, then delete this comment. -->
-- [Local image library](/openwiki/workflows/image-library.md)
+- [System architecture](../architecture/overview.md)
+- [TV gallery and thumbnails](../tv/gallery-and-thumbnails.md)
+- [Local image library](../workflows/image-library.md)

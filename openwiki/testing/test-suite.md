@@ -12,20 +12,21 @@ sources:
     resource: repo://backend/tests/test_frame_tv_timeouts.py
   - id: openwiki-source-64ed2c6018b0eae34dd77457
     resource: repo://backend/tests/test_migrations.py
+  - id: openwiki-source-d281b6895c2bb7d8c2cf09ed
+    resource: repo://backend/tests/test_provider_settings.py
   - id: openwiki-source-40a9426dfd988cde0852abee
     resource: repo://backend/tests/test_reframed_import.py
   - id: openwiki-source-409ba6a0a4bc479b5339335a
     resource: repo://backend/tests/test_tv_diagnostics.py
-generated: { by: "claude-code", at: "2026-10-27T18:55:06.371Z" }
+generated: { by: "claude-code", at: "2026-10-28T14:34:25.443Z" }
 verified:
   - by: openwiki/0.7.2
-    at: 2026-10-27T18:55:06.371Z
+    at: 2026-10-28T14:34:25.443Z
 ---
 
 # Test suite
 
-<!-- openwiki: broken internal link [/openwiki/frontend/spa-structure.md] link "/openwiki/frontend/spa-structure.md" is root-absolute, which no real consumer resolves against the repository root (not a coding agent reading the page, not GitHub's Markdown renderer, not a local viewer); use a path relative to this file instead. Fix the href or restore the target, then delete this comment. -->
-The tests are pytest tests for the backend only, in `backend/tests/`. There is no frontend test runner; the frontend is checked by its typecheck and build (see [Frontend structure](/openwiki/frontend/spa-structure.md)). The directory holds 18 test files with 141 test functions, and pytest reports more than that because some tests are parametrised.
+The tests are pytest tests for the backend only, in `backend/tests/`. There is no frontend test runner; the frontend is checked by its typecheck and build (see [Frontend structure](../frontend/spa-structure.md)). The directory holds 19 test files with 150 test functions, and pytest reports more than that because some tests are parametrised.
 
 ## Running them
 
@@ -36,8 +37,7 @@ pip install -e ".[test]"
 pytest -q
 ```
 
-<!-- openwiki: broken internal link [/openwiki/operations/deployment-and-release.md] link "/openwiki/operations/deployment-and-release.md" is root-absolute, which no real consumer resolves against the repository root (not a coding agent reading the page, not GitHub's Markdown renderer, not a local viewer); use a path relative to this file instead. Fix the href or restore the target, then delete this comment. -->
-The `test` extra contains pytest and nothing else (`backend/pyproject.toml` line 35). CI runs exactly this on Python 3.13, so a local pass is what CI will check (see [Deployment and release](/openwiki/operations/deployment-and-release.md)).
+The `test` extra contains pytest and nothing else (`backend/pyproject.toml` line 35). CI runs exactly this on Python 3.13, so a local pass is what CI will check (see [Deployment and release](../operations/deployment-and-release.md)).
 
 Each file carries a docstring that names the command to run just that file, for example `pytest tests/test_frame_tv_timeouts.py`.
 
@@ -65,6 +65,7 @@ The consequence to know about is that these fixtures never run alembic. That gap
 | Sending and deleting | `test_matte_and_one_slot_mode.py`, `test_tv_delete.py`, `test_frame_tv_delete_fallback.py` | A matte is sent when none was chosen, one-slot mode prunes the wrong images, or deleting from the TV leaves stale records here. |
 | Slideshow | `test_slideshow.py` | A TV is rotated too early, while in use, or with a half-configured slideshow. |
 | Library | `test_album_api.py`, `test_duplicate_uploads.py`, `test_gallery_listing.py`, `test_crop_presets.py`, `test_backup.py`, `test_reframed_import.py` | Albums, duplicate detection, listing and sort, cropping, backup or Reframed import misbehave. |
+| Immich provider and settings | `test_provider_settings.py` | The API returns the API key, a partial save erases the stored key, the provider does not follow the saved settings, an unreachable Immich crashes instead of answering 502, the image cache grows without bound, other sites get CORS permission, the old `/tv/<ip>/...` routes come back, or a failed GitHub version check is not cached. |
 | Diagnostics and send errors | `test_tv_diagnostics.py` | The TV probe reads the wrong endpoint or opens the art channel, an unreachable TV still triggers an art session, a failure is reported under the wrong `art_error`, or a failed send loses its `code` and readable message. |
 | Wake-on-LAN | `test_wake_on_lan.py` | The magic packet is malformed, or a TV with no saved address is not explained. |
 | Migrations | `test_migrations.py` | A database is not usable however it was created. |
@@ -101,7 +102,5 @@ Four more tests each fail without the change they cover. Album deletion with an 
 
 ## Related pages
 
-<!-- openwiki: broken internal link [/openwiki/tv/connection-and-session.md] link "/openwiki/tv/connection-and-session.md" is root-absolute, which no real consumer resolves against the repository root (not a coding agent reading the page, not GitHub's Markdown renderer, not a local viewer); use a path relative to this file instead. Fix the href or restore the target, then delete this comment. -->
-- [TV connection layer](/openwiki/tv/connection-and-session.md)
-<!-- openwiki: broken internal link [/openwiki/workflows/image-library.md] link "/openwiki/workflows/image-library.md" is root-absolute, which no real consumer resolves against the repository root (not a coding agent reading the page, not GitHub's Markdown renderer, not a local viewer); use a path relative to this file instead. Fix the href or restore the target, then delete this comment. -->
-- [Local image library](/openwiki/workflows/image-library.md)
+- [TV connection layer](../tv/connection-and-session.md)
+- [Local image library](../workflows/image-library.md)

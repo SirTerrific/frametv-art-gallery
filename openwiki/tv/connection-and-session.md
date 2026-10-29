@@ -12,10 +12,10 @@ sources:
     resource: repo://backend/utils/frame_tv.py
   - id: openwiki-source-a74be312010be245530dc464
     resource: repo://backend/utils/tv_connection.py
-generated: { by: "claude-code", at: "2026-10-27T18:55:06.371Z" }
+generated: { by: "claude-code", at: "2026-10-28T14:34:25.443Z" }
 verified:
-  - by: openwiki/0.5.1
-    at: 2026-09-21T12:08:00.549Z
+  - by: openwiki/0.7.2
+    at: 2026-10-28T14:34:25.443Z
 ---
 
 # TV connection layer
@@ -83,8 +83,7 @@ A caller may pass `stall_timeout`. A daemon thread then checks once a second how
 
 ## Keeping the token the TV hands back
 
-<!-- openwiki: broken internal link [/openwiki/tv/pairing-tokens-and-wake.md] link "/openwiki/tv/pairing-tokens-and-wake.md" is root-absolute, which no real consumer resolves against the repository root (not a coding agent reading the page, not GitHub's Markdown renderer, not a local viewer); use a path relative to this file instead. Fix the href or restore the target, then delete this comment. -->
-A Frame TV issues a fresh token when a client connects and stops honouring the previous one. After every call, successful or not, `_tv_call` asks the session for the newest token its channels received. If it differs from the one used, it hands it to a registered observer. `app.py` registers `_remember_tv_token`, which writes it to the TV's row (`backend/utils/tv_connection.py` lines 333 to 338 and 416 to 424, and `backend/app.py` lines 186 to 207). Keeping it even after a failure matters, because the token arrives during the handshake, so a call that dies later has still learned the one the TV expects next time. See [Pairing, tokens, discovery and wake](/openwiki/tv/pairing-tokens-and-wake.md).
+A Frame TV issues a fresh token when a client connects and stops honouring the previous one. After every call, successful or not, `_tv_call` asks the session for the newest token its channels received. If it differs from the one used, it hands it to a registered observer. `app.py` registers `_remember_tv_token`, which writes it to the TV's row (`backend/utils/tv_connection.py` lines 333 to 338 and 416 to 424, and `backend/app.py` lines 186 to 207). Keeping it even after a failure matters, because the token arrives during the handshake, so a call that dies later has still learned the one the TV expects next time. See [Pairing, tokens, discovery and wake](pairing-tokens-and-wake.md).
 
 ## Error types
 
@@ -95,8 +94,7 @@ All of them live in `tv_connection.py` (`backend/utils/tv_connection.py` lines 6
 - `FrameTVTimeoutError` is a connection error raised when a deadline passes.
 - `FrameTVUnavailableError` is a connection error raised without contacting the TV, for the cooldown and for a busy lock.
 
-<!-- openwiki: broken internal link [/openwiki/operations/diagnostics-and-failure-modes.md] link "/openwiki/operations/diagnostics-and-failure-modes.md" is root-absolute, which no real consumer resolves against the repository root (not a coding agent reading the page, not GitHub's Markdown renderer, not a local viewer); use a path relative to this file instead. Fix the href or restore the target, then delete this comment. -->
-Because the last two are subclasses, code that catches `FrameTVConnectionError` also catches them, and route handlers catch the most specific class first (see [Diagnostics and failure modes](/openwiki/operations/diagnostics-and-failure-modes.md)).
+Because the last two are subclasses, code that catches `FrameTVConnectionError` also catches them, and route handlers catch the most specific class first (see [Diagnostics and failure modes](../operations/diagnostics-and-failure-modes.md)).
 
 ## Settings
 
@@ -119,9 +117,6 @@ Some of these defaults are declared twice, in `tv_connection.py` and in `frame_t
 
 ## Related pages
 
-<!-- openwiki: broken internal link [/openwiki/tv/gallery-and-thumbnails.md] link "/openwiki/tv/gallery-and-thumbnails.md" is root-absolute, which no real consumer resolves against the repository root (not a coding agent reading the page, not GitHub's Markdown renderer, not a local viewer); use a path relative to this file instead. Fix the href or restore the target, then delete this comment. -->
-- [TV gallery and thumbnails](/openwiki/tv/gallery-and-thumbnails.md)
-<!-- openwiki: broken internal link [/openwiki/tv/pairing-tokens-and-wake.md] link "/openwiki/tv/pairing-tokens-and-wake.md" is root-absolute, which no real consumer resolves against the repository root (not a coding agent reading the page, not GitHub's Markdown renderer, not a local viewer); use a path relative to this file instead. Fix the href or restore the target, then delete this comment. -->
-- [Pairing, tokens, discovery and wake](/openwiki/tv/pairing-tokens-and-wake.md)
-<!-- openwiki: broken internal link [/openwiki/operations/diagnostics-and-failure-modes.md] link "/openwiki/operations/diagnostics-and-failure-modes.md" is root-absolute, which no real consumer resolves against the repository root (not a coding agent reading the page, not GitHub's Markdown renderer, not a local viewer); use a path relative to this file instead. Fix the href or restore the target, then delete this comment. -->
-- [Diagnostics and failure modes](/openwiki/operations/diagnostics-and-failure-modes.md)
+- [TV gallery and thumbnails](gallery-and-thumbnails.md)
+- [Pairing, tokens, discovery and wake](pairing-tokens-and-wake.md)
+- [Diagnostics and failure modes](../operations/diagnostics-and-failure-modes.md)
