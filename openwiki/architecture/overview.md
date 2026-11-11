@@ -81,7 +81,7 @@ TV preview thumbnails are cached under `instance/tv_thumbnails` (`backend/utils/
 
 A request that touches a TV goes through two layers, and keeping them apart is the main design rule:
 
-1. `backend/utils/frame_tv.py` decides what to ask: list the gallery, upload an image, delete, select, switch art mode. The route handlers in `app.py` import these functions (`backend/app.py` lines 46 to 69). Two of them, `probe_tv` and `diagnose_tv`, serve the read-only `GET /api/tv/<ip>/diagnostics` route (`backend/app.py` line 1460), which the Settings page uses for its test-connection button; see [Diagnostics and failure modes](../operations/diagnostics-and-failure-modes.md).
+1. `backend/utils/frame_tv.py` decides what to ask: list the gallery, upload an image, delete, select, switch art mode. The route handlers in `app.py` import these functions (`backend/app.py` lines 46 to 69). Two of them, `probe_tv` and `diagnose_tv`, serve the read-only `GET /api/tv/<ip>/diagnostics` route (`backend/app.py` line 1432), which the Settings page uses for its test-connection button; see [Diagnostics and failure modes](../operations/diagnostics-and-failure-modes.md).
 2. `backend/utils/tv_connection.py` decides how to ask it safely: one caller per TV at a time, a hard deadline, a watchdog for silence, and cleanup of connections the TV left half-open.
 
 See [TV connection layer](../tv/connection-and-session.md) for the second layer, which is where most reliability problems live.

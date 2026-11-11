@@ -51,7 +51,7 @@ Sending artwork goes further and adds a machine-readable `code` next to the mess
 Two read-only routes let the app check a TV without disturbing uploads in progress:
 
 - `GET /api/tv/<ip>/reachability` is the cheap check behind the connection light in the header. It only reads the TV's plain HTTP endpoint on port 8001, so it never takes the art channel (`backend/app.py` lines 1449 to 1458).
-- `GET /api/tv/<ip>/diagnostics` is behind the Test connection button in Settings. It returns the HTTP probe plus one art session that reads the art API version, whether art mode is on and how many artworks the TV holds, together with whether a MAC address is saved for waking the TV (`backend/app.py` lines 1460 to 1483, `backend/utils/frame_tv.py` lines 853 to 893).
+- `GET /api/tv/<ip>/diagnostics` is behind the Test connection button in Settings. It returns the HTTP probe plus one art session that reads the art API version, whether art mode is on and how many artworks the TV holds, together with whether a MAC address is saved for waking the TV (`backend/app.py` lines 1432 to 1455, `backend/utils/frame_tv.py` lines 853 to 893).
 
 The probe reports the model, the latency and `reported_power_state`. That last value is the firmware's own word and is not trusted alone: some firmware reports `standby` while the TV is showing art, so the art session decides. When the art session fails, `art_error` is one of `unreachable` (the probe got no answer), `busy` (another call holds the channel), `timeout` (the channel opened and stayed silent), `refused` (the connection failed) or `error` (anything else, logged). The panel maps each to advice (`frontend/app/components/TvDiagnosticsPanel.tsx`, `frontend/app/utils/tvApi.ts` lines 66 to 85).
 
@@ -107,7 +107,7 @@ A failed call also puts the TV in a short cooldown, `FRAME_TV_DOWN_COOLDOWN` sec
 
 ## Missing logs on a first start
 
-If a brand new data directory produced no `utils.*` log lines at all, the cause was alembic, not the app: `migrations/env.py` used to call `fileConfig` with its default of disabling every existing logger, and the stamp of a fresh database runs it inside the gunicorn process. It now passes `disable_existing_loggers=False` (`backend/migrations/env.py` lines 12 to 18). An image older than v2.3.2 still has the fault; restarting the container works around it, because the second start finds an existing database and skips the stamp. See [Data model and migrations](../architecture/data-model-and-migrations.md).
+If a brand new data directory produced no `utils.*` log lines at all, the cause was alembic, not the app: `backend/migrations/env.py` used to call `fileConfig` with its default of disabling every existing logger, and the stamp of a fresh database runs it inside the gunicorn process. It now passes `disable_existing_loggers=False` (`backend/migrations/env.py` lines 12 to 18). An image older than v2.3.2 still has the fault; restarting the container works around it, because the second start finds an existing database and skips the stamp. See [Data model and migrations](../architecture/data-model-and-migrations.md).
 
 ## Immich unreachable
 

@@ -42,13 +42,13 @@ The frontend is a React Router single-page app under `frontend/`. It has no serv
 
 | Path | File | Purpose |
 | --- | --- | --- |
-| `/` | `routes/home.tsx` | Landing page. It also renders the update notice. |
-| `/gallery` | `routes/gallery.tsx` | The local image library: search, sort, multi-select, upload, import, albums. |
-| `/tv-gallery` | `routes/tvGallery.tsx` | The images currently on a chosen TV. |
-| `/settings` | `routes/settings.tsx` | TVs, slideshow, mattes, providers, backup and maintenance. |
-| `/album/:albumId` | `routes/albumPage.tsx` | One album's images. |
+| `/` | `frontend/app/routes/home.tsx` | Landing page. It also renders the update notice. |
+| `/gallery` | `frontend/app/routes/gallery.tsx` | The local image library: search, sort, multi-select, upload, import, albums. |
+| `/tv-gallery` | `frontend/app/routes/tvGallery.tsx` | The images currently on a chosen TV. |
+| `/settings` | `frontend/app/routes/settings.tsx` | TVs, slideshow, mattes, providers, backup and maintenance. |
+| `/album/:albumId` | `frontend/app/routes/albumPage.tsx` | One album's images. |
 
-The layout, `routes/_layout.tsx`, renders a `Header`, the routed page in `<main>`, and a `BottomTabs` bar (`frontend/app/routes/_layout.tsx` lines 5 to 17). The header also carries one connection light per TV (`frontend/app/components/header.tsx`). `root.tsx` wraps everything in a `next-themes` theme provider that follows the system theme, mounts the toast container, and shows a loading screen while the app hydrates (`frontend/app/root.tsx` lines 30 to 58).
+The layout, `frontend/app/routes/_layout.tsx`, renders a `Header`, the routed page in `<main>`, and a `BottomTabs` bar (`frontend/app/routes/_layout.tsx` lines 5 to 17). The header also carries one connection light per TV (`frontend/app/components/header.tsx`). `root.tsx` wraps everything in a `next-themes` theme provider that follows the system theme, mounts the toast container, and shows a loading screen while the app hydrates (`frontend/app/root.tsx` lines 30 to 58).
 
 One quirk to know when editing routes: the album route's file path is written with a doubled slash, `"routes//albumPage.tsx"`, and works as is.
 
